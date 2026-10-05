@@ -45,7 +45,7 @@ export async function getAuthUser(): Promise<AuthUser> {
     full_name: profile?.full_name || user.email || '',
     role: (shopUser?.role as UserRole) || 'cashier',
     shop_id: shopUser?.shop_id || null,
-    shop: shopUser?.shops as AuthUser['shop'],
+    shop: (Array.isArray(shopUser?.shops) ? shopUser.shops[0] : shopUser?.shops) as AuthUser['shop'],
   };
 }
 

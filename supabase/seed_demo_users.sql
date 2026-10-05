@@ -59,6 +59,26 @@ BEGIN
       NOW()
     );
 
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      identity_data,
+      provider,
+      provider_id,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      super_admin_id,
+      super_admin_id,
+      format('{"sub":"%s","email":"%s"}', super_admin_id, 'admin@shopflow.com')::jsonb,
+      'email',
+      super_admin_id::text,
+      NOW(),
+      NOW(),
+      NOW()
+    ) ON CONFLICT (provider, provider_id) DO NOTHING;
+
     INSERT INTO profiles (id, email, full_name, phone)
     VALUES (super_admin_id, 'admin@shopflow.com', 'System Administrator', '03000000000')
     ON CONFLICT (id) DO NOTHING;
@@ -95,6 +115,26 @@ BEGIN
       NOW(),
       NOW()
     );
+
+    INSERT INTO auth.identities (
+      id,
+      user_id,
+      identity_data,
+      provider,
+      provider_id,
+      last_sign_in_at,
+      created_at,
+      updated_at
+    ) VALUES (
+      shop_owner_id,
+      shop_owner_id,
+      format('{"sub":"%s","email":"%s"}', shop_owner_id, 'owner@shopflow.com')::jsonb,
+      'email',
+      shop_owner_id::text,
+      NOW(),
+      NOW(),
+      NOW()
+    ) ON CONFLICT (provider, provider_id) DO NOTHING;
 
     INSERT INTO profiles (id, email, full_name, phone)
     VALUES (shop_owner_id, 'owner@shopflow.com', 'Muhammad Usman', '03001234567')

@@ -52,8 +52,8 @@ export async function loginAction(formData: FormData) {
   }
 
   // Check if shop is active
-  const shopArr = shopUser.shops as unknown as { status: string }[] | null;
-  const shop = shopArr?.[0] ?? null;
+  const rawShops = shopUser.shops as unknown;
+  const shop = (Array.isArray(rawShops) ? rawShops[0] : rawShops) as { status: string } | null;
   if (shop?.status === 'suspended') {
     await supabase.auth.signOut();
     return { error: 'Your shop has been suspended. Please contact support.' };
