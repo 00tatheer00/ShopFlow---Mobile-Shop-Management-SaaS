@@ -20,6 +20,7 @@ interface ProductFiltersProps {
   currentSearch: string;
   currentCategory: string;
   currentBrand: string;
+  currentStatus?: string;
 }
 
 export function ProductFilters({
@@ -28,6 +29,7 @@ export function ProductFilters({
   currentSearch,
   currentCategory,
   currentBrand,
+  currentStatus = 'active',
 }: ProductFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -80,6 +82,16 @@ export function ProductFilters({
       </form>
 
       <div className="flex flex-wrap gap-2">
+        <select
+          value={currentStatus}
+          onChange={(e) => updateQuery({ status: e.target.value || null })}
+          className="h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+        >
+          <option value="active">Active Only</option>
+          <option value="inactive">Archived / Inactive</option>
+          <option value="all">All Products</option>
+        </select>
+
         <select
           value={currentCategory}
           onChange={(e) => updateQuery({ category: e.target.value || null })}

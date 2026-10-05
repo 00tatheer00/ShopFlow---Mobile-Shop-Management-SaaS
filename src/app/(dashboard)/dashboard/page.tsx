@@ -60,13 +60,12 @@ export default async function DashboardPage() {
     0
   );
 
-  // Low stock products count
+  // Low stock products count (consistent with products catalog)
   const { data: lowStockProducts } = await supabase
     .from('products')
     .select('id, stock_quantity, low_stock_threshold')
     .eq('shop_id', user.shop_id!)
-    .eq('is_active', true)
-    .eq('is_imei_tracked', false);
+    .eq('is_active', true);
 
   const actualLowStock = lowStockProducts?.filter(
     (p) => p.stock_quantity <= p.low_stock_threshold

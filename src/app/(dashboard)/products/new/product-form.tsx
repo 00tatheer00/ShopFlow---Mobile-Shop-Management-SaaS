@@ -206,14 +206,18 @@ export function ProductForm({ categories, brands, initialProduct }: ProductFormP
                 name="stock_quantity"
                 min="0"
                 defaultValue={initialProduct ? initialProduct.stock_quantity : 0}
-                disabled={isImeiTracked}
+                disabled={isEdit || isImeiTracked}
                 className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
               />
-              {isImeiTracked && (
+              {isImeiTracked ? (
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  IMEI-tracked stock is managed via IMEI records in Purchases.
+                  IMEI-tracked stock is managed via IMEI serials in Purchases.
                 </p>
-              )}
+              ) : isEdit ? (
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  To adjust inventory for existing items, use the &quot;Adjust Stock&quot; action on the Products page.
+                </p>
+              ) : null}
             </div>
 
             <div>

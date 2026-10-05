@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { requireShopAccess, hasPermission } from '@/lib/auth';
-import { createPurchaseSchema } from '@/lib/validations';
+import { createPurchaseSchema, validateImeiString } from '@/lib/validations';
 import { toPaisas } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 
@@ -43,28 +43,57 @@ export async function createPurchase(payload: CreatePurchasePayload) {
     return { error: 'Supplier not found or does not belong to this shop.' };
   }
 
-  // 2. Verify all products belong to this shop and collect IMEIs
+  // 2. Verify all products belong to this shop, check active status, and validate IMEI counts & formats
   const allImeis: string[] = [];
+  const productCache = new Map<string, { id: string; name: string; is_imei_tracked: boolean; stock_quantity: number }>();
+
   for (const item of result.data.items) {
     const { data: product } = await supabase
       .from('products')
-      .select('id, is_imei_tracked')
+      .select('id, name, is_imei_tracked, stock_quantity, is_active')
       .eq('id', item.product_id)
       .eq('shop_id', user.shop_id!)
       .single();
 
     if (!product) {
-      return { error: 'One or more products do not belong to this shop.' };
+      return { error: 'One or more selected products do not belong to your shop.' };
     }
 
-    if (item.imei_numbers && item.imei_numbers.length > 0) {
-      const cleaned = item.imei_numbers.map((n) => n.trim()).filter(Boolean);
-      allImeis.push(...cleaned);
+    productCache.set(product.id, product);
+
+    if (product.is_imei_tracked) {
+      const imeis = (item.imei_numbers || [])
+        .map((n) => n.trim().replace(/\s+/g, ''))
+        .filter(Boolean);
+
+      if (imeis.length !== item.quantity) {
+        return {
+          error: `Product "${product.name}" requires exactly ${item.quantity} IMEI(s), but ${imeis.length} were provided.`,
+        };
+      }
+
+      // Validate 15-digit format for each IMEI
+      for (const imei of imeis) {
+        const val = validateImeiString(imei);
+        if (!val.isValidFormat) {
+          return {
+            error: `Invalid IMEI "${imei}" for "${product.name}". Every IMEI must be exactly 15 numeric digits.`,
+          };
+        }
+        allImeis.push(imei);
+      }
     }
   }
 
   // 3. Pre-check for duplicate IMEIs across the entire shop
   if (allImeis.length > 0) {
+    // Check duplicates within the input list itself
+    const uniqueInput = new Set(allImeis);
+    if (uniqueInput.size !== allImeis.length) {
+      return { error: 'Duplicate IMEI numbers detected within the purchase order items.' };
+    }
+
+    // Check existing records in DB for this shop
     const { data: existingImeis } = await supabase
       .from('imei_records')
       .select('imei_number')
@@ -73,7 +102,7 @@ export async function createPurchase(payload: CreatePurchasePayload) {
 
     if (existingImeis && existingImeis.length > 0) {
       return {
-        error: `The following IMEI(s) already exist in your inventory: ${existingImeis.map((i) => i.imei_number).join(', ')}.`,
+        error: `The following IMEI(s) already exist in your inventory: ${existingImeis.map((i) => i.imei_number).join(', ')}. Duplicate IMEIs cannot be added.`,
       };
     }
   }
@@ -84,7 +113,7 @@ export async function createPurchase(payload: CreatePurchasePayload) {
     totalAmountPaisas += toPaisas(item.quantity * item.unit_price);
   });
 
-  // 4. Insert Purchase
+  // 4. Insert Purchase record
   const { data: purchase, error: purchaseError } = await supabase
     .from('purchases')
     .insert({
@@ -100,12 +129,18 @@ export async function createPurchase(payload: CreatePurchasePayload) {
 
   if (purchaseError || !purchase) {
     console.error('Purchase create error:', purchaseError);
-    return { error: 'Failed to record purchase.' };
+    return { error: 'Failed to record purchase header.' };
   }
 
-  // 2. Insert items, update product stock, and insert IMEIs
+  // 5. ATOMIC EXECUTION: Insert items, update product stock, and insert IMEIs
+  // If any item or IMEI fails, cleanly roll back the entire purchase transaction
+  const stockIncrementsToRollback: { productId: string; quantity: number }[] = [];
+  let rollbackNeeded = false;
+  let failureReason = '';
+
   for (const item of result.data.items) {
     const itemTotalPaisas = toPaisas(item.quantity * item.unit_price);
+    const unitPricePaisas = toPaisas(item.unit_price);
 
     const { data: purchaseItem, error: itemError } = await supabase
       .from('purchase_items')
@@ -113,39 +148,24 @@ export async function createPurchase(payload: CreatePurchasePayload) {
         purchase_id: purchase.id,
         product_id: item.product_id,
         quantity: item.quantity,
-        unit_price: toPaisas(item.unit_price),
+        unit_price: unitPricePaisas,
         total_price: itemTotalPaisas,
       })
       .select('id')
       .single();
 
-    if (itemError) {
-      console.error('Purchase item error:', itemError);
-      continue;
-    }
-
-    // Increment stock quantity & update purchase price in products
-    const { data: existingProduct } = await supabase
-      .from('products')
-      .select('stock_quantity')
-      .eq('id', item.product_id)
-      .single();
-
-    if (existingProduct) {
-      await supabase
-        .from('products')
-        .update({
-          stock_quantity: (existingProduct.stock_quantity || 0) + item.quantity,
-          purchase_price: toPaisas(item.unit_price),
-        })
-        .eq('id', item.product_id);
+    if (itemError || !purchaseItem) {
+      rollbackNeeded = true;
+      failureReason = `Failed to insert purchase item for product.`;
+      break;
     }
 
     // Insert IMEIs if tracked
-    if (item.imei_numbers && item.imei_numbers.length > 0) {
+    const prod = productCache.get(item.product_id);
+    if (prod?.is_imei_tracked && item.imei_numbers && item.imei_numbers.length > 0) {
       const imeiRows = item.imei_numbers
-        .map((num) => num.trim())
-        .filter((num) => num.length > 0)
+        .map((num) => num.trim().replace(/\s+/g, ''))
+        .filter(Boolean)
         .map((imeiNumber) => ({
           shop_id: user.shop_id,
           product_id: item.product_id,
@@ -154,14 +174,70 @@ export async function createPurchase(payload: CreatePurchasePayload) {
           purchase_item_id: purchaseItem.id,
         }));
 
-      if (imeiRows.length > 0) {
-        const { error: imeiError } = await supabase.from('imei_records').insert(imeiRows);
-        if (imeiError) {
-          console.error('IMEI insert error:', imeiError);
-        }
+      const { error: imeiError } = await supabase.from('imei_records').insert(imeiRows);
+      if (imeiError) {
+        rollbackNeeded = true;
+        failureReason = `Failed to register IMEIs: ${imeiError.message}`;
+        break;
       }
     }
+
+    // Increment product stock and update purchase price
+    const currentProd = productCache.get(item.product_id);
+    const newStock = (currentProd?.stock_quantity || 0) + item.quantity;
+
+    const { error: stockError } = await supabase
+      .from('products')
+      .update({
+        stock_quantity: newStock,
+        purchase_price: unitPricePaisas,
+      })
+      .eq('id', item.product_id)
+      .eq('shop_id', user.shop_id!);
+
+    if (stockError) {
+      rollbackNeeded = true;
+      failureReason = `Failed to update inventory stock for ${prod?.name}.`;
+      break;
+    }
+
+    stockIncrementsToRollback.push({ productId: item.product_id, quantity: item.quantity });
   }
+
+  // 6. ROLLBACK IF ANY ERROR OCCURRED (Section 12: Purchase + IMEI Atomicity)
+  if (rollbackNeeded) {
+    // Reverse any applied stock increments
+    for (const rb of stockIncrementsToRollback) {
+      const curr = productCache.get(rb.productId);
+      if (curr) {
+        await supabase
+          .from('products')
+          .update({ stock_quantity: curr.stock_quantity })
+          .eq('id', rb.productId)
+          .eq('shop_id', user.shop_id!);
+      }
+    }
+
+    // Clean up created purchase (cascades items and IMEIs)
+    await supabase.from('purchases').delete().eq('id', purchase.id).eq('shop_id', user.shop_id!);
+
+    return { error: `Purchase transaction aborted for atomicity: ${failureReason}` };
+  }
+
+  // 7. Audit log
+  await supabase.from('audit_logs').insert({
+    shop_id: user.shop_id,
+    user_id: user.id,
+    action: 'purchase_create',
+    entity_type: 'purchase',
+    entity_id: purchase.id,
+    metadata: {
+      supplier_id: result.data.supplier_id,
+      total_amount: totalAmountPaisas,
+      items_count: result.data.items.length,
+      imeis_count: allImeis.length,
+    },
+  });
 
   revalidatePath('/purchases');
   revalidatePath('/products');
@@ -178,7 +254,7 @@ export async function deletePurchase(purchaseId: string) {
 
   const supabase = await createClient();
 
-  // Fetch purchase and items
+  // 1. Fetch purchase and items
   const { data: purchase } = await supabase
     .from('purchases')
     .select(`
@@ -193,7 +269,7 @@ export async function deletePurchase(purchaseId: string) {
     return { error: 'Purchase record not found.' };
   }
 
-  // Check if any IMEI associated with this purchase has been sold
+  // 2. Check if any IMEI associated with this purchase has been sold
   const purchaseItemIds = purchase.purchase_items?.map((i) => i.id) || [];
   if (purchaseItemIds.length > 0) {
     const { data: soldImeis } = await supabase
@@ -205,18 +281,35 @@ export async function deletePurchase(purchaseId: string) {
 
     if (soldImeis && soldImeis.length > 0) {
       return {
-        error: `Cannot delete purchase because device with IMEI ${soldImeis[0].imei_number} has already been sold.`,
+        error: `Cannot delete purchase because device with IMEI "${soldImeis[0].imei_number}" has already been sold.`,
       };
     }
   }
 
-  // Reverse stock for items
+  // 3. Pre-verify stock reversal: verify reversing stock won't violate non-negative stock constraint
   if (purchase.purchase_items) {
+    for (const item of purchase.purchase_items) {
+      const { data: prod } = await supabase
+        .from('products')
+        .select('name, stock_quantity')
+        .eq('id', item.product_id)
+        .eq('shop_id', user.shop_id!)
+        .single();
+
+      if (prod && (prod.stock_quantity || 0) < item.quantity) {
+        return {
+          error: `Cannot delete purchase: stock for "${prod.name}" has already been depleted (${prod.stock_quantity} available, purchase was ${item.quantity}).`,
+        };
+      }
+    }
+
+    // Safely decrement stock
     for (const item of purchase.purchase_items) {
       const { data: prod } = await supabase
         .from('products')
         .select('stock_quantity')
         .eq('id', item.product_id)
+        .eq('shop_id', user.shop_id!)
         .single();
 
       if (prod) {
@@ -225,12 +318,22 @@ export async function deletePurchase(purchaseId: string) {
           .update({
             stock_quantity: Math.max(0, (prod.stock_quantity || 0) - item.quantity),
           })
-          .eq('id', item.product_id);
+          .eq('id', item.product_id)
+          .eq('shop_id', user.shop_id!);
       }
     }
   }
 
-  // Delete purchase (cascades purchase_items)
+  // 4. Delete IMEIs associated with this purchase
+  if (purchaseItemIds.length > 0) {
+    await supabase
+      .from('imei_records')
+      .delete()
+      .in('purchase_item_id', purchaseItemIds)
+      .eq('shop_id', user.shop_id!);
+  }
+
+  // 5. Delete purchase (cascades purchase_items)
   const { error } = await supabase
     .from('purchases')
     .delete()
@@ -240,6 +343,16 @@ export async function deletePurchase(purchaseId: string) {
   if (error) {
     return { error: 'Failed to delete purchase record.' };
   }
+
+  // 6. Audit log
+  await supabase.from('audit_logs').insert({
+    shop_id: user.shop_id,
+    user_id: user.id,
+    action: 'purchase_delete',
+    entity_type: 'purchase',
+    entity_id: purchaseId,
+    metadata: { purchase_id: purchaseId },
+  });
 
   revalidatePath('/purchases');
   revalidatePath('/products');

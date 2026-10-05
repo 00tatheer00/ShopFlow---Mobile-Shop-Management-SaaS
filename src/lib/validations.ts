@@ -125,7 +125,95 @@ export const createSaleSchema = z.object({
   notes: z.string().max(500).optional().or(z.literal('')),
 });
 
-// ---- Purchase ----
+// ---- IMEI Helpers & Validation ----
+
+export function isValidLuhn(numStr: string): boolean {
+  let sum = 0;
+  let shouldDouble = false;
+  for (let i = numStr.length - 1; i >= 0; i--) {
+    let digit = parseInt(numStr.charAt(i), 10);
+    if (isNaN(digit)) return false;
+    if (shouldDouble) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    shouldDouble = !shouldDouble;
+  }
+  return sum % 10 === 0;
+}
+
+export function validateImeiString(rawImei: string): {
+  normalized: string;
+  isValidFormat: boolean;
+  isLuhnValid: boolean;
+  error?: string;
+} {
+  const normalized = rawImei.trim().replace(/\s+/g, '');
+  if (!/^\d{15}$/.test(normalized)) {
+    return {
+      normalized,
+      isValidFormat: false,
+      isLuhnValid: false,
+      error: 'IMEI must contain exactly 15 numeric digits',
+    };
+  }
+  const isLuhnValid = isValidLuhn(normalized);
+  return {
+    normalized,
+    isValidFormat: true,
+    isLuhnValid,
+  };
+}
+
+export interface ParsedImeisResult {
+  total: number;
+  valid: string[];
+  duplicates: string[];
+  invalid: string[];
+  validLuhnCount: number;
+}
+
+export function parseImeiText(text: string): ParsedImeisResult {
+  if (!text || !text.trim()) {
+    return { total: 0, valid: [], duplicates: [], invalid: [], validLuhnCount: 0 };
+  }
+
+  const rawTokens = text
+    .split(/[\n,]+/)
+    .map((s) => s.trim().replace(/\s+/g, ''))
+    .filter(Boolean);
+
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  let validLuhnCount = 0;
+
+  for (const token of rawTokens) {
+    if (!/^\d{15}$/.test(token)) {
+      invalid.push(token);
+    } else {
+      if (seen.has(token)) {
+        duplicates.add(token);
+      } else {
+        seen.add(token);
+        valid.push(token);
+        if (isValidLuhn(token)) {
+          validLuhnCount++;
+        }
+      }
+    }
+  }
+
+  return {
+    total: rawTokens.length,
+    valid,
+    duplicates: Array.from(duplicates),
+    invalid,
+    validLuhnCount,
+  };
+}
 
 export const imeiSchema = z
   .string()

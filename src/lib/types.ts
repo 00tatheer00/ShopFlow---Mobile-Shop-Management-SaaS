@@ -155,6 +155,20 @@ export interface ImeiRecord {
   product?: Product;
 }
 
+export interface StockAdjustment {
+  id: string;
+  shop_id: string;
+  product_id: string;
+  adjustment: number;
+  old_stock: number;
+  new_stock: number;
+  reason: string;
+  created_by: string;
+  created_at: string;
+  product?: Product;
+  created_by_user?: Profile;
+}
+
 // ---- Transaction Entities ----
 
 export interface Purchase {

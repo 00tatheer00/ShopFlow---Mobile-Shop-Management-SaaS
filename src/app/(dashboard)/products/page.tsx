@@ -12,6 +12,7 @@ interface SearchParams {
   search?: string;
   category?: string;
   brand?: string;
+  status?: string;
   page?: string;
 }
 
@@ -26,6 +27,7 @@ export default async function ProductsPage(props: {
   const search = searchParams.search || '';
   const categoryFilter = searchParams.category || '';
   const brandFilter = searchParams.brand || '';
+  const statusFilter = searchParams.status || 'active';
   const page = Number(searchParams.page) || 1;
   const perPage = 20;
 
@@ -39,8 +41,13 @@ export default async function ProductsPage(props: {
       brands(id, name)
     `, { count: 'exact' })
     .eq('shop_id', user.shop_id!)
-    .eq('is_active', true)
     .order('created_at', { ascending: false });
+
+  if (statusFilter === 'active') {
+    query = query.eq('is_active', true);
+  } else if (statusFilter === 'inactive') {
+    query = query.eq('is_active', false);
+  }
 
   if (search) {
     query = query.ilike('name', `%${search}%`);
@@ -103,6 +110,7 @@ export default async function ProductsPage(props: {
         currentSearch={search}
         currentCategory={categoryFilter}
         currentBrand={brandFilter}
+        currentStatus={statusFilter}
       />
 
       {/* Products Table */}
@@ -120,6 +128,7 @@ export default async function ProductsPage(props: {
             search: search || undefined,
             category: categoryFilter || undefined,
             brand: brandFilter || undefined,
+            status: statusFilter !== 'active' ? statusFilter : undefined,
             page: String(page),
           }}
         />

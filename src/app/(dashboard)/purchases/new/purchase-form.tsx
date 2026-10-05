@@ -9,12 +9,15 @@ import {
   Trash2,
   Smartphone,
   AlertCircle,
+  AlertTriangle,
+  CheckCircle2,
   X,
 } from 'lucide-react';
 import type { Product, Supplier } from '@/lib/types';
 import { formatPKR, toRupees } from '@/lib/types';
 import { createPurchase } from '../actions';
 import { createSupplier } from '../../suppliers/actions';
+import { parseImeiText } from '@/lib/validations';
 
 interface PurchaseFormProps {
   suppliers: Supplier[];
@@ -99,14 +102,25 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
       const item = items[i];
       const prod = products.find((p) => p.id === item.productId);
       if (prod?.is_imei_tracked) {
-        const imeis = item.imeiText
-          .split(/[\n,]+/)
-          .map((s) => s.trim())
-          .filter((s) => s.length > 0);
+        const parsed = parseImeiText(item.imeiText);
 
-        if (imeis.length !== item.quantity) {
+        if (parsed.duplicates.length > 0) {
           setErrorMessage(
-            `Product "${prod.name}" is IMEI tracked. You entered ${imeis.length} IMEIs, but quantity is ${item.quantity}.`
+            `Duplicate IMEI(s) detected for "${prod.name}": ${parsed.duplicates.join(', ')}`
+          );
+          return;
+        }
+
+        if (parsed.invalid.length > 0) {
+          setErrorMessage(
+            `Invalid IMEI(s) for "${prod.name}": ${parsed.invalid.join(', ')}. Each must be exactly 15 numeric digits.`
+          );
+          return;
+        }
+
+        if (parsed.valid.length !== item.quantity) {
+          setErrorMessage(
+            `Product "${prod.name}" requires exactly ${item.quantity} valid 15-digit IMEI(s). You entered ${parsed.valid.length}.`
           );
           return;
         }
@@ -121,12 +135,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
       notes: notes || undefined,
       items: items.map((item) => {
         const prod = products.find((p) => p.id === item.productId);
-        const imeis = prod?.is_imei_tracked
-          ? item.imeiText
-              .split(/[\n,]+/)
-              .map((s) => s.trim())
-              .filter((s) => s.length > 0)
-          : [];
+        const imeis = prod?.is_imei_tracked ? parseImeiText(item.imeiText).valid : [];
 
         return {
           product_id: item.productId,
@@ -339,26 +348,86 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                   </div>
 
                   {/* IMEI inputs if tracked */}
-                  {isImei && (
-                    <div className="mt-2 rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
-                      <div className="flex items-center justify-between text-xs font-semibold text-primary">
-                        <span className="flex items-center gap-1">
-                          <Smartphone className="h-3.5 w-3.5" />
-                          Enter {item.quantity} IMEI Number(s) for {selectedProd?.name}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground">
-                          Separate with newlines or commas
-                        </span>
+                  {isImei && (() => {
+                    const parsed = parseImeiText(item.imeiText);
+                    const isCountMatch =
+                      parsed.valid.length === item.quantity &&
+                      parsed.duplicates.length === 0 &&
+                      parsed.invalid.length === 0;
+
+                    return (
+                      <div className="mt-2 rounded-lg border border-primary/20 bg-primary/5 p-3.5 space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs font-semibold text-primary">
+                          <span className="flex items-center gap-1.5">
+                            <Smartphone className="h-4 w-4" />
+                            Enter {item.quantity} Serial / IMEI Number(s) for {selectedProd?.name}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground font-normal">
+                            Separate with newlines, spaces, or commas
+                          </span>
+                        </div>
+                        <textarea
+                          rows={3}
+                          value={item.imeiText}
+                          onChange={(e) => updateItem(idx, { imeiText: e.target.value })}
+                          placeholder={`Enter 15-digit IMEIs (one per line):\n352481098234123\n352481098234124`}
+                          className="w-full rounded border border-border bg-background p-2.5 font-mono text-xs focus:border-primary focus:outline-none"
+                        />
+
+                        {/* Live IMEI Feedback Summary Bar */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1">
+                          <div
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${
+                              isCountMatch
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                            }`}
+                          >
+                            {isCountMatch ? (
+                              <CheckCircle2 className="h-3 w-3" />
+                            ) : (
+                              <AlertTriangle className="h-3 w-3" />
+                            )}
+                            {parsed.valid.length} of {item.quantity} valid IMEIs
+                          </div>
+
+                          <span className="text-[11px] text-muted-foreground">
+                            Total entered: <strong>{parsed.total}</strong>
+                          </span>
+
+                          {parsed.duplicates.length > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                              {parsed.duplicates.length} duplicate(s)
+                            </span>
+                          )}
+
+                          {parsed.invalid.length > 0 && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-rose-100 px-2 py-0.5 text-[11px] font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                              {parsed.invalid.length} invalid format (not 15 digits)
+                            </span>
+                          )}
+
+                          {parsed.valid.length > 0 && parsed.validLuhnCount === parsed.valid.length && (
+                            <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                              (Luhn Checksum ✓)
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Error details if any */}
+                        {parsed.duplicates.length > 0 && (
+                          <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+                            Duplicate IMEI: {parsed.duplicates.join(', ')}
+                          </p>
+                        )}
+                        {parsed.invalid.length > 0 && (
+                          <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
+                            Invalid (must be 15 digits): {parsed.invalid.join(', ')}
+                          </p>
+                        )}
                       </div>
-                      <textarea
-                        rows={2}
-                        value={item.imeiText}
-                        onChange={(e) => updateItem(idx, { imeiText: e.target.value })}
-                        placeholder={`e.g.\n352481098234123\n352481098234124`}
-                        className="w-full rounded border border-border bg-background p-2 font-mono text-xs focus:border-primary focus:outline-none"
-                      />
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
               );
             })}

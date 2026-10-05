@@ -47,9 +47,16 @@ export default async function NewSalePage() {
       .single(),
   ]);
 
+  const activeProducts = (products || []).map((p) => ({
+    ...p,
+    imei_records: ((p.imei_records as Array<{ id: string; imei_number: string; status: string }>) || []).filter(
+      (i) => i.status === 'in_stock'
+    ),
+  }));
+
   return (
     <PosTerminal
-      products={products || []}
+      products={activeProducts}
       customers={customers || []}
       categories={categories || []}
       brands={brands || []}

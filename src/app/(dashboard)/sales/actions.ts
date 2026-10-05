@@ -47,11 +47,11 @@ export async function createSale(payload: CreateSalePayload) {
     }
   }
 
-  // 2. Pre-verify all products, stock levels, and IMEIs before any mutation
+  // 2. Pre-verify all products: tenant ownership, active status, stock levels, and IMEI states
   for (const item of result.data.items) {
     const { data: product } = await supabase
       .from('products')
-      .select('id, name, stock_quantity, is_imei_tracked')
+      .select('id, name, stock_quantity, is_imei_tracked, is_active')
       .eq('id', item.product_id)
       .eq('shop_id', user.shop_id!)
       .single();
@@ -60,9 +60,13 @@ export async function createSale(payload: CreateSalePayload) {
       return { error: 'One or more selected products do not belong to this shop.' };
     }
 
+    if (!product.is_active) {
+      return { error: `Product "${product.name}" is archived/inactive and cannot be sold.` };
+    }
+
     if ((product.stock_quantity || 0) < item.quantity) {
       return {
-        error: `Insufficient stock for "${product.name}". Available: ${product.stock_quantity || 0}, requested: ${item.quantity}.`,
+        error: `Insufficient stock for "${product.name}". Available: ${product.stock_quantity || 0}, requested: ${item.quantity}. Overselling is prevented.`,
       };
     }
 
@@ -75,7 +79,9 @@ export async function createSale(payload: CreateSalePayload) {
         .single();
 
       if (!imeiRecord || imeiRecord.product_id !== item.product_id || imeiRecord.status !== 'in_stock') {
-        return { error: `Selected IMEI for "${product.name}" is either invalid, not in stock, or assigned to another shop.` };
+        return {
+          error: `Selected IMEI for "${product.name}" is invalid, already sold, or assigned to another shop.`,
+        };
       }
     }
   }
@@ -104,12 +110,12 @@ export async function createSale(payload: CreateSalePayload) {
     return { error: 'Customer must be selected if payment is not made in full (Udhaar sale).' };
   }
 
-  // 4. Generate Invoice Number (e.g. INV-20261005-0012)
+  // 4. Generate Invoice Number (e.g. INV-20261006-0012)
   const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
   const randSuffix = Math.floor(1000 + Math.random() * 9000);
   const invoiceNumber = `INV-${todayStr}-${randSuffix}`;
 
-  // 5. Insert Sale
+  // 5. Insert Sale Header
   const { data: sale, error: saleError } = await supabase
     .from('sales')
     .insert({
@@ -134,8 +140,28 @@ export async function createSale(payload: CreateSalePayload) {
     return { error: 'Failed to record sale transaction.' };
   }
 
-  // 6. Insert Sale Items and update inventory
+  // 6. ATOMIC INVENTORY REDUCTION & SALE ITEMS CREATION
+  const decrementedProducts: { productId: string; quantity: number }[] = [];
+  let saleAborted = false;
+  let abortReason = '';
+
   for (const item of itemsWithPaisas) {
+    // 6a. Atomic stock decrement via PostgreSQL function
+    const { error: decError } = await supabase.rpc('decrement_product_stock', {
+      p_shop_id: user.shop_id,
+      p_product_id: item.product_id,
+      p_quantity: item.quantity,
+    });
+
+    if (decError) {
+      saleAborted = true;
+      abortReason = `Insufficient stock or race condition for product ID ${item.product_id}.`;
+      break;
+    }
+
+    decrementedProducts.push({ productId: item.product_id, quantity: item.quantity });
+
+    // 6b. Insert sale item
     const { data: insertedItem, error: itemError } = await supabase
       .from('sale_items')
       .insert({
@@ -149,39 +175,49 @@ export async function createSale(payload: CreateSalePayload) {
       .select('id')
       .single();
 
-    if (itemError) {
-      console.error('Sale item insert error:', itemError);
+    if (itemError || !insertedItem) {
+      saleAborted = true;
+      abortReason = `Failed to insert sale line item.`;
+      break;
     }
 
-    // Decrement stock quantity
-    const { data: currentProduct } = await supabase
-      .from('products')
-      .select('stock_quantity')
-      .eq('id', item.product_id)
-      .single();
-
-    if (currentProduct) {
-      await supabase
-        .from('products')
-        .update({
-          stock_quantity: Math.max(0, (currentProduct.stock_quantity || 0) - item.quantity),
-        })
-        .eq('id', item.product_id);
-    }
-
-    // If item has IMEI, mark IMEI sold
+    // 6c. If item has IMEI, mark IMEI sold
     if (item.imei_record_id) {
-      await supabase
+      const { error: imeiUpdateErr } = await supabase
         .from('imei_records')
         .update({
           status: 'sold',
-          sale_item_id: insertedItem?.id || null,
+          sale_item_id: insertedItem.id,
         })
-        .eq('id', item.imei_record_id);
+        .eq('id', item.imei_record_id)
+        .eq('shop_id', user.shop_id!);
+
+      if (imeiUpdateErr) {
+        saleAborted = true;
+        abortReason = `Failed to update IMEI status to sold.`;
+        break;
+      }
     }
   }
 
-  // 5. If amount_paid > 0, record in payments
+  // 7. ROLLBACK IF SALE ABORTED (Sections 5 & 6)
+  if (saleAborted) {
+    // Restore any decremented stocks
+    for (const dp of decrementedProducts) {
+      await supabase.rpc('increment_product_stock', {
+        p_shop_id: user.shop_id,
+        p_product_id: dp.productId,
+        p_quantity: dp.quantity,
+      });
+    }
+
+    // Clean up created sale (cascades sale_items)
+    await supabase.from('sales').delete().eq('id', sale.id).eq('shop_id', user.shop_id!);
+
+    return { error: `Sale transaction rejected: ${abortReason}` };
+  }
+
+  // 8. If amount_paid > 0, record in payments
   if (amountPaidPaisas > 0) {
     await supabase.from('payments').insert({
       shop_id: user.shop_id,
@@ -196,7 +232,7 @@ export async function createSale(payload: CreateSalePayload) {
     });
   }
 
-  // 6. If amount_due > 0 and customer_id is present, log Udhaar credit
+  // 9. If amount_due > 0 and customer_id is present, log Udhaar credit
   if (amountDuePaisas > 0 && result.data.customer_id) {
     const { data: latestUdhaar } = await supabase
       .from('udhaar_ledger')
@@ -221,6 +257,21 @@ export async function createSale(payload: CreateSalePayload) {
     });
   }
 
+  // 10. Audit log
+  await supabase.from('audit_logs').insert({
+    shop_id: user.shop_id,
+    user_id: user.id,
+    action: 'sale_create',
+    entity_type: 'sale',
+    entity_id: sale.id,
+    metadata: {
+      invoice_number: invoiceNumber,
+      total_amount: totalAmountPaisas,
+      items_count: result.data.items.length,
+      customer_id: result.data.customer_id || null,
+    },
+  });
+
   // Revalidate routes
   revalidatePath('/sales');
   revalidatePath('/products');
@@ -242,7 +293,7 @@ export async function cancelSale(saleId: string) {
 
   const supabase = await createClient();
 
-  // Fetch sale
+  // 1. Fetch sale
   const { data: sale } = await supabase
     .from('sales')
     .select(`
@@ -253,28 +304,25 @@ export async function cancelSale(saleId: string) {
     .eq('shop_id', user.shop_id!)
     .single();
 
-  if (!sale || sale.status === 'cancelled') {
-    return { error: 'Sale not found or already cancelled.' };
+  if (!sale) {
+    return { error: 'Sale record not found.' };
   }
 
-  // Revert product stock and IMEI records
+  if (sale.status === 'cancelled') {
+    return { error: 'This sale has already been cancelled.' };
+  }
+
+  // 2. Revert product stock and IMEI records
   if (sale.sale_items) {
     for (const item of sale.sale_items) {
-      const { data: product } = await supabase
-        .from('products')
-        .select('stock_quantity')
-        .eq('id', item.product_id)
-        .single();
+      // Revert product stock atomically
+      await supabase.rpc('increment_product_stock', {
+        p_shop_id: user.shop_id,
+        p_product_id: item.product_id,
+        p_quantity: item.quantity,
+      });
 
-      if (product) {
-        await supabase
-          .from('products')
-          .update({
-            stock_quantity: (product.stock_quantity || 0) + item.quantity,
-          })
-          .eq('id', item.product_id);
-      }
-
+      // Restore IMEI lifecycle: sold -> in_stock
       if (item.imei_record_id) {
         await supabase
           .from('imei_records')
@@ -282,12 +330,13 @@ export async function cancelSale(saleId: string) {
             status: 'in_stock',
             sale_item_id: null,
           })
-          .eq('id', item.imei_record_id);
+          .eq('id', item.imei_record_id)
+          .eq('shop_id', user.shop_id!);
       }
     }
   }
 
-  // Revert udhaar if there was amount_due
+  // 3. Revert udhaar if there was amount_due
   if (sale.amount_due > 0 && sale.customer_id) {
     const { data: latestUdhaar } = await supabase
       .from('udhaar_ledger')
@@ -312,7 +361,7 @@ export async function cancelSale(saleId: string) {
     });
   }
 
-  // Update sale status to cancelled
+  // 4. Update sale status to cancelled
   const { error } = await supabase
     .from('sales')
     .update({ status: 'cancelled' })
@@ -322,6 +371,19 @@ export async function cancelSale(saleId: string) {
   if (error) {
     return { error: 'Failed to cancel sale.' };
   }
+
+  // 5. Audit log
+  await supabase.from('audit_logs').insert({
+    shop_id: user.shop_id,
+    user_id: user.id,
+    action: 'sale_cancel',
+    entity_type: 'sale',
+    entity_id: saleId,
+    metadata: {
+      invoice_number: sale.invoice_number,
+      reverted_items: sale.sale_items?.length || 0,
+    },
+  });
 
   revalidatePath('/sales');
   revalidatePath('/products');
