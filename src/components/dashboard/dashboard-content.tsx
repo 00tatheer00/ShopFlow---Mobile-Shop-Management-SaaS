@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import type { DashboardMetrics, UserRole, ShopSubscription } from '@/lib/types';
 import { formatPKR, toRupees } from '@/lib/types';
+import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 
 interface DashboardContentProps {
   metrics: DashboardMetrics;
@@ -179,81 +180,89 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
 
       {/* Primary KPI Cards Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {/* Today's Sales */}
+        {/* Today Total Sale */}
         <MetricCard
-          title="Today's Sales"
+          title="Today Total Sale"
           value={formatPKR(metrics.today_sales)}
           icon={TrendingUp}
           variant="sales"
-          subtitle={`${metrics.today_sales_count ?? 0} completed orders`}
+          subtitle={`${metrics.today_sales_count ?? 0} orders completed today`}
+          urduDetail="Aj ke din dukan mein kul kitni bikri (sales) hui hai, chahay cash par biki ho ya udhaar par."
         />
 
-        {/* Today's Gross Profit (Owner/Manager Only) */}
+        {/* Today Profit (Owner/Manager Only) */}
         {isPrivileged ? (
           <MetricCard
-            title="Gross Profit"
+            title="Today Profit (Munafa)"
             value={formatPKR(metrics.today_profit)}
             icon={DollarSign}
             variant="profit"
-            subtitle="Sales minus wholesale cost"
+            subtitle="Sale minus item wholesale cost"
+            urduDetail="Aj jitna samaan bika hai, uski wholesale khareed qeemat nikaal kar dukan ka kitna munafa banta hai."
           />
         ) : (
           <MetricCard
-            title="Catalog Items"
+            title="Total Items in Shop"
             value={String(metrics.total_products ?? 0)}
             icon={Package}
             variant="sales"
-            subtitle="Total active products"
+            subtitle="Active items in shop catalog"
+            urduDetail="Aapki dukan mein is waqt kitni mukhtalif items active mojood hain."
           />
         )}
 
-        {/* Cash Received */}
+        {/* Cash in Hand */}
         <MetricCard
-          title="Cash Received"
+          title="Cash in Hand (Wasooli)"
           value={formatPKR(metrics.today_cash)}
           icon={Banknote}
           variant="cash"
-          subtitle="Today's total payments"
+          subtitle="Total cash collected in counter"
+          urduDetail="Aj dukan ke galle (cash counter) mein total kitna cash jama hua hai (sales aur purani wasooli mila kar)."
         />
 
-        {/* Total Udhaar */}
+        {/* Customer Udhaar */}
         <MetricCard
-          title="Total Udhaar"
+          title="Customer Udhaar (Khata)"
           value={formatPKR(metrics.total_udhaar)}
           icon={Receipt}
           variant="udhaar"
-          subtitle="Customer credit balance"
+          subtitle="Total market credit to collect"
+          urduDetail="Gahakon ke zimay kul kitna udhaar baqi khara hai jo dukan ko wapas lena hai."
         />
       </div>
 
       {/* Secondary Financial Snapshot (Owner/Manager Only) */}
       {isPrivileged && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {/* Today's COGS */}
+          {/* Item Purchase Cost */}
           <MetricCard
-            title="Product Cost (COGS)"
+            title="Item Purchase Cost (COGS)"
             value={formatPKR(metrics.today_cogs ?? 0)}
             icon={ShoppingBag}
             variant="cogs"
             subtitle="Wholesale cost of goods sold"
+            urduDetail="Jo samaan aj dukan se bika hai, wo aap ne wholesale se kitnay ka khareeda tha (asal laagat)."
           />
 
-          {/* Today's Expenses */}
+          {/* Today Shop Expenses */}
           <MetricCard
-            title="Today's Expenses"
+            title="Today Shop Expenses"
             value={formatPKR(metrics.today_expenses ?? 0)}
             icon={TrendingDown}
             variant="expense"
-            subtitle="Shop overheads & daily bills"
+            subtitle="Daily shop bills, food & tea"
+            urduDetail="Aj dukan ke roz marrah ke kharchay (roti, chai, bijli, dukan ka kiraya waghera) kitnay huay."
           />
 
-          {/* Today's Net Profit */}
+          {/* Net Profit */}
           <MetricCard
-            title="Net Profit"
+            title="Net Profit (Asal Bachat)"
             value={formatPKR(metrics.today_net_profit ?? 0)}
             icon={DollarSign}
             variant={(metrics.today_net_profit ?? 0) >= 0 ? 'net_profit' : 'expense'}
-            subtitle="Gross profit minus expenses"
+            subtitle="Profit after all shop expenses"
+            urduDetail="Samaan ki khareed laagat aur dukan ke saare kharchay nikaal kar aj ki asal saaf bachat kitni bachi."
           />
         </div>
       )}
@@ -263,18 +272,24 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
         <div className="flex items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
           <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium text-foreground">
-              {metrics.low_stock_count} product{metrics.low_stock_count > 1 ? 's' : ''} running low on stock
-            </p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-bold text-foreground">
+                Stock Ending Soon: {metrics.low_stock_count} item{metrics.low_stock_count > 1 ? 's' : ''}
+              </p>
+              <CardInfoTooltip
+                title="Stock Ending Soon"
+                urduDetail="Wo items jinka stock bohot kam reh gaya hai taakay aap waqt par wholesale se naya maal mangwa sakein."
+              />
+            </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Check your inventory to avoid running out
+              Check items to reorder before stock runs out
             </p>
           </div>
           <a
             href="/products"
-            className="flex items-center gap-1 text-xs font-medium text-warning hover:text-warning/80 transition-colors"
+            className="flex items-center gap-1 text-xs font-semibold text-warning hover:text-warning/80 transition-colors"
           >
-            View
+            View Items
             <ArrowUpRight className="h-3 w-3" />
           </a>
         </div>
@@ -354,12 +369,14 @@ function MetricCard({
   icon: Icon,
   variant,
   subtitle,
+  urduDetail,
 }: {
   title: string;
   value: string;
   icon: React.ElementType;
   variant: MetricVariant;
   subtitle: string;
+  urduDetail: string;
 }) {
   const variantStyles: Record<MetricVariant, MetricStyle> = {
     sales: {
@@ -438,13 +455,16 @@ function MetricCard({
 
   return (
     <div
-      className={`rounded-2xl border p-5 transition-colors duration-300 ease-out ${style.cardBg} ${style.cardBorder} ${style.hoverBorder}`}
+      className={`rounded-2xl border p-5 transition-colors duration-300 ease-out relative ${style.cardBg} ${style.cardBorder} ${style.hoverBorder}`}
     >
-      <div className="flex items-center justify-between">
-        <p className={`text-xs font-bold uppercase tracking-wider ${style.titleColor}`}>
-          {title}
-        </p>
-        <div className={`rounded-xl p-2 border ${style.iconBg} ${style.iconColor}`}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <p className={`text-xs font-bold uppercase tracking-wider truncate ${style.titleColor}`}>
+            {title}
+          </p>
+          <CardInfoTooltip title={title} urduDetail={urduDetail} />
+        </div>
+        <div className={`rounded-xl p-2 border shrink-0 ${style.iconBg} ${style.iconColor}`}>
           <Icon className="h-4 w-4" />
         </div>
       </div>

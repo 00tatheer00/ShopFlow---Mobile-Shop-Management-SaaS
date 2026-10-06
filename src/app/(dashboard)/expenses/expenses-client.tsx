@@ -23,6 +23,7 @@ import { createExpense, updateExpense, deleteExpense, createExpenseCategory } fr
 import { hasPermission } from '@/lib/permissions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { exportToCSV } from '@/lib/export-csv';
+import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 
 interface ExpensesClientProps {
   expenses: (Expense & { category?: ExpenseCategory | null })[];
@@ -204,10 +205,18 @@ export function ExpensesClient({
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Today's Expenses */}
-        <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Today&apos;s Expenses</span>
-            <div className="rounded-xl p-2 border bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
+        <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out relative">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 truncate">
+                Today Shop Expenses
+              </span>
+              <CardInfoTooltip
+                title="Today Shop Expenses"
+                urduDetail="Aj ke din dukan se kitna kharcha hua hai (chai, roti, bijli, petrol waghera)."
+              />
+            </div>
+            <div className="rounded-xl p-2 border shrink-0 bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
               <Calendar className="h-4 w-4" />
             </div>
           </div>
@@ -216,10 +225,18 @@ export function ExpensesClient({
         </div>
 
         {/* This Month */}
-        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">This Month</span>
-            <div className="rounded-xl p-2 border bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
+        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out relative">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 truncate">
+                This Month Total Expense
+              </span>
+              <CardInfoTooltip
+                title="This Month Total Expense"
+                urduDetail="Is poore maheenay mein dukan ke kul kitnay kharchay ho chukay hain."
+              />
+            </div>
+            <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
               <TrendingDown className="h-4 w-4" />
             </div>
           </div>
@@ -228,15 +245,23 @@ export function ExpensesClient({
         </div>
 
         {/* Total Records */}
-        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Records</span>
-            <div className="rounded-xl p-2 border bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
+        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+                Total Expense Slips
+              </span>
+              <CardInfoTooltip
+                title="Total Expense Slips"
+                urduDetail="Ab tak kitni expense slips ya kharcha entries system mein darj hain."
+              />
+            </div>
+            <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
               <Receipt className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{totalCount}</div>
-          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Logged expense transactions</p>
+          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Logged expense slips</p>
         </div>
       </div>
 

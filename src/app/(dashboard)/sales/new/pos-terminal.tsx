@@ -20,6 +20,7 @@ import { formatPKR, toRupees } from '@/lib/types';
 import { createSale } from '../actions';
 import { createCustomer } from '../../customers/actions';
 import { ReceiptModal, type ReceiptData } from '@/components/ui/receipt-modal';
+import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 
 interface ProductWithStock extends Product {
   imei_records?: { id: string; imei_number: string; status: string }[];
@@ -593,10 +594,14 @@ export function PosTerminal({
         <div className="lg:col-span-5 xl:col-span-4 flex flex-col min-h-0 h-full rounded-2xl border border-indigo-500/20 bg-card shadow-2xs overflow-hidden">
           {/* Basket Header */}
           <div className="shrink-0 px-3 py-2.5 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-transparent border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ShoppingCart className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+            <div className="flex items-center gap-1.5 min-w-0">
+              <ShoppingCart className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <h2 className="font-black text-xs sm:text-sm text-foreground tracking-tight">Sale Basket</h2>
-              <span className="rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-extrabold text-[10px] px-2 py-0.5 border border-indigo-500/30">
+              <CardInfoTooltip
+                title="Sale Basket"
+                urduDetail="Gahak ke liye select kiye gaye items ki list. Yahan se aap item ki qeemat ya quantity kam ya zyada kar sakte hain."
+              />
+              <span className="rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-extrabold text-[10px] px-2 py-0.5 border border-indigo-500/30 shrink-0">
                 {cart.reduce((s, i) => s + i.quantity, 0)} item(s)
               </span>
             </div>
@@ -703,10 +708,16 @@ export function PosTerminal({
             {/* Customer Selector */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <label className="font-bold text-foreground flex items-center gap-1 text-[11px]">
-                  <User className="h-3 w-3 text-indigo-500" />
-                  Customer (Gahak)
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <label className="font-bold text-foreground flex items-center gap-1 text-[11px]">
+                    <User className="h-3 w-3 text-indigo-500" />
+                    Customer (Gahak)
+                  </label>
+                  <CardInfoTooltip
+                    title="Customer (Gahak)"
+                    urduDetail="Aam naqd gahak ke liye Walk-in Customer rehne dein. Agar Udhaar par maal dena hai to gahak select karna lazmi hai."
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => setIsAddCustomerOpen(true)}
@@ -751,9 +762,15 @@ export function PosTerminal({
             {/* Vibrant Net Total Banner */}
             <div className="rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 text-white p-2 sm:p-2.5 shadow-md flex items-center justify-between">
               <div>
-                <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-200 block">
-                  Net Payable Total
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-200 block">
+                    Net Payable Total
+                  </span>
+                  <CardInfoTooltip
+                    title="Net Payable Total"
+                    urduDetail="Subtotal mein se discount minus karne ke baad gahak se lene wali aakhri kul raqam."
+                  />
+                </div>
                 <span className="text-xs text-indigo-100 font-medium">
                   {cart.reduce((s, i) => s + i.quantity, 0)} Items Selected
                 </span>

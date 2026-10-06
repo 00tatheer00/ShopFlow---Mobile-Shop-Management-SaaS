@@ -20,6 +20,7 @@ import { formatPKR } from '@/lib/types';
 import { recordUdhaarPayment, addManualUdhaarCredit } from './actions';
 import { hasPermission } from '@/lib/permissions';
 import { exportToCSV } from '@/lib/export-csv';
+import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 
 interface CustomerUdhaarRow extends Customer {
   udhaar_balance: number;
@@ -180,41 +181,65 @@ export function UdhaarClient({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Total Outstanding Udhaar */}
-        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">Total Outstanding Udhaar</span>
-            <div className="rounded-xl p-2 border bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
+        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out relative">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 truncate">
+                Total Udhaar to Collect
+              </span>
+              <CardInfoTooltip
+                title="Total Udhaar to Collect"
+                urduDetail="Market aur gahakon se total kitna udhaar wapas lena hai jo dukan ka baqi khara hai."
+              />
+            </div>
+            <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
               <Wallet className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
             {formatPKR(totalUdhaar)}
           </div>
-          <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Market debt to be collected</p>
+          <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Market credit pending collection</p>
         </div>
 
         {/* Customers with Udhaar */}
-        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Customers with Udhaar</span>
-            <div className="rounded-xl p-2 border bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
+        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+                Customers with Balance
+              </span>
+              <CardInfoTooltip
+                title="Customers with Balance"
+                urduDetail="Kitnay gahakon ke naam par is waqt dukan ka udhaar baqi khara hai."
+              />
+            </div>
+            <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
               <Building className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{debtorsCount}</div>
-          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Customers who currently owe balance</p>
+          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Customers who owe balance</p>
         </div>
 
         {/* Ledger Transactions */}
-        <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Ledger Transactions</span>
-            <div className="rounded-xl p-2 border bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
+        <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out relative">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 truncate">
+                Total Khata Entries
+              </span>
+              <CardInfoTooltip
+                title="Total Khata Entries"
+                urduDetail="Udhaar aur wasooli (recovery) ki kitni transactions record ho chuki hain."
+              />
+            </div>
+            <div className="rounded-xl p-2 border shrink-0 bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
               <History className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">{recentLedger.length}</div>
-          <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Recent credits & debits logged</p>
+          <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Recent credits & wasooli entries</p>
         </div>
       </div>
 
