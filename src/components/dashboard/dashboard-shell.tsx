@@ -23,6 +23,8 @@ import {
 import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
+import { AppUpdateNotifier } from '@/components/ui/app-update-notifier';
+import { CURRENT_APP_VERSION } from '@/lib/app-version';
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -112,6 +114,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <NavigationProgress />
+      <AppUpdateNotifier />
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -243,6 +246,15 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               <span>Sign out</span>
             </button>
           </form>
+
+          {/* Version Indicator */}
+          <div className="mt-2 pt-2 border-t border-sidebar-border/60 px-3 flex items-center justify-between text-[11px] text-sidebar-foreground/50">
+            <span className="font-mono font-medium">ShopFlow v{CURRENT_APP_VERSION.version}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 font-medium">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
+          </div>
         </div>
       </aside>
 

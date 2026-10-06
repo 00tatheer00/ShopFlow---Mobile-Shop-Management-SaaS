@@ -17,6 +17,8 @@ import {
 import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
+import { AppUpdateNotifier } from '@/components/ui/app-update-notifier';
+import { CURRENT_APP_VERSION } from '@/lib/app-version';
 
 interface AdminShellProps {
   user: AuthUser;
@@ -45,6 +47,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <NavigationProgress />
+      <AppUpdateNotifier />
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div
@@ -128,6 +131,15 @@ export function AdminShell({ user, children }: AdminShellProps) {
                 <LogOut className="h-4 w-4" />
               </button>
             </form>
+          </div>
+
+          {/* Admin Shell Version Indicator */}
+          <div className="mt-2 pt-2 border-t border-border/50 px-2 flex items-center justify-between text-[11px] text-muted-foreground">
+            <span className="font-mono font-medium">ShopFlow v{CURRENT_APP_VERSION.version}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 font-medium">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
           </div>
         </div>
       </aside>

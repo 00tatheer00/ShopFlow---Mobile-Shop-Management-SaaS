@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import type { ShopSettings } from '@/lib/types';
 import { updateShopPreferences } from '../actions';
+import { CheckForUpdatesButton } from '@/components/ui/app-update-notifier';
+import { CURRENT_APP_VERSION } from '@/lib/app-version';
 
 interface PreferencesFormProps {
   settings: ShopSettings | null;
@@ -164,6 +166,38 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
           </button>
         </div>
       </form>
+
+      {/* System & Version Updates Card */}
+      <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+              <span>ShopFlow App Version & Updates</span>
+              <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                v{CURRENT_APP_VERSION.version}
+              </span>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Live automated update notification system. Release: {CURRENT_APP_VERSION.releaseDate}
+            </p>
+          </div>
+          <CheckForUpdatesButton />
+        </div>
+
+        <div className="rounded-xl bg-muted/40 p-3 text-xs space-y-2 border border-border/60">
+          <div className="font-semibold text-foreground text-[11px] uppercase tracking-wider">
+            Current Release Highlights:
+          </div>
+          <ul className="space-y-1 text-muted-foreground text-[11px]">
+            {CURRENT_APP_VERSION.highlights.map((h, i) => (
+              <li key={i} className="flex items-center gap-1.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                <span>{h}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
