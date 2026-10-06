@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
+import { NavigationProgress } from '@/components/ui/navigation-progress';
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -110,6 +111,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      <NavigationProgress />
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div

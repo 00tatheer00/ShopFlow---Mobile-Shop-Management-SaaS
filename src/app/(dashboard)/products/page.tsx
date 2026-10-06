@@ -62,10 +62,9 @@ export default async function ProductsPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const { data: products, count } = await query;
-
-  // Fetch categories and brands for filter dropdowns
-  const [{ data: categories }, { data: brands }] = await Promise.all([
+  // Fetch product list, categories, and brands concurrently in single round-trip
+  const [{ data: products, count }, { data: categories }, { data: brands }] = await Promise.all([
+    query,
     supabase
       .from('product_categories')
       .select('id, name')

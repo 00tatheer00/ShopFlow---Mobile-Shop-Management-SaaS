@@ -18,8 +18,10 @@ import {
   Archive,
   RefreshCw,
   CheckCircle2,
+  Download,
 } from 'lucide-react';
 import type { UserRole } from '@/lib/types';
+import { exportToCSV } from '@/lib/export-csv';
 import {
   deleteProduct,
   toggleProductStatus,
@@ -172,6 +174,34 @@ export function ProductsTable({
     return `/products?${params.toString()}`;
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Product Name',
+      'Model',
+      'Category',
+      'Brand',
+      'Sale Price (PKR)',
+      'Cost Price (PKR)',
+      'Stock Quantity',
+      'Low Stock Threshold',
+      'IMEI Tracked',
+      'Status',
+    ];
+    const rows = products.map((p) => [
+      p.name,
+      p.model || '',
+      p.category_name || '',
+      p.brand_name || '',
+      Math.round(p.sale_price / 100),
+      Math.round(p.purchase_price / 100),
+      p.stock_quantity,
+      p.low_stock_threshold,
+      p.is_imei_tracked ? 'YES' : 'NO',
+      p.is_active ? 'ACTIVE' : 'INACTIVE',
+    ]);
+    exportToCSV('products_catalog', headers, rows);
+  };
+
   return (
     <div className="space-y-4">
       {/* Feedback Messages */}
@@ -197,21 +227,32 @@ export function ProductsTable({
       )}
 
       {/* Action Header Banner */}
-      <div className="flex items-center justify-between bg-card rounded-xl border border-border p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-xl border border-border p-3">
         <span className="text-xs text-muted-foreground font-medium">
           Showing {products.length} products on this page
         </span>
-        <button
-          onClick={() => {
-            setIsImeiModalOpen(true);
-            setImeiResults(null);
-            setImeiSearchQuery('');
-          }}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
-        >
-          <Search className="h-3.5 w-3.5" />
-          Search IMEI / Serial
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors hover:border-emerald-500/40"
+          >
+            <Download className="h-3.5 w-3.5 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
+
+          <button
+            onClick={() => {
+              setIsImeiModalOpen(true);
+              setImeiResults(null);
+              setImeiSearchQuery('');
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+          >
+            <Search className="h-3.5 w-3.5" />
+            Search IMEI / Serial
+          </button>
+        </div>
       </div>
 
       {/* Table */}

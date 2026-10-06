@@ -16,11 +16,13 @@ import {
   Building,
   FileText,
   X,
+  Download,
 } from 'lucide-react';
 import type { Supplier, UserRole } from '@/lib/types';
 import { createSupplier, updateSupplier, deleteSupplier } from './actions';
 import { hasPermission } from '@/lib/permissions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { exportToCSV } from '@/lib/export-csv';
 
 interface SuppliersClientProps {
   suppliers: Supplier[];
@@ -122,6 +124,26 @@ export function SuppliersClient({
     return `https://wa.me/${cleaned}`;
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Supplier Name',
+      'Company',
+      'Phone',
+      'Email',
+      'Address',
+      'Status',
+    ];
+    const rows = suppliers.map((s) => [
+      s.name,
+      s.company || '',
+      s.phone || '',
+      s.email || '',
+      s.address || '',
+      s.is_active ? 'ACTIVE' : 'INACTIVE',
+    ]);
+    exportToCSV('suppliers_directory', headers, rows);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -133,18 +155,29 @@ export function SuppliersClient({
           </p>
         </div>
 
-        {canCreate && (
+        <div className="flex items-center gap-2.5">
           <button
-            onClick={() => {
-              setFormError(null);
-              setIsAddModalOpen(true);
-            }}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Plus className="h-4 w-4" />
-            Add Supplier
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
           </button>
-        )}
+
+          {canCreate && (
+            <button
+              onClick={() => {
+                setFormError(null);
+                setIsAddModalOpen(true);
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Add Supplier</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Filter & Search Bar */}

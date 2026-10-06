@@ -1,12 +1,14 @@
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import type { AuthUser, UserRole } from '@/lib/types';
 
 /**
  * Get the currently authenticated user with their shop context.
+ * Deduplicated per-request using React cache() to eliminate duplicate auth roundtrips.
  * Redirects to /login if not authenticated.
  */
-export async function getAuthUser(): Promise<AuthUser> {
+export const getAuthUser = cache(async (): Promise<AuthUser> => {
   const supabase = await createClient();
 
   const { data: { user }, error } = await supabase.auth.getUser();
@@ -15,29 +17,30 @@ export async function getAuthUser(): Promise<AuthUser> {
     redirect('/login');
   }
 
-  // Get user profile and shop assignment
-  const { data: shopUser } = await supabase
-    .from('shop_users')
-    .select(`
-      role,
-      shop_id,
-      shops:shop_id (
-        id,
-        name,
-        slug,
-        city,
-        status
-      )
-    `)
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .single();
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, email')
-    .eq('id', user.id)
-    .single();
+  // Fetch shop user & profile concurrently to minimize network latency
+  const [{ data: shopUser }, { data: profile }] = await Promise.all([
+    supabase
+      .from('shop_users')
+      .select(`
+        role,
+        shop_id,
+        shops:shop_id (
+          id,
+          name,
+          slug,
+          city,
+          status
+        )
+      `)
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .maybeSingle(),
+    supabase
+      .from('profiles')
+      .select('full_name, email')
+      .eq('id', user.id)
+      .maybeSingle(),
+  ]);
 
   return {
     id: user.id,
@@ -47,7 +50,7 @@ export async function getAuthUser(): Promise<AuthUser> {
     shop_id: shopUser?.shop_id || null,
     shop: (Array.isArray(shopUser?.shops) ? shopUser.shops[0] : shopUser?.shops) as AuthUser['shop'],
   };
-}
+});
 
 /**
  * Require a specific role. Redirects to /unauthorized if role doesn't match.

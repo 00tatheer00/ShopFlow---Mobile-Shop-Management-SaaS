@@ -13,11 +13,13 @@ import {
   CheckCircle2,
   X,
   Building,
+  Download,
 } from 'lucide-react';
 import type { Customer, UdhaarLedgerEntry, UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
 import { recordUdhaarPayment, addManualUdhaarCredit } from './actions';
 import { hasPermission } from '@/lib/permissions';
+import { exportToCSV } from '@/lib/export-csv';
 
 interface CustomerUdhaarRow extends Customer {
   udhaar_balance: number;
@@ -109,77 +111,109 @@ export function UdhaarClient({
     return `https://wa.me/${cleaned}?text=${message}`;
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Customer Name',
+      'Phone',
+      'Address',
+      'Current Udhaar Balance (PKR)',
+      'Last Activity',
+    ];
+    const rows = customersWithBalance.map((c) => [
+      c.name,
+      c.phone || '',
+      c.address || '',
+      Math.round(c.udhaar_balance / 100),
+      c.last_activity ? new Date(c.last_activity).toLocaleDateString('en-PK') : 'N/A',
+    ]);
+    exportToCSV('udhaar_ledger', headers, rows);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Udhaar (Khata)</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Udhaar Ledger (Credit)</h1>
           <p className="text-sm text-muted-foreground">
             Manage customer credit, record recoveries (Vasooli), and send WhatsApp balance reminders.
           </p>
         </div>
 
-        {canManage && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                setFormError(null);
-                setIsCreditModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
-            >
-              <Plus className="h-4 w-4" />
-              Add Udhaar
-            </button>
-            <button
-              onClick={() => {
-                setFormError(null);
-                setPaymentModalCustomer(customersWithBalance[0] || null);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500"
-            >
-              <ArrowDownLeft className="h-4 w-4" />
-              Receive Payment (Vasooli)
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
+
+          {canManage && (
+            <>
+              <button
+                onClick={() => {
+                  setFormError(null);
+                  setIsCreditModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition"
+              >
+                <Plus className="h-4 w-4" />
+                Add Udhaar
+              </button>
+              <button
+                onClick={() => {
+                  setFormError(null);
+                  setPaymentModalCustomer(customersWithBalance[0] || null);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <ArrowDownLeft className="h-4 w-4" />
+                Receive Payment (Vasooli)
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-5">
+        <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
           <div className="flex items-center justify-between text-rose-600 dark:text-rose-400">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Outstanding Udhaar</span>
-            <div className="rounded-lg bg-rose-500/10 p-2">
+            <span className="text-xs font-bold uppercase tracking-wider">Total Outstanding Udhaar</span>
+            <div className="rounded-xl bg-rose-500/10 p-2">
               <Wallet className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-3xl font-extrabold text-rose-600 dark:text-rose-400">
+          <div className="mt-2 text-3xl font-black text-rose-600 dark:text-rose-400">
             {formatPKR(totalUdhaar)}
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Market debt to be collected</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Active Customers with Udhaar</span>
-            <div className="rounded-lg bg-primary/10 p-2 text-primary">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Customers with Udhaar</span>
+            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
               <Building className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-3xl font-bold text-foreground">{debtorsCount}</div>
+          <div className="mt-2 text-3xl font-black text-foreground">{debtorsCount}</div>
           <p className="mt-1 text-xs text-muted-foreground">Customers who currently owe balance</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Ledger Transactions</span>
-            <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Ledger Transactions</span>
+            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
               <History className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-3xl font-bold text-foreground">{recentLedger.length}</div>
+          <div className="mt-2 text-3xl font-black text-foreground">{recentLedger.length}</div>
           <p className="mt-1 text-xs text-muted-foreground">Recent credits & debits logged</p>
         </div>
       </div>

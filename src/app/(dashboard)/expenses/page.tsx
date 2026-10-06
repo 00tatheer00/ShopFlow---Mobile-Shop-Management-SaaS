@@ -17,20 +17,9 @@ export default async function ExpensesPage(props: {
   const page = Number(searchParams.page) || 1;
   const perPage = 20;
 
-  // 1. Fetch categories
-  const { data: categories } = await supabase
-    .from('expense_categories')
-    .select('*')
-    .eq('shop_id', user.shop_id!)
-    .order('name');
-
-  // 2. Fetch expenses list with pagination
   let query = supabase
     .from('expenses')
-    .select(`
-      id, shop_id, category_id, amount, description, expense_date, payment_method, notes, created_by, created_at,
-      expense_categories(id, name)
-    `, { count: 'exact' })
+    .select('*, expense_categories(*)', { count: 'exact' })
     .eq('shop_id', user.shop_id!)
     .order('expense_date', { ascending: false })
     .order('created_at', { ascending: false });
@@ -42,13 +31,17 @@ export default async function ExpensesPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const { data: rawExpenses, count } = await query;
-
-  // 3. Compute Today's Total and This Month's Total
+  // 3. Compute Today's Total and This Month's Total & fetch list in parallel
   const todayStr = new Date().toISOString().split('T')[0];
   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
 
-  const [{ data: todayData }, { data: monthData }] = await Promise.all([
+  const [{ data: categories }, { data: rawExpenses, count }, { data: todayData }, { data: monthData }] = await Promise.all([
+    supabase
+      .from('expense_categories')
+      .select('*')
+      .eq('shop_id', user.shop_id!)
+      .order('name'),
+    query,
     supabase
       .from('expenses')
       .select('amount')
@@ -61,10 +54,10 @@ export default async function ExpensesPage(props: {
       .gte('expense_date', startOfMonth),
   ]);
 
-  const todayTotal = (todayData || []).reduce((sum, item) => sum + (item.amount || 0), 0);
-  const monthTotal = (monthData || []).reduce((sum, item) => sum + (item.amount || 0), 0);
+  const todayTotal = (todayData || []).reduce((sum: number, item: { amount: number | null }) => sum + (item.amount || 0), 0);
+  const monthTotal = (monthData || []).reduce((sum: number, item: { amount: number | null }) => sum + (item.amount || 0), 0);
 
-  const expenses = (rawExpenses || []).map((exp) => ({
+  const expenses = (rawExpenses || []).map((exp: Record<string, any>) => ({
     id: exp.id,
     shop_id: exp.shop_id,
     category_id: exp.category_id,

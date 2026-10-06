@@ -15,9 +15,11 @@ import {
   Ban,
   Tag,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 import type { UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
+import { exportToCSV } from '@/lib/export-csv';
 
 interface ProductInventoryItem {
   id: string;
@@ -114,74 +116,170 @@ export function ReportsClient({
   const grossMarginPct = totalRevenue > 0 ? ((grossProfit / totalRevenue) * 100).toFixed(1) : '0';
   const netMarginPct = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0';
 
+  const handleExportCSV = () => {
+    if (activeTab === 'pnl') {
+      const headers = ['Financial Metric', 'Amount (PKR)', 'Description'];
+      const rows = [
+        ['Gross Sales Revenue', Math.round(totalRevenue / 100), 'Total completed sales volume'],
+        ['Total Customer Discounts', Math.round(totalDiscounts / 100), 'Discounts granted'],
+        ['Cost of Goods Sold (COGS)', Math.round(cogs / 100), 'Wholesale product cost of sold items'],
+        ['Gross Profit', Math.round(grossProfit / 100), 'Revenue minus COGS'],
+        ['Operating Expenses', Math.round(totalExpenses / 100), 'Total business expenditures'],
+        ['Net Profit (Loss)', Math.round(netProfit / 100), 'Gross Profit minus Operating Expenses'],
+        ['Net Profit Margin', `${netMarginPct}%`, 'Net margin percentage'],
+        ['Udhaar Unpaid (Receivables)', Math.round(totalUdhaar / 100), 'Outstanding credit receivables'],
+        ['Cash Collected', Math.round(totalCollected / 100), 'Realized cash inflow'],
+      ];
+      exportToCSV(`pnl_report_${dateRange}`, headers, rows);
+    } else if (activeTab === 'sales') {
+      const headers = ['Product / Metric', 'Units / Count', 'Details'];
+      const rows = [
+        ['Total Completed Sales', salesCount, 'Transactions count'],
+        ['Gross Sales Revenue', Math.round(totalRevenue / 100), 'Total sales PKR'],
+        ['Cash Collected', Math.round(totalCollected / 100), 'Collected PKR'],
+        ['Unpaid Udhaar', Math.round(totalUdhaar / 100), 'Credit balance PKR'],
+        ['Cancelled Invoices', cancelledCount, 'Voided transactions'],
+        ['Cancelled Total Value', Math.round(cancelledTotal / 100), 'Voided PKR'],
+        ...topProducts.map((p) => [p.name, `${p.quantity} units`, `Revenue: Rs. ${Math.round(p.revenue / 100)}`]),
+        ...paymentMethodStats.map((m) => [`Payment: ${m.method.toUpperCase()}`, `${m.count} txns`, `Total: Rs. ${Math.round(m.total / 100)}`]),
+      ];
+      exportToCSV(`sales_report_${dateRange}`, headers, rows);
+    } else if (activeTab === 'purchases') {
+      const headers = ['Supplier Name', 'Purchases Count', 'Total Spend (PKR)'];
+      const rows = [
+        ['Total Procurement Spend', purchasesCount, Math.round(totalPurchases / 100)],
+        ...supplierStats.map((s) => [s.name, s.count, Math.round(s.total / 100)]),
+      ];
+      exportToCSV(`purchases_report_${dateRange}`, headers, rows);
+    } else if (activeTab === 'expenses') {
+      const headers = ['Date', 'Category', 'Amount (PKR)', 'Payment Method', 'Description', 'Notes'];
+      const rows = recentExpenses.map((e) => [
+        e.expense_date,
+        e.expense_categories?.name || 'Uncategorized',
+        Math.round(e.amount / 100),
+        e.payment_method?.toUpperCase() || 'CASH',
+        e.description || '',
+        e.notes || '',
+      ]);
+      exportToCSV(`expenses_report_${dateRange}`, headers, rows);
+    } else if (activeTab === 'inventory') {
+      const headers = ['Product Name', 'Model', 'Stock Qty', 'Cost Price (PKR)', 'Sale Price (PKR)', 'Total Cost Value (PKR)', 'Potential Retail Value (PKR)', 'IMEI Tracked', 'Status'];
+      const rows = products.map((p) => [
+        p.name,
+        p.model || '',
+        p.stock_quantity,
+        Math.round(p.purchase_price / 100),
+        Math.round(p.sale_price / 100),
+        Math.round((p.purchase_price * p.stock_quantity) / 100),
+        Math.round((p.sale_price * p.stock_quantity) / 100),
+        p.is_imei_tracked ? 'YES' : 'NO',
+        p.stock_quantity === 0 ? 'OUT OF STOCK' : p.stock_quantity <= p.low_stock_threshold ? 'LOW STOCK' : 'IN STOCK',
+      ]);
+      exportToCSV(`inventory_valuation_${dateRange}`, headers, rows);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
-          <p className="text-sm text-muted-foreground">
-            Authoritative business intelligence, Profit & Loss, sales, inventory valuation, and expenses.
-          </p>
+      {/* Interactive Controls & Header (Hidden during print) */}
+      <div className="print:hidden space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
+            <p className="text-sm text-muted-foreground">
+              Authoritative business intelligence, Profit & Loss, sales, inventory valuation, and expenses.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Date Range Selector */}
+            <div className="flex rounded-lg border border-border bg-card p-1">
+              {[
+                { id: 'today', label: 'Today' },
+                { id: 'week', label: 'This Week' },
+                { id: 'month', label: 'This Month' },
+                { id: 'all', label: 'All Time' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => updateQuery(tab.id, activeTab)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                    dateRange === tab.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleExportCSV}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold hover:bg-muted text-foreground transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Download className="h-4 w-4 text-emerald-500" />
+              <span>Export CSV</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Print Report</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Date Range Selector */}
-          <div className="flex rounded-lg border border-border bg-card p-1">
-            {[
-              { id: 'today', label: 'Today' },
-              { id: 'week', label: 'This Week' },
-              { id: 'month', label: 'This Month' },
-              { id: 'all', label: 'All Time' },
-            ].map((tab) => (
+        {/* Report Module Navigation Tabs */}
+        <div className="flex border-b border-border space-x-2 overflow-x-auto pb-1 text-sm font-medium">
+          {[
+            { id: 'pnl', label: 'Profit & Loss', privilegedOnly: true },
+            { id: 'sales', label: 'Sales Report', privilegedOnly: false },
+            { id: 'purchases', label: 'Purchases Report', privilegedOnly: true },
+            { id: 'expenses', label: 'Expenses Report', privilegedOnly: false },
+            { id: 'inventory', label: 'Inventory Valuation', privilegedOnly: false },
+          ]
+            .filter((t) => !t.privilegedOnly || isPrivileged)
+            .map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => updateQuery(tab.id, activeTab)}
-                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
-                  dateRange === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                onClick={() => updateQuery(dateRange, tab.id)}
+                className={`px-3 py-2 border-b-2 font-semibold text-xs transition-colors whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 }`}
               >
                 {tab.label}
               </button>
             ))}
-          </div>
-
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold hover:bg-muted"
-          >
-            <Printer className="h-4 w-4" />
-            Print Report
-          </button>
         </div>
       </div>
 
-      {/* Report Module Navigation Tabs */}
-      <div className="flex border-b border-border space-x-2 overflow-x-auto pb-1 text-sm font-medium">
-        {[
-          { id: 'pnl', label: 'Profit & Loss', privilegedOnly: true },
-          { id: 'sales', label: 'Sales Report', privilegedOnly: false },
-          { id: 'purchases', label: 'Purchases Report', privilegedOnly: true },
-          { id: 'expenses', label: 'Expenses Report', privilegedOnly: false },
-          { id: 'inventory', label: 'Inventory Valuation', privilegedOnly: false },
-        ]
-          .filter((t) => !t.privilegedOnly || isPrivileged)
-          .map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => updateQuery(dateRange, tab.id)}
-              className={`px-3 py-2 border-b-2 font-semibold text-xs transition-colors whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-      </div>
+      {/* ============================================================ */}
+      {/* PRINTABLE REPORT CONTAINER (100% VISIBLE ON PRINT) */}
+      {/* ============================================================ */}
+      <div id="printable-report" className="space-y-6">
+        {/* Printable Official Header */}
+        <div className="hidden print:block pb-3 mb-4 border-b-2 border-black">
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-wider text-black border border-black px-1.5 py-0.5 rounded inline-block mb-1">
+                ShopFlow Certified Report
+              </div>
+              <h1 className="text-xl font-black uppercase tracking-tight text-black">Financial & Operations Report</h1>
+              <p className="text-xs text-gray-700 font-medium">Period: {dateRange.toUpperCase()} | Module: {activeTab.toUpperCase()}</p>
+            </div>
+            <div className="text-right text-xs text-gray-800 space-y-0.5">
+              <p>Generated: {new Date().toLocaleString('en-PK')}</p>
+              <p className="font-bold text-black">Official Business Intelligence</p>
+            </div>
+          </div>
+        </div>
 
       {/* ============================================================ */}
       {/* TAB 1: PROFIT & LOSS STATEMENT */}
@@ -190,52 +288,56 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Gross Revenue */}
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
               <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-semibold uppercase tracking-wider">Gross Revenue</span>
-                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Gross Revenue</span>
+                <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
                   <DollarSign className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(totalRevenue)}</div>
+              <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(totalRevenue)}</div>
               <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed customer sales</p>
             </div>
 
             {/* Cost of Goods Sold */}
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="premium-card border border-slate-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-zinc-600" />
               <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-semibold uppercase tracking-wider">Cost of Goods (COGS)</span>
-                <div className="rounded-lg bg-muted p-2 text-muted-foreground">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Cost of Goods (COGS)</span>
+                <div className="rounded-xl bg-muted p-2 text-muted-foreground">
                   <ShoppingBag className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(cogs)}</div>
+              <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(cogs)}</div>
               <p className="mt-1 text-xs text-muted-foreground">Wholesale cost of goods sold</p>
             </div>
 
             {/* Gross Profit */}
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
               <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-semibold uppercase tracking-wider">Gross Profit</span>
-                <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Gross Profit</span>
+                <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
                   <TrendingUp className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+              <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">
                 {formatPKR(grossProfit)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Gross Margin: {grossMarginPct}%</p>
             </div>
 
             {/* Operating Expenses */}
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
               <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-semibold uppercase tracking-wider">Operating Expenses</span>
-                <div className="rounded-lg bg-rose-500/10 p-2 text-rose-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Operating Expenses</span>
+                <div className="rounded-xl bg-rose-500/10 p-2 text-rose-500">
                   <TrendingDown className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400">
+              <div className="mt-2 text-2xl font-black text-rose-600 dark:text-rose-400">
                 {formatPKR(totalExpenses)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Shop rent, utilities & overheads</p>
@@ -243,22 +345,29 @@ export function ReportsClient({
 
             {/* Net Profit */}
             <div
-              className={`rounded-xl border p-5 ${
+              className={`premium-card p-5 relative overflow-hidden group border ${
                 isNetPositive
-                  ? 'border-emerald-500/30 bg-emerald-500/5'
-                  : 'border-rose-500/30 bg-rose-500/5'
+                  ? 'border-emerald-500/30 bg-card'
+                  : 'border-rose-500/30 bg-card'
               }`}
             >
+              <div
+                className={`absolute top-0 left-0 right-0 h-1 ${
+                  isNetPositive
+                    ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500'
+                    : 'bg-gradient-to-r from-rose-500 to-red-600'
+                }`}
+              />
               <div className="flex items-center justify-between">
                 <span
-                  className={`text-xs font-semibold uppercase tracking-wider ${
+                  className={`text-xs font-bold uppercase tracking-wider ${
                     isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   Net Profit
                 </span>
                 <div
-                  className={`rounded-lg p-2 ${
+                  className={`rounded-xl p-2 ${
                     isNetPositive
                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                       : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -268,7 +377,7 @@ export function ReportsClient({
                 </div>
               </div>
               <div
-                className={`mt-2 text-2xl font-extrabold ${
+                className={`mt-2 text-2xl font-black ${
                   isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                 }`}
               >
@@ -375,31 +484,35 @@ export function ReportsClient({
       {activeTab === 'sales' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Sales</span>
-              <div className="mt-2 text-2xl font-bold text-foreground font-mono">{formatPKR(totalRevenue)}</div>
+            <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Sales</span>
+              <div className="mt-2 text-2xl font-black text-foreground font-mono">{formatPKR(totalRevenue)}</div>
               <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed sales</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Discounts Given</span>
-              <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400 font-mono">
+            <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Discounts Given</span>
+              <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
                 {formatPKR(totalDiscounts)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Total discount concessions</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Collected (Paid)</span>
-              <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+            <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Collected (Paid)</span>
+              <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                 {formatPKR(totalCollected)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Cash & digital collections</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Credit (Udhaar)</span>
-              <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400 font-mono">
+            <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Credit (Udhaar)</span>
+              <div className="mt-2 text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">
                 {formatPKR(totalUdhaar)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Unpaid balance on credit</p>
@@ -565,33 +678,37 @@ export function ReportsClient({
       {activeTab === 'inventory' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valuation at Cost</span>
-              <div className="mt-2 text-2xl font-bold text-foreground font-mono">
+            <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
+              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Valuation at Cost</span>
+              <div className="mt-2 text-2xl font-black text-foreground font-mono">
                 {formatPKR(totalInventoryCostValuation)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Total investment at purchase cost</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Potential Retail Value</span>
-              <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+            <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Potential Retail Value</span>
+              <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
                 {formatPKR(totalPotentialRetailValuation)}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Expected revenue at selling price</p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Units in Stock</span>
-              <div className="mt-2 text-2xl font-bold text-foreground font-mono">{totalStockQuantity}</div>
+            <div className="premium-card border border-blue-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Total Units in Stock</span>
+              <div className="mt-2 text-2xl font-black text-foreground font-mono">{totalStockQuantity}</div>
               <p className="mt-1 text-xs text-muted-foreground">
                 Including {inStockImeiCount} IMEI devices
               </p>
             </div>
 
-            <div className="rounded-xl border border-border bg-card p-5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Low Stock Warnings</span>
-              <div className={`mt-2 text-2xl font-bold font-mono ${lowStockCount > 0 ? 'text-amber-600' : 'text-foreground'}`}>
+            <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Low Stock Warnings</span>
+              <div className={`mt-2 text-2xl font-black font-mono ${lowStockCount > 0 ? 'text-amber-600' : 'text-foreground'}`}>
                 {lowStockCount}
               </div>
               <p className="mt-1 text-xs text-muted-foreground">Products at or below threshold</p>
@@ -663,6 +780,7 @@ export function ReportsClient({
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

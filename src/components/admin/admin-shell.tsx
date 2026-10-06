@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
+import { NavigationProgress } from '@/components/ui/navigation-progress';
 
 interface AdminShellProps {
   user: AuthUser;
@@ -43,6 +44,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
+      <NavigationProgress />
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div

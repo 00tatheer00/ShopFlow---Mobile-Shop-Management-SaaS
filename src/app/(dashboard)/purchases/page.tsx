@@ -53,13 +53,13 @@ export default async function PurchasesPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const { data: rawPurchases, count } = await query;
-
-  // Total procurement spend
-  const { data: totalSpendData } = await supabase
-    .from('purchases')
-    .select('total_amount')
-    .eq('shop_id', user.shop_id!);
+  const [{ data: rawPurchases, count }, { data: totalSpendData }] = await Promise.all([
+    query,
+    supabase
+      .from('purchases')
+      .select('total_amount')
+      .eq('shop_id', user.shop_id!),
+  ]);
 
   const totalSpend = (totalSpendData || []).reduce((sum, p) => sum + (p.total_amount || 0), 0);
 

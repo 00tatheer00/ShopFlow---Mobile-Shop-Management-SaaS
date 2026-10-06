@@ -14,11 +14,13 @@ import {
   ChevronRight,
   TrendingDown,
   X,
+  Download,
 } from 'lucide-react';
 import type { Purchase, Supplier, UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
 import { deletePurchase } from './actions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { exportToCSV } from '@/lib/export-csv';
 
 interface PurchaseWithRelations extends Omit<Purchase, 'items'> {
   supplier?: Supplier;
@@ -104,6 +106,28 @@ export function PurchasesClient({
     });
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Purchase ID',
+      'Purchase Date',
+      'Supplier',
+      'Supplier Phone',
+      'Items Summary',
+      'Total Amount (PKR)',
+      'Notes',
+    ];
+    const rows = purchases.map((p) => [
+      p.id.substring(0, 8),
+      p.purchase_date,
+      p.supplier?.name || p.supplier?.company || 'Direct Vendor',
+      p.supplier?.phone || '',
+      (p.items || []).map((i) => `${i.product?.name || 'Item'} (x${i.quantity})`).join('; '),
+      Math.round(p.total_amount / 100),
+      p.notes || '',
+    ]);
+    exportToCSV('purchases_history', headers, rows);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -115,49 +139,63 @@ export function PurchasesClient({
           </p>
         </div>
 
-        {canCreate && (
-          <Link
-            href="/purchases/new"
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition"
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Plus className="h-4 w-4" />
-            New Purchase (Add Stock)
-          </Link>
-        )}
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
+
+          {canCreate && (
+            <Link
+              href="/purchases/new"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              <span>New Purchase (Add Stock)</span>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Inventory Spend</span>
-            <div className="rounded-lg bg-primary/10 p-2 text-primary">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Inventory Spend</span>
+            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
               <TrendingDown className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(totalSpend)}</div>
+          <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(totalSpend)}</div>
           <p className="mt-1 text-xs text-muted-foreground">Total purchase procurement costs</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Purchase Orders</span>
-            <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Purchase Orders</span>
+            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
               <Package className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{totalCount}</div>
+          <div className="mt-2 text-2xl font-black text-foreground">{totalCount}</div>
           <p className="mt-1 text-xs text-muted-foreground">Shipments logged from suppliers</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Active Suppliers</span>
-            <div className="rounded-lg bg-amber-500/10 p-2 text-amber-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Active Suppliers</span>
+            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
               <Truck className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{suppliers.length}</div>
+          <div className="mt-2 text-2xl font-black text-foreground">{suppliers.length}</div>
           <p className="mt-1 text-xs text-muted-foreground">Registered vendor distributors</p>
         </div>
       </div>

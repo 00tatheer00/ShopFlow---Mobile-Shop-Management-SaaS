@@ -15,12 +15,14 @@ import {
   FileText,
   Pencil,
   CreditCard,
+  Download,
 } from 'lucide-react';
 import type { Expense, ExpenseCategory, UserRole } from '@/lib/types';
 import { formatPKR, toRupees } from '@/lib/types';
 import { createExpense, updateExpense, deleteExpense, createExpenseCategory } from './actions';
 import { hasPermission } from '@/lib/permissions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { exportToCSV } from '@/lib/export-csv';
 
 interface ExpensesClientProps {
   expenses: (Expense & { category?: ExpenseCategory | null })[];
@@ -132,72 +134,108 @@ export function ExpensesClient({
     });
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Expense ID',
+      'Date',
+      'Category',
+      'Amount (PKR)',
+      'Payment Method',
+      'Description',
+      'Notes',
+    ];
+    const rows = expenses.map((e) => [
+      e.id.substring(0, 8),
+      e.expense_date,
+      e.category?.name || 'Uncategorized',
+      Math.round(e.amount / 100),
+      e.payment_method?.toUpperCase() || 'CASH',
+      e.description || '',
+      e.notes || '',
+    ]);
+    exportToCSV('expenses_report', headers, rows);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Expenses</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Shop Expenses</h1>
           <p className="text-sm text-muted-foreground">
-            Track daily operating costs, utility bills, rent, refreshments, and other overheads.
+            Track day-to-day shop operating costs, rent, utilities, food, and staff allowances.
           </p>
         </div>
 
-        {canCreate && (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsAddCatModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
-            >
-              <Tag className="h-4 w-4" />
-              New Category
-            </button>
-            <button
-              onClick={() => {
-                setFormError(null);
-                setIsAddModalOpen(true);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4" />
-              Record Expense
-            </button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
+
+          {canCreate && (
+            <>
+              <button
+                onClick={() => setIsAddCatModalOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition"
+              >
+                <Tag className="h-4 w-4" />
+                New Category
+              </button>
+              <button
+                onClick={() => {
+                  setFormError(null);
+                  setIsAddModalOpen(true);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <Plus className="h-4 w-4" />
+                Record Expense
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Today&apos;s Expenses</span>
-            <div className="rounded-lg bg-amber-500/10 p-2 text-amber-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Today&apos;s Expenses</span>
+            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
               <Calendar className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(todayTotal)}</div>
+          <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(todayTotal)}</div>
           <p className="mt-1 text-xs text-muted-foreground">Outflow recorded today</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">This Month</span>
-            <div className="rounded-lg bg-rose-500/10 p-2 text-rose-500">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">This Month</span>
+            <div className="rounded-xl bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400">
               <TrendingDown className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(monthTotal)}</div>
+          <div className="mt-2 text-2xl font-black text-rose-600 dark:text-rose-400">{formatPKR(monthTotal)}</div>
           <p className="mt-1 text-xs text-muted-foreground">Total overhead for current month</p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
           <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Records</span>
-            <div className="rounded-lg bg-primary/10 p-2 text-primary">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Records</span>
+            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
               <Receipt className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{totalCount}</div>
+          <div className="mt-2 text-2xl font-black text-foreground">{totalCount}</div>
           <p className="mt-1 text-xs text-muted-foreground">Logged expense transactions</p>
         </div>
       </div>

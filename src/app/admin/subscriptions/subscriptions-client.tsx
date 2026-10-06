@@ -19,9 +19,11 @@ import {
   Phone,
   FileText,
   BadgeAlert,
+  Download,
 } from 'lucide-react';
 import type { ShopSubscription, Shop, EmailLog } from '@/lib/types';
 import { toRupees } from '@/lib/types';
+import { exportToCSV } from '@/lib/export-csv';
 import {
   approveSubscriptionPayment,
   revokeSubscriptionPayment,
@@ -190,6 +192,34 @@ export function SubscriptionsClient({
     });
   }
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Shop ID',
+      'Shop Name',
+      'City',
+      'Phone',
+      'Billing Month',
+      'Amount (PKR)',
+      'Status',
+      'Paid At',
+      'Payment Method',
+      'Reference ID',
+    ];
+    const rows = filteredSubscriptions.map((s) => [
+      s.shop?.display_shop_id || s.shop_id.substring(0, 8),
+      s.shop?.name || 'Shop',
+      s.shop?.city || '',
+      s.shop?.phone || '',
+      s.month_name,
+      toRupees(s.amount),
+      s.status.toUpperCase(),
+      s.paid_at ? new Date(s.paid_at).toLocaleDateString('en-PK') : 'N/A',
+      s.payment_method?.toUpperCase() || 'N/A',
+      s.reference_id || 'N/A',
+    ]);
+    exportToCSV(`subscriptions_${selectedMonth}`, headers, rows);
+  };
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -211,6 +241,15 @@ export function SubscriptionsClient({
         </div>
 
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
+
           <button
             onClick={() => setEmailLogsModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-accent hover:text-accent-foreground transition"

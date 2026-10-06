@@ -12,8 +12,10 @@ import {
   AlertTriangle,
   XCircle,
   Calendar,
+  Download,
 } from 'lucide-react';
 import type { Shop } from '@/lib/types';
+import { exportToCSV } from '@/lib/export-csv';
 
 export interface ShopListItem extends Shop {
   plan_name?: string;
@@ -81,6 +83,34 @@ export function ShopsClient({
     { label: 'Deactivated', value: 'deactivated' },
   ];
 
+  const handleExportCSV = () => {
+    const headers = [
+      'Display ID',
+      'Shop Name',
+      'City',
+      'Phone',
+      'Email',
+      'Owner Name',
+      'Owner Email',
+      'Shop Status',
+      'Subscription Status',
+      'Created At',
+    ];
+    const rows = shops.map((s) => [
+      s.display_shop_id || s.id.substring(0, 8),
+      s.name,
+      s.city || '',
+      s.phone || '',
+      s.email || '',
+      s.owner?.full_name || '',
+      s.owner?.email || '',
+      s.status.toUpperCase(),
+      (s.subscription_status || 'active').toUpperCase(),
+      new Date(s.created_at).toLocaleDateString('en-PK'),
+    ]);
+    exportToCSV('platform_shops', headers, rows);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -91,10 +121,19 @@ export function ShopsClient({
             View, search, filter, and manage all registered mobile shop tenants ({totalCount} total).
           </p>
         </div>
-        <div>
+        <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
+
           <Link
             href="/admin/shops/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Create Shop</span>

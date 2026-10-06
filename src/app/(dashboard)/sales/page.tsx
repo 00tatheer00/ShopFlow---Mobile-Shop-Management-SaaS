@@ -47,12 +47,11 @@ export default async function SalesPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const { data: rawSales, count } = await query;
-
-  // Aggregate Metrics (Revenue, Today's Count, Udhaar Due)
+  // Aggregate Metrics & Sales data concurrently in single round-trip
   const todayStr = new Date().toISOString().split('T')[0];
 
-  const [{ data: revenueData }, { data: todayData }, { data: shop }] = await Promise.all([
+  const [{ data: rawSales, count }, { data: revenueData }, { data: todayData }, { data: shop }] = await Promise.all([
+    query,
     supabase
       .from('sales')
       .select('total_amount, amount_due')
@@ -67,7 +66,7 @@ export default async function SalesPage(props: {
       .from('shops')
       .select('name, phone, address')
       .eq('id', user.shop_id!)
-      .single(),
+      .maybeSingle(),
   ]);
 
   const totalRevenue = (revenueData || []).reduce((sum, s) => sum + (s.total_amount || 0), 0);

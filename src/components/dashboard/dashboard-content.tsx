@@ -230,49 +230,52 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
       {isPrivileged && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Today's COGS */}
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 premium-card hover:border-violet-500/40 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-xs font-semibold uppercase tracking-wider">Product Cost (COGS)</span>
-              <div className="rounded-lg bg-muted p-1.5 text-muted-foreground">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Cost (COGS)</span>
+              <div className="rounded-xl bg-violet-500/10 p-2 text-violet-600 dark:text-violet-400 border border-violet-500/20">
                 <ShoppingBag className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-2 text-xl font-bold text-foreground">
+            <div className="mt-3 text-2xl font-black text-foreground tracking-tight tabular-nums font-mono">
               {formatPKR(metrics.today_cogs ?? 0)}
             </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">Wholesale cost of goods sold</p>
+            <p className="mt-1 text-xs text-muted-foreground font-medium">Wholesale cost of goods sold</p>
           </div>
 
           {/* Today's Expenses */}
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 premium-card hover:border-rose-500/40 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-xs font-semibold uppercase tracking-wider">Today&apos;s Expenses</span>
-              <div className="rounded-lg bg-rose-500/10 p-1.5 text-rose-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Today&apos;s Expenses</span>
+              <div className="rounded-xl bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                 <TrendingDown className="h-4 w-4" />
               </div>
             </div>
-            <div className="mt-2 text-xl font-bold text-rose-600 dark:text-rose-400">
+            <div className="mt-3 text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight tabular-nums font-mono">
               {formatPKR(metrics.today_expenses ?? 0)}
             </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">Shop overheads & daily bills</p>
+            <p className="mt-1 text-xs text-muted-foreground font-medium">Shop overheads & daily bills</p>
           </div>
 
           {/* Today's Net Profit */}
-          <div className="rounded-xl border border-border bg-card p-4">
+          <div className="rounded-2xl border border-border/80 bg-card p-5 premium-card hover:border-emerald-500/40 relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
             <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-xs font-semibold uppercase tracking-wider">Net Profit</span>
-              <div className="rounded-lg bg-emerald-500/10 p-1.5 text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Net Profit</span>
+              <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                 <DollarSign className="h-4 w-4" />
               </div>
             </div>
-            <div className={`mt-2 text-xl font-bold ${
+            <div className={`mt-3 text-2xl font-black tracking-tight tabular-nums font-mono ${
               (metrics.today_net_profit ?? 0) >= 0
                 ? 'text-emerald-600 dark:text-emerald-400'
                 : 'text-rose-600 dark:text-rose-400'
             }`}>
               {formatPKR(metrics.today_net_profit ?? 0)}
             </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">Gross profit minus expenses</p>
+            <p className="mt-1 text-xs text-muted-foreground font-medium">Gross profit minus expenses</p>
           </div>
         </div>
       )}
@@ -367,29 +370,50 @@ function MetricCard({
   variant: 'sales' | 'profit' | 'cash' | 'udhaar';
   subtitle: string;
 }) {
-  const variantStyles: Record<string, { bg: string; iconColor: string }> = {
-    sales: { bg: 'metric-sales', iconColor: 'text-primary' },
-    profit: { bg: 'metric-profit', iconColor: 'text-success' },
-    cash: { bg: 'metric-cash', iconColor: 'text-info' },
-    udhaar: { bg: 'metric-udhaar', iconColor: 'text-warning' },
+  const variantStyles: Record<string, { bar: string; iconColor: string; iconBg: string; borderHover: string }> = {
+    sales: {
+      bar: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+      iconColor: 'text-blue-600 dark:text-blue-400',
+      iconBg: 'bg-blue-500/10 border-blue-500/20',
+      borderHover: 'hover:border-blue-500/40',
+    },
+    profit: {
+      bar: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      iconBg: 'bg-emerald-500/10 border-emerald-500/20',
+      borderHover: 'hover:border-emerald-500/40',
+    },
+    cash: {
+      bar: 'bg-gradient-to-r from-cyan-500 to-blue-500',
+      iconColor: 'text-cyan-600 dark:text-cyan-400',
+      iconBg: 'bg-cyan-500/10 border-cyan-500/20',
+      borderHover: 'hover:border-cyan-500/40',
+    },
+    udhaar: {
+      bar: 'bg-gradient-to-r from-amber-500 to-orange-500',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      iconBg: 'bg-amber-500/10 border-amber-500/20',
+      borderHover: 'hover:border-amber-500/40',
+    },
   };
 
   const style = variantStyles[variant];
 
   return (
-    <div className={`rounded-xl border border-border bg-card p-5 card-hover ${style.bg}`}>
+    <div className={`rounded-2xl border border-border/80 bg-card p-5 premium-card relative overflow-hidden ${style.borderHover}`}>
+      <div className={`absolute top-0 left-0 right-0 h-1 ${style.bar}`} />
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
           {title}
         </p>
-        <div className={`rounded-lg bg-background/80 p-2 ${style.iconColor}`}>
+        <div className={`rounded-xl p-2 border ${style.iconBg} ${style.iconColor}`}>
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="mt-3 text-2xl font-bold tracking-tight text-foreground tabular-nums">
+      <p className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-foreground tabular-nums font-mono">
         {value}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">{subtitle}</p>
+      <p className="mt-1 text-xs text-muted-foreground font-medium">{subtitle}</p>
     </div>
   );
 }
