@@ -1,17 +1,74 @@
 {
-  "name": "ShopFlow — Mobile Shop Management",
+  "name": "ShopFlow — Mobile Shop Management SaaS",
   "short_name": "ShopFlow",
-  "description": "Simple, powerful cloud-based management system for mobile phone shops.",
-  "start_url": "/dashboard",
+  "description": "Cloud-based POS, IMEI Tracking, Stock & Udhaar Khata Management for Mobile Shops",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#0f172a",
-  "orientation": "any",
+  "orientation": "portrait-primary",
+  "background_color": "#090d16",
+  "theme_color": "#2563eb",
+  "categories": ["business", "finance", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "POS Terminal (New Sale)",
+      "short_name": "New Sale",
+      "description": "Open POS Cash Counter to make a sale",
+      "url": "/sales/new",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Udhaar Khata (Customer Ledger)",
+      "short_name": "Udhaar",
+      "description": "Check customer balances and recover cash",
+      "url": "/udhaar",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Daily Expenses (Kharcha)",
+      "short_name": "Expenses",
+      "description": "Record shop expenses and bills",
+      "url": "/expenses",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Reports & Analytics",
+      "short_name": "Reports",
+      "description": "View profit, sales and stock reports",
+      "url": "/reports",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

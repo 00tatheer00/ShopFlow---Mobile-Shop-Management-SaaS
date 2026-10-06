@@ -24,6 +24,7 @@ import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
 import { AppUpdateNotifier } from '@/components/ui/app-update-notifier';
+import { PwaInstallButton } from '@/components/pwa/pwa-install-button';
 import { CURRENT_APP_VERSION } from '@/lib/app-version';
 
 interface DashboardShellProps {
@@ -305,13 +306,11 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
             <Menu className="h-5 w-5" />
           </button>
 
-          {/* Breadcrumb area — can be enhanced later */}
-          <div className="flex-1" />
-
-          {/* Header Right — User Quick Info */}
-          <div className="hidden items-center gap-2 sm:flex">
+          {/* Header Right — User Quick Info & PWA Install */}
+          <div className="flex items-center gap-2">
+            <PwaInstallButton />
             {user.shop?.name && (
-              <span className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+              <span className="hidden sm:inline-block text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
                 {user.shop.name}
               </span>
             )}

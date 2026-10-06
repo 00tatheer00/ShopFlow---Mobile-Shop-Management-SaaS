@@ -18,6 +18,7 @@ import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
 import { AppUpdateNotifier } from '@/components/ui/app-update-notifier';
+import { PwaInstallButton } from '@/components/pwa/pwa-install-button';
 import { CURRENT_APP_VERSION } from '@/lib/app-version';
 
 interface AdminShellProps {
@@ -184,6 +185,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           </div>
 
           <div className="flex items-center gap-3">
+            <PwaInstallButton />
             <Link
               href="/admin/shops/new"
               className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
