@@ -10,49 +10,47 @@ export default async function UdhaarPage() {
   const user = await requireShopAccess();
   const supabase = await createClient();
 
-  // 1. Fetch shop profile to get shop name for WhatsApp messages
-  const { data: shop } = await supabase
-    .from('shops')
-    .select('name')
-    .eq('id', user.shop_id!)
-    .single();
-
-  // 2. Fetch all customers of this shop
-  const { data: customers } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('shop_id', user.shop_id!)
-    .eq('is_active', true)
-    .order('name');
-
-  // 3. Fetch latest ledger entries to calculate each customer's balance
-  const { data: ledgerEntries } = await supabase
-    .from('udhaar_ledger')
-    .select(`
-      id, shop_id, customer_id, sale_id, payment_id, type, amount, balance_after, description, created_at,
-      customers(id, name, phone)
-    `)
-    .eq('shop_id', user.shop_id!)
-    .order('created_at', { ascending: false })
-    .limit(100);
-
-  // Group latest balance per customer
-  const latestBalanceMap = new Map<string, number>();
-
-  // Fetch all latest balances across customers
-  if (customers && customers.length > 0) {
-    const { data: allBalances } = await supabase
+  // Parallelize all 4 database queries concurrently in a single round-trip
+  const [
+    { data: shop },
+    { data: customers },
+    { data: ledgerEntries },
+    { data: allBalances },
+  ] = await Promise.all([
+    supabase
+      .from('shops')
+      .select('name')
+      .eq('id', user.shop_id!)
+      .maybeSingle(),
+    supabase
+      .from('customers')
+      .select('*')
+      .eq('shop_id', user.shop_id!)
+      .eq('is_active', true)
+      .order('name'),
+    supabase
+      .from('udhaar_ledger')
+      .select(`
+        id, shop_id, customer_id, sale_id, payment_id, type, amount, balance_after, description, created_at,
+        customers(id, name, phone)
+      `)
+      .eq('shop_id', user.shop_id!)
+      .order('created_at', { ascending: false })
+      .limit(100),
+    supabase
       .from('udhaar_ledger')
       .select('customer_id, balance_after, created_at')
       .eq('shop_id', user.shop_id!)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }),
+  ]);
 
-    allBalances?.forEach((entry) => {
-      if (!latestBalanceMap.has(entry.customer_id)) {
-        latestBalanceMap.set(entry.customer_id, entry.balance_after);
-      }
-    });
-  }
+  // Group latest balance per customer
+  const latestBalanceMap = new Map<string, number>();
+  allBalances?.forEach((entry) => {
+    if (!latestBalanceMap.has(entry.customer_id)) {
+      latestBalanceMap.set(entry.customer_id, entry.balance_after);
+    }
+  });
 
   // Filter customers who have an outstanding balance > 0
   const customersWithBalance = (customers || [])

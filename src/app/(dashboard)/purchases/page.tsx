@@ -18,15 +18,6 @@ export default async function PurchasesPage(props: {
   const page = Number(searchParams.page) || 1;
   const perPage = 20;
 
-  // 1. Fetch suppliers for filter dropdown
-  const { data: suppliers } = await supabase
-    .from('suppliers')
-    .select('*')
-    .eq('shop_id', user.shop_id!)
-    .eq('is_active', true)
-    .order('name');
-
-  // 2. Fetch purchases with join
   let query = supabase
     .from('purchases')
     .select(`
@@ -53,7 +44,14 @@ export default async function PurchasesPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const [{ data: rawPurchases, count }, { data: totalSpendData }] = await Promise.all([
+  // Fetch suppliers, purchases list, and total spend concurrently in a single round-trip
+  const [{ data: suppliers }, { data: rawPurchases, count }, { data: totalSpendData }] = await Promise.all([
+    supabase
+      .from('suppliers')
+      .select('*')
+      .eq('shop_id', user.shop_id!)
+      .eq('is_active', true)
+      .order('name'),
     query,
     supabase
       .from('purchases')

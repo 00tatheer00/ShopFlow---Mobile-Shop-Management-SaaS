@@ -117,10 +117,10 @@ export function AppUpdateNotifier() {
       checkForUpdate(false);
     }, 4000);
 
-    // Poll every 60 seconds
+    // Poll every 5 minutes (300,000ms) to preserve bandwidth & CPU
     const interval = setInterval(() => {
       checkForUpdate(false);
-    }, 60000);
+    }, 300000);
 
     // Also check when tab becomes active again
     const handleVisibilityChange = () => {
