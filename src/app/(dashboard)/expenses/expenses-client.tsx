@@ -203,40 +203,40 @@ export function ExpensesClient({
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Today&apos;s Expenses</span>
-            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
+        {/* Today's Expenses */}
+        <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Today&apos;s Expenses</span>
+            <div className="rounded-xl p-2 border bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
               <Calendar className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(todayTotal)}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Outflow recorded today</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">{formatPKR(todayTotal)}</div>
+          <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Outflow recorded today</p>
         </div>
 
-        <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">This Month</span>
-            <div className="rounded-xl bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400">
+        {/* This Month */}
+        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">This Month</span>
+            <div className="rounded-xl p-2 border bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
               <TrendingDown className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-rose-600 dark:text-rose-400">{formatPKR(monthTotal)}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Total overhead for current month</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">{formatPKR(monthTotal)}</div>
+          <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Total overhead for current month</p>
         </div>
 
-        <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Records</span>
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
+        {/* Total Records */}
+        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Records</span>
+            <div className="rounded-xl p-2 border bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
               <Receipt className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-foreground">{totalCount}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Logged expense transactions</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{totalCount}</div>
+          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Logged expense transactions</p>
         </div>
       </div>
 

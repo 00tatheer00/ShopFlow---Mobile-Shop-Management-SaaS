@@ -255,18 +255,15 @@
 
   /* Premium Card & Interactive Hover Effects */
   .premium-card {
-    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     border-radius: 1rem;
   }
   .premium-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 30px -8px rgba(99, 102, 241, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
-    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
   }
   .dark .premium-card:hover {
-    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.6), 0 0 20px -2px rgba(129, 140, 248, 0.2);
-    border-color: rgba(129, 140, 248, 0.45);
+    box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.4);
   }
 
   .metric-card-hover {

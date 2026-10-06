@@ -288,102 +288,97 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Gross Revenue */}
-            <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Gross Revenue</span>
-                <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
+            <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Gross Revenue</span>
+                <div className="rounded-xl p-2 border bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
                   <DollarSign className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(totalRevenue)}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed customer sales</p>
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalRevenue)}</div>
+              <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">{salesCount} completed customer sales</p>
             </div>
 
             {/* Cost of Goods Sold */}
-            <div className="premium-card border border-slate-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400 to-zinc-600" />
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">Cost of Goods (COGS)</span>
-                <div className="rounded-xl bg-muted p-2 text-muted-foreground">
+            <div className="rounded-2xl p-5 border bg-violet-50/80 dark:bg-violet-950/30 border-violet-200/50 dark:border-violet-900/40 hover:border-violet-500 dark:hover:border-violet-400 transition-colors duration-300 ease-out">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300">Cost of Goods (COGS)</span>
+                <div className="rounded-xl p-2 border bg-violet-100/90 dark:bg-violet-900/60 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400">
                   <ShoppingBag className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(cogs)}</div>
-              <p className="mt-1 text-xs text-muted-foreground">Wholesale cost of goods sold</p>
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-violet-950 dark:text-violet-50">{formatPKR(cogs)}</div>
+              <p className="mt-1 text-xs font-medium text-violet-600/80 dark:text-violet-400/80">Wholesale cost of goods sold</p>
             </div>
 
             {/* Gross Profit */}
-            <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Gross Profit</span>
-                <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
+            <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Gross Profit</span>
+                <div className="rounded-xl p-2 border bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
                   <TrendingUp className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
                 {formatPKR(grossProfit)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Gross Margin: {grossMarginPct}%</p>
+              <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Gross Margin: {grossMarginPct}%</p>
             </div>
 
             {/* Operating Expenses */}
-            <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Operating Expenses</span>
-                <div className="rounded-xl bg-rose-500/10 p-2 text-rose-500">
+            <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">Operating Expenses</span>
+                <div className="rounded-xl p-2 border bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
                   <TrendingDown className="h-4 w-4" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-black text-rose-600 dark:text-rose-400">
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
                 {formatPKR(totalExpenses)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Shop rent, utilities & overheads</p>
+              <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Shop rent, utilities & overheads</p>
             </div>
 
             {/* Net Profit */}
             <div
-              className={`premium-card p-5 relative overflow-hidden group border ${
+              className={`rounded-2xl p-5 border transition-colors duration-300 ease-out ${
                 isNetPositive
-                  ? 'border-emerald-500/30 bg-card'
-                  : 'border-rose-500/30 bg-card'
+                  ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400'
+                  : 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400'
               }`}
             >
-              <div
-                className={`absolute top-0 left-0 right-0 h-1 ${
-                  isNetPositive
-                    ? 'bg-gradient-to-r from-emerald-400 via-teal-500 to-cyan-500'
-                    : 'bg-gradient-to-r from-rose-500 to-red-600'
-                }`}
-              />
               <div className="flex items-center justify-between">
                 <span
                   className={`text-xs font-bold uppercase tracking-wider ${
-                    isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                    isNetPositive ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'
                   }`}
                 >
                   Net Profit
                 </span>
                 <div
-                  className={`rounded-xl p-2 ${
+                  className={`rounded-xl p-2 border ${
                     isNetPositive
-                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                      ? 'bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400'
                   }`}
                 >
                   <TrendingUp className="h-4 w-4" />
                 </div>
               </div>
               <div
-                className={`mt-2 text-2xl font-black ${
-                  isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                className={`mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono ${
+                  isNetPositive ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'
                 }`}
               >
                 {formatPKR(netProfit)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Net Margin: {netMarginPct}%</p>
+              <p
+                className={`mt-1 text-xs font-medium ${
+                  isNetPositive ? 'text-emerald-600/80 dark:text-emerald-400/80' : 'text-rose-600/80 dark:text-rose-400/80'
+                }`}
+              >
+                Net Margin: {netMarginPct}%
+              </p>
             </div>
 
             {/* Total Udhaar Outflow */}
@@ -484,38 +479,38 @@ export function ReportsClient({
       {activeTab === 'sales' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Sales</span>
-              <div className="mt-2 text-2xl font-black text-foreground font-mono">{formatPKR(totalRevenue)}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed sales</p>
+            {/* Total Sales */}
+            <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Sales</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalRevenue)}</div>
+              <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">{salesCount} completed sales</p>
             </div>
 
-            <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Discounts Given</span>
-              <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
+            {/* Discounts Given */}
+            <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Discounts Given</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">
                 {formatPKR(totalDiscounts)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Total discount concessions</p>
+              <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Total discount concessions</p>
             </div>
 
-            <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Collected (Paid)</span>
-              <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+            {/* Collected (Paid) */}
+            <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Collected (Paid)</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
                 {formatPKR(totalCollected)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Cash & digital collections</p>
+              <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Cash & digital collections</p>
             </div>
 
-            <div className="premium-card border border-rose-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-              <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Credit (Udhaar)</span>
-              <div className="mt-2 text-2xl font-black text-rose-600 dark:text-rose-400 font-mono">
+            {/* Credit (Udhaar) */}
+            <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">Credit (Udhaar)</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
                 {formatPKR(totalUdhaar)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Unpaid balance on credit</p>
+              <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Unpaid balance on credit</p>
             </div>
           </div>
 
@@ -678,40 +673,40 @@ export function ReportsClient({
       {activeTab === 'inventory' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Valuation at Cost</span>
-              <div className="mt-2 text-2xl font-black text-foreground font-mono">
+            {/* Valuation at Cost */}
+            <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Valuation at Cost</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">
                 {formatPKR(totalInventoryCostValuation)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Total investment at purchase cost</p>
+              <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Total investment at purchase cost</p>
             </div>
 
-            <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Potential Retail Value</span>
-              <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
+            {/* Potential Retail Value */}
+            <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Potential Retail Value</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
                 {formatPKR(totalPotentialRetailValuation)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Expected revenue at selling price</p>
+              <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Expected revenue at selling price</p>
             </div>
 
-            <div className="premium-card border border-blue-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">Total Units in Stock</span>
-              <div className="mt-2 text-2xl font-black text-foreground font-mono">{totalStockQuantity}</div>
-              <p className="mt-1 text-xs text-muted-foreground">
+            {/* Total Units in Stock */}
+            <div className="rounded-2xl p-5 border bg-cyan-50/80 dark:bg-cyan-950/30 border-cyan-200/50 dark:border-cyan-900/40 hover:border-cyan-500 dark:hover:border-cyan-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">Total Units in Stock</span>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-cyan-950 dark:text-cyan-50">{totalStockQuantity}</div>
+              <p className="mt-1 text-xs font-medium text-cyan-600/80 dark:text-cyan-400/80">
                 Including {inStockImeiCount} IMEI devices
               </p>
             </div>
 
-            <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Low Stock Warnings</span>
-              <div className={`mt-2 text-2xl font-black font-mono ${lowStockCount > 0 ? 'text-amber-600' : 'text-foreground'}`}>
+            {/* Low Stock Warnings */}
+            <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Low Stock Warnings</span>
+              <div className={`mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono ${lowStockCount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-amber-950 dark:text-amber-50'}`}>
                 {lowStockCount}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Products at or below threshold</p>
+              <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Products at or below threshold</p>
             </div>
           </div>
 

@@ -163,40 +163,40 @@ export function PurchasesClient({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="premium-card border border-indigo-500/20 bg-card p-5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-primary" />
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">Total Inventory Spend</span>
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600 dark:text-indigo-400">
+        {/* Total Inventory Spend */}
+        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Inventory Spend</span>
+            <div className="rounded-xl p-2 border bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
               <TrendingDown className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-foreground">{formatPKR(totalSpend)}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Total purchase procurement costs</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalSpend)}</div>
+          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Total purchase procurement costs</p>
         </div>
 
-        <div className="premium-card border border-emerald-500/20 bg-card p-5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-400" />
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Purchase Orders</span>
-            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
+        {/* Purchase Orders */}
+        <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Purchase Orders</span>
+            <div className="rounded-xl p-2 border bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
               <Package className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-foreground">{totalCount}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Shipments logged from suppliers</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">{totalCount}</div>
+          <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Shipments logged from suppliers</p>
         </div>
 
-        <div className="premium-card border border-amber-500/20 bg-card p-5 relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-400" />
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Active Suppliers</span>
-            <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
+        {/* Active Suppliers */}
+        <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Active Suppliers</span>
+            <div className="rounded-xl p-2 border bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
               <Truck className="h-4 w-4" />
             </div>
           </div>
-          <div className="mt-2 text-2xl font-black text-foreground">{suppliers.length}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Registered vendor distributors</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">{suppliers.length}</div>
+          <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Registered vendor distributors</p>
         </div>
       </div>
 

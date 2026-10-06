@@ -230,53 +230,31 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
       {isPrivileged && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {/* Today's COGS */}
-          <div className="rounded-2xl border border-border/80 bg-card p-5 premium-card hover:border-violet-500/40 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-500" />
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Product Cost (COGS)</span>
-              <div className="rounded-xl bg-violet-500/10 p-2 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-                <ShoppingBag className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3 text-2xl font-black text-foreground tracking-tight tabular-nums font-mono">
-              {formatPKR(metrics.today_cogs ?? 0)}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground font-medium">Wholesale cost of goods sold</p>
-          </div>
+          <MetricCard
+            title="Product Cost (COGS)"
+            value={formatPKR(metrics.today_cogs ?? 0)}
+            icon={ShoppingBag}
+            variant="cogs"
+            subtitle="Wholesale cost of goods sold"
+          />
 
           {/* Today's Expenses */}
-          <div className="rounded-2xl border border-border/80 bg-card p-5 premium-card hover:border-rose-500/40 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-pink-500" />
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Today&apos;s Expenses</span>
-              <div className="rounded-xl bg-rose-500/10 p-2 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                <TrendingDown className="h-4 w-4" />
-              </div>
-            </div>
-            <div className="mt-3 text-2xl font-black text-rose-600 dark:text-rose-400 tracking-tight tabular-nums font-mono">
-              {formatPKR(metrics.today_expenses ?? 0)}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground font-medium">Shop overheads & daily bills</p>
-          </div>
+          <MetricCard
+            title="Today's Expenses"
+            value={formatPKR(metrics.today_expenses ?? 0)}
+            icon={TrendingDown}
+            variant="expense"
+            subtitle="Shop overheads & daily bills"
+          />
 
           {/* Today's Net Profit */}
-          <div className="rounded-2xl border border-border/80 bg-card p-5 premium-card hover:border-emerald-500/40 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-            <div className="flex items-center justify-between text-muted-foreground">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Net Profit</span>
-              <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                <DollarSign className="h-4 w-4" />
-              </div>
-            </div>
-            <div className={`mt-3 text-2xl font-black tracking-tight tabular-nums font-mono ${
-              (metrics.today_net_profit ?? 0) >= 0
-                ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-rose-600 dark:text-rose-400'
-            }`}>
-              {formatPKR(metrics.today_net_profit ?? 0)}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground font-medium">Gross profit minus expenses</p>
-          </div>
+          <MetricCard
+            title="Net Profit"
+            value={formatPKR(metrics.today_net_profit ?? 0)}
+            icon={DollarSign}
+            variant={(metrics.today_net_profit ?? 0) >= 0 ? 'net_profit' : 'expense'}
+            subtitle="Gross profit minus expenses"
+          />
         </div>
       )}
 
@@ -357,6 +335,19 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
 
 // ---- Helper Components ----
 
+type MetricVariant = 'sales' | 'profit' | 'cash' | 'udhaar' | 'cogs' | 'expense' | 'net_profit';
+
+interface MetricStyle {
+  cardBg: string;
+  cardBorder: string;
+  hoverBorder: string;
+  titleColor: string;
+  iconBg: string;
+  iconColor: string;
+  valueColor: string;
+  subColor: string;
+}
+
 function MetricCard({
   title,
   value,
@@ -367,53 +358,100 @@ function MetricCard({
   title: string;
   value: string;
   icon: React.ElementType;
-  variant: 'sales' | 'profit' | 'cash' | 'udhaar';
+  variant: MetricVariant;
   subtitle: string;
 }) {
-  const variantStyles: Record<string, { bar: string; iconColor: string; iconBg: string; borderHover: string }> = {
+  const variantStyles: Record<MetricVariant, MetricStyle> = {
     sales: {
-      bar: 'bg-gradient-to-r from-blue-500 to-indigo-600',
+      cardBg: 'bg-blue-50/80 dark:bg-blue-950/30',
+      cardBorder: 'border-blue-200/50 dark:border-blue-900/40',
+      hoverBorder: 'hover:border-blue-500 dark:hover:border-blue-400',
+      titleColor: 'text-blue-700 dark:text-blue-300',
+      iconBg: 'bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800',
       iconColor: 'text-blue-600 dark:text-blue-400',
-      iconBg: 'bg-blue-500/10 border-blue-500/20',
-      borderHover: 'hover:border-blue-500/40',
+      valueColor: 'text-blue-950 dark:text-blue-50',
+      subColor: 'text-blue-600/80 dark:text-blue-400/80',
     },
     profit: {
-      bar: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+      cardBg: 'bg-emerald-50/80 dark:bg-emerald-950/30',
+      cardBorder: 'border-emerald-200/50 dark:border-emerald-900/40',
+      hoverBorder: 'hover:border-emerald-500 dark:hover:border-emerald-400',
+      titleColor: 'text-emerald-700 dark:text-emerald-300',
+      iconBg: 'bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800',
       iconColor: 'text-emerald-600 dark:text-emerald-400',
-      iconBg: 'bg-emerald-500/10 border-emerald-500/20',
-      borderHover: 'hover:border-emerald-500/40',
+      valueColor: 'text-emerald-950 dark:text-emerald-50',
+      subColor: 'text-emerald-600/80 dark:text-emerald-400/80',
     },
     cash: {
-      bar: 'bg-gradient-to-r from-cyan-500 to-blue-500',
+      cardBg: 'bg-cyan-50/80 dark:bg-cyan-950/30',
+      cardBorder: 'border-cyan-200/50 dark:border-cyan-900/40',
+      hoverBorder: 'hover:border-cyan-500 dark:hover:border-cyan-400',
+      titleColor: 'text-cyan-700 dark:text-cyan-300',
+      iconBg: 'bg-cyan-100/90 dark:bg-cyan-900/60 border-cyan-200 dark:border-cyan-800',
       iconColor: 'text-cyan-600 dark:text-cyan-400',
-      iconBg: 'bg-cyan-500/10 border-cyan-500/20',
-      borderHover: 'hover:border-cyan-500/40',
+      valueColor: 'text-cyan-950 dark:text-cyan-50',
+      subColor: 'text-cyan-600/80 dark:text-cyan-400/80',
     },
     udhaar: {
-      bar: 'bg-gradient-to-r from-amber-500 to-orange-500',
+      cardBg: 'bg-amber-50/80 dark:bg-amber-950/30',
+      cardBorder: 'border-amber-200/50 dark:border-amber-900/40',
+      hoverBorder: 'hover:border-amber-500 dark:hover:border-amber-400',
+      titleColor: 'text-amber-700 dark:text-amber-300',
+      iconBg: 'bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800',
       iconColor: 'text-amber-600 dark:text-amber-400',
-      iconBg: 'bg-amber-500/10 border-amber-500/20',
-      borderHover: 'hover:border-amber-500/40',
+      valueColor: 'text-amber-950 dark:text-amber-50',
+      subColor: 'text-amber-600/80 dark:text-amber-400/80',
+    },
+    cogs: {
+      cardBg: 'bg-violet-50/80 dark:bg-violet-950/30',
+      cardBorder: 'border-violet-200/50 dark:border-violet-900/40',
+      hoverBorder: 'hover:border-violet-500 dark:hover:border-violet-400',
+      titleColor: 'text-violet-700 dark:text-violet-300',
+      iconBg: 'bg-violet-100/90 dark:bg-violet-900/60 border-violet-200 dark:border-violet-800',
+      iconColor: 'text-violet-600 dark:text-violet-400',
+      valueColor: 'text-violet-950 dark:text-violet-50',
+      subColor: 'text-violet-600/80 dark:text-violet-400/80',
+    },
+    expense: {
+      cardBg: 'bg-rose-50/80 dark:bg-rose-950/30',
+      cardBorder: 'border-rose-200/50 dark:border-rose-900/40',
+      hoverBorder: 'hover:border-rose-500 dark:hover:border-rose-400',
+      titleColor: 'text-rose-700 dark:text-rose-300',
+      iconBg: 'bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800',
+      iconColor: 'text-rose-600 dark:text-rose-400',
+      valueColor: 'text-rose-700 dark:text-rose-300',
+      subColor: 'text-rose-600/80 dark:text-rose-400/80',
+    },
+    net_profit: {
+      cardBg: 'bg-emerald-50/80 dark:bg-emerald-950/30',
+      cardBorder: 'border-emerald-200/50 dark:border-emerald-900/40',
+      hoverBorder: 'hover:border-emerald-500 dark:hover:border-emerald-400',
+      titleColor: 'text-emerald-700 dark:text-emerald-300',
+      iconBg: 'bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      valueColor: 'text-emerald-700 dark:text-emerald-300',
+      subColor: 'text-emerald-600/80 dark:text-emerald-400/80',
     },
   };
 
   const style = variantStyles[variant];
 
   return (
-    <div className={`rounded-2xl border border-border/80 bg-card p-5 premium-card relative overflow-hidden ${style.borderHover}`}>
-      <div className={`absolute top-0 left-0 right-0 h-1 ${style.bar}`} />
+    <div
+      className={`rounded-2xl border p-5 transition-colors duration-300 ease-out ${style.cardBg} ${style.cardBorder} ${style.hoverBorder}`}
+    >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+        <p className={`text-xs font-bold uppercase tracking-wider ${style.titleColor}`}>
           {title}
         </p>
         <div className={`rounded-xl p-2 border ${style.iconBg} ${style.iconColor}`}>
           <Icon className="h-4 w-4" />
         </div>
       </div>
-      <p className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-foreground tabular-nums font-mono">
+      <p className={`mt-3 text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono ${style.valueColor}`}>
         {value}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground font-medium">{subtitle}</p>
+      <p className={`mt-1 text-xs font-medium ${style.subColor}`}>{subtitle}</p>
     </div>
   );
 }
