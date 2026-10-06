@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useTransition, useMemo, useDeferredValue } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -21,6 +20,7 @@ import { createSale } from '../actions';
 import { createCustomer } from '../../customers/actions';
 import { ReceiptModal, type ReceiptData } from '@/components/ui/receipt-modal';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
+import { toast } from 'sonner';
 
 interface ProductWithStock extends Product {
   imei_records?: { id: string; imei_number: string; status: string }[];
@@ -134,11 +134,14 @@ export function PosTerminal({
   shopPhone,
   shopAddress,
 }: PosTerminalProps) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   // Search & Filters for Products
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search);
+
+  // Local products state for optimistic stock updates (no router.refresh needed)
+  const [localProducts, setLocalProducts] = useState(products);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
 
@@ -165,23 +168,23 @@ export function PosTerminal({
   // IMEI Selection Modal when adding tracked phone
   const [imeiSelectProduct, setImeiSelectProduct] = useState<ProductWithStock | null>(null);
 
-  // Filter products
-  const filteredProducts = products.filter((p) => {
+  // Filter products (memoized + deferred search for instant typing)
+  const filteredProducts = useMemo(() => localProducts.filter((p) => {
     if (!p.is_active || p.stock_quantity <= 0) return false;
     if (selectedCategory && p.category_id !== selectedCategory) return false;
     if (selectedBrand && p.brand_id !== selectedBrand) return false;
-    if (search) {
-      const q = search.toLowerCase();
+    if (deferredSearch) {
+      const q = deferredSearch.toLowerCase();
       const matchName = p.name.toLowerCase().includes(q);
       const matchModel = p.model?.toLowerCase().includes(q);
       const matchImei = p.imei_records?.some((i) => i.imei_number.includes(q));
       if (!matchName && !matchModel && !matchImei) return false;
     }
     return true;
-  });
+  }), [localProducts, deferredSearch, selectedCategory, selectedBrand]);
 
-  // Cart Calculations
-  const subtotal = cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
+  // Cart Calculations (memoized subtotal)
+  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0), [cart]);
   const numDiscount = Number(discount) || 0;
   const total = Math.max(0, subtotal - numDiscount);
   const effectivePaid = amountPaid === '' ? total : Number(amountPaid);
@@ -199,7 +202,7 @@ export function PosTerminal({
       // If IMEI tracked, each unit is a distinct IMEI line
       if (product.is_imei_tracked && imei) {
         if (prev.some((item) => item.imei_record_id === imei.id)) {
-          alert('This IMEI is already in the cart.');
+          toast.error('This IMEI is already in the cart.');
           return prev;
         }
         return [
@@ -218,7 +221,7 @@ export function PosTerminal({
       const existing = prev.find((item) => item.product.id === product.id && !item.imei_record_id);
       if (existing) {
         if (existing.quantity >= product.stock_quantity) {
-          alert(`Cannot add more than available stock (${product.stock_quantity})`);
+          toast.error(`Cannot add more than available stock (${product.stock_quantity})`);
           return prev;
         }
         return prev.map((item) =>
@@ -252,7 +255,7 @@ export function PosTerminal({
         return prev.filter((_, i) => i !== index);
       }
       if (newQty > item.product.stock_quantity) {
-        alert(`Maximum available stock is ${item.product.stock_quantity}`);
+        toast.error(`Maximum available stock is ${item.product.stock_quantity}`);
         return prev;
       }
       return prev.map((it, i) => (i === index ? { ...it, quantity: newQty } : it));
@@ -307,46 +310,71 @@ export function PosTerminal({
       idempotency_key: txKey,
     };
 
+    // ⚡ OPTIMISTIC: Show receipt INSTANTLY, process server call in background
+    const activeCust = customers.find((c) => c.id === selectedCustomerId);
+    const todayDateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const tempInvoice = `INV-${todayDateStr}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const receipt: ReceiptData = {
+      shopName: shopName || 'ShopFlow Mobile',
+      shopPhone: shopPhone || null,
+      shopAddress: shopAddress || null,
+      invoiceNumber: tempInvoice,
+      date: new Date().toLocaleDateString('en-PK', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+      customerName: activeCust?.name || (due > 0 ? 'Valued Customer' : 'Walk-in Customer'),
+      customerPhone: activeCust?.phone || null,
+      items: cart.map((item) => ({
+        id: item.product.id,
+        name: item.product.name,
+        quantity: item.quantity,
+        unit_price: Math.round(item.unit_price * 100),
+        total_price: Math.round(item.unit_price * item.quantity * 100),
+        imei: item.imei_number || null,
+      })),
+      subtotal: Math.round(subtotal * 100),
+      discount: Math.round(numDiscount * 100),
+      totalAmount: Math.round(total * 100),
+      amountPaid: Math.round(Math.min(effectivePaid, total) * 100),
+      cashTendered: effectivePaid > total && paymentMethod === 'cash' ? Math.round(effectivePaid * 100) : undefined,
+      cashChange: cashChange > 0 ? Math.round(cashChange * 100) : undefined,
+      amountDue: Math.round(due * 100),
+      paymentMethod: paymentMethod.toUpperCase(),
+    };
+
+    // Show receipt INSTANTLY (optimistic)
+    setReceiptData(receipt);
+    setShowReceipt(true);
+
+    // Optimistically update local product stock
+    const soldCart = [...cart];
+    setLocalProducts((prev) =>
+      prev.map((p) => {
+        const soldItem = soldCart.find((ci) => ci.product.id === p.id);
+        if (!soldItem) return p;
+        return {
+          ...p,
+          stock_quantity: Math.max(0, p.stock_quantity - soldItem.quantity),
+          imei_records: p.imei_records?.filter((i) => !soldCart.some((ci) => ci.imei_record_id === i.id)),
+        };
+      })
+    );
+
+    // Process sale in background — revert if server fails
     startTransition(async () => {
       const res = await createSale(payload);
       if (res.error) {
+        setShowReceipt(false);
+        setReceiptData(null);
+        setLocalProducts(products);
+        toast.error(res.error);
         setErrorMessage(res.error);
-      } else if (res.success && res.saleId) {
-        const activeCust = customers.find((c) => c.id === selectedCustomerId);
-        const receipt: ReceiptData = {
-          shopName: shopName || 'ShopFlow Mobile',
-          shopPhone: shopPhone || null,
-          shopAddress: shopAddress || null,
-          invoiceNumber: res.invoiceNumber || 'INV',
-          date: new Date().toLocaleDateString('en-PK', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
-          customerName: activeCust?.name || (due > 0 ? 'Valued Customer' : 'Walk-in Customer'),
-          customerPhone: activeCust?.phone || null,
-          items: cart.map((item) => ({
-            id: item.product.id,
-            name: item.product.name,
-            quantity: item.quantity,
-            unit_price: Math.round(item.unit_price * 100),
-            total_price: Math.round(item.unit_price * item.quantity * 100),
-            imei: item.imei_number || null,
-          })),
-          subtotal: Math.round(subtotal * 100),
-          discount: Math.round(numDiscount * 100),
-          totalAmount: Math.round(total * 100),
-          amountPaid: Math.round(Math.min(effectivePaid, total) * 100),
-          cashTendered: effectivePaid > total && paymentMethod === 'cash' ? Math.round(effectivePaid * 100) : undefined,
-          cashChange: cashChange > 0 ? Math.round(cashChange * 100) : undefined,
-          amountDue: Math.round(due * 100),
-          paymentMethod: paymentMethod.toUpperCase(),
-        };
-
-        setReceiptData(receipt);
-        setShowReceipt(true);
+      } else if (res.success && res.invoiceNumber) {
+        setReceiptData((prev) => prev ? { ...prev, invoiceNumber: res.invoiceNumber! } : null);
       }
     });
   }
@@ -363,7 +391,6 @@ export function PosTerminal({
     setTxKey(
       typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `tx_${Date.now()}_${Math.random()}`
     );
-    router.refresh();
   }
 
   async function handleQuickAddCustomer(e: React.FormEvent<HTMLFormElement>) {
@@ -373,14 +400,14 @@ export function PosTerminal({
     startTransition(async () => {
       const res = await createCustomer(formData);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         if (res.customer) {
           setCustomers((prev) => [...prev, res.customer as Customer]);
           setSelectedCustomerId(res.customer.id);
         }
         setIsAddCustomerOpen(false);
-        router.refresh();
+        toast.success('Customer added!');
       }
     });
   }
@@ -476,7 +503,7 @@ export function PosTerminal({
                     : 'border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
-                All ({products.filter((p) => p.is_active && p.stock_quantity > 0).length})
+                All ({localProducts.filter((p) => p.is_active && p.stock_quantity > 0).length})
               </button>
               {categories.map((c) => {
                 const isSelected = selectedCategory === c.id;
@@ -554,7 +581,8 @@ export function PosTerminal({
                       key={p.id}
                       type="button"
                       onClick={() => addToCart(p)}
-                      className={`group relative flex flex-col justify-between rounded-xl border ${theme.bg} ${theme.border} ${theme.hoverBorder} p-2.5 sm:p-3 text-left transition-all duration-200 shadow-2xs hover:shadow-md active:scale-[0.98] cursor-pointer`}
+                      style={{ contentVisibility: 'auto' }}
+                      className={`group relative flex flex-col justify-between rounded-xl border ${theme.bg} ${theme.border} ${theme.hoverBorder} p-2.5 sm:p-3 text-left transition-all duration-75 shadow-2xs hover:shadow-md active:scale-[0.97] cursor-pointer`}
                     >
                       <div>
                         <div className="flex items-start justify-between gap-1 mb-1">

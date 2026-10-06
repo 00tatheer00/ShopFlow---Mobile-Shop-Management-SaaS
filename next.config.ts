@@ -28,6 +28,13 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    staleTimes: {
+      dynamic: 600,
+      static: 600,
+    },
+    optimizePackageImports: ['lucide-react', 'recharts', 'sonner', 'qrcode.react', 'zod'],
+  },
   async headers() {
     return [
       {

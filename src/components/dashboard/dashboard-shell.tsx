@@ -95,10 +95,16 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
   // Proactively warm frequent routes in background during browser idle time for 0ms transitions
   useEffect(() => {
+    // ⚡ Warm critical POS routes IMMEDIATELY on app load for 0ms POS opening
+    try {
+      router.prefetch('/sales/new');
+      router.prefetch('/sales');
+    } catch {
+      // Ignore prefetch error
+    }
+
     const routesToWarm = [
       '/dashboard',
-      '/sales/new',
-      '/sales',
       '/products',
       '/purchases',
       '/purchases/new',
@@ -117,7 +123,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           // Ignore prefetch error
         }
       });
-    }, 1200);
+    }, 250);
     return () => clearTimeout(timer);
   }, [router]);
 

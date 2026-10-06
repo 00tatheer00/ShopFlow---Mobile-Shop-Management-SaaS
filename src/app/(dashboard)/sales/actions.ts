@@ -67,53 +67,78 @@ export async function createSale(payload: CreateSalePayload) {
     }
   }
 
-  // 3. Pre-verify all products: tenant ownership, active status, stock levels, and IMEI states
-  const checkedImeis = new Set<string>();
-
+  // 3. Pre-verify all products in a SINGLE batch query (0ms delay)
   for (const item of result.data.items) {
     if (item.unit_price <= 0) {
       return { error: 'Product unit price must be greater than zero.' };
     }
+  }
 
-    const { data: product } = await supabase
-      .from('products')
-      .select('id, name, stock_quantity, is_imei_tracked, is_active, sale_price')
-      .eq('id', item.product_id)
-      .eq('shop_id', user.shop_id!)
-      .single();
+  const uniqueProductIds = Array.from(new Set(result.data.items.map((i) => i.product_id)));
+  const { data: dbProducts, error: prodErr } = await supabase
+    .from('products')
+    .select('id, name, stock_quantity, is_imei_tracked, is_active, sale_price')
+    .in('id', uniqueProductIds)
+    .eq('shop_id', user.shop_id!);
 
-    if (!product) {
-      return { error: 'One or more selected products do not belong to this shop.' };
-    }
+  if (prodErr || !dbProducts || dbProducts.length !== uniqueProductIds.length) {
+    return { error: 'One or more selected products do not belong to this shop.' };
+  }
 
+  const productMap = new Map(dbProducts.map((p) => [p.id, p]));
+
+  // Sum requested quantities per product to prevent overselling if multiple lines refer to same product
+  const requestedQtyMap = new Map<string, number>();
+  for (const item of result.data.items) {
+    requestedQtyMap.set(item.product_id, (requestedQtyMap.get(item.product_id) || 0) + item.quantity);
+  }
+
+  for (const [prodId, reqQty] of requestedQtyMap.entries()) {
+    const product = productMap.get(prodId)!;
     if (!product.is_active) {
       return { error: `Product "${product.name}" is archived/inactive and cannot be sold.` };
     }
-
-    if ((product.stock_quantity || 0) < item.quantity) {
+    if ((product.stock_quantity || 0) < reqQty) {
       return {
-        error: `Insufficient stock for "${product.name}". Available: ${product.stock_quantity || 0}, requested: ${item.quantity}. Overselling is prevented.`,
+        error: `Insufficient stock for "${product.name}". Available: ${product.stock_quantity || 0}, requested: ${reqQty}. Overselling is prevented.`,
       };
     }
+  }
 
-    // IMEI validation
-    if (item.imei_record_id) {
-      if (checkedImeis.has(item.imei_record_id)) {
+  // Pre-verify all IMEIs in a SINGLE batch query
+  const imeiRecordIds = result.data.items
+    .map((i) => i.imei_record_id)
+    .filter((id): id is string => Boolean(id));
+
+  if (imeiRecordIds.length > 0) {
+    const checkedImeis = new Set<string>();
+    for (const imeiId of imeiRecordIds) {
+      if (checkedImeis.has(imeiId)) {
         return { error: 'Duplicate IMEI selected in the sale order items.' };
       }
-      checkedImeis.add(item.imei_record_id);
+      checkedImeis.add(imeiId);
+    }
 
-      const { data: imeiRecord } = await supabase
-        .from('imei_records')
-        .select('id, status, product_id, shop_id')
-        .eq('id', item.imei_record_id)
-        .eq('shop_id', user.shop_id!)
-        .single();
+    const { data: dbImeis, error: imeiErr } = await supabase
+      .from('imei_records')
+      .select('id, status, product_id, shop_id')
+      .in('id', imeiRecordIds)
+      .eq('shop_id', user.shop_id!);
 
-      if (!imeiRecord || imeiRecord.product_id !== item.product_id || imeiRecord.status !== 'in_stock') {
-        return {
-          error: `Selected IMEI for "${product.name}" is invalid, already sold, or assigned to another shop.`,
-        };
+    if (imeiErr || !dbImeis || dbImeis.length !== imeiRecordIds.length) {
+      return { error: 'One or more selected IMEIs are invalid or assigned to another shop.' };
+    }
+
+    const imeiMap = new Map(dbImeis.map((im) => [im.id, im]));
+    for (const item of result.data.items) {
+      if (item.imei_record_id) {
+        const imeiRecord = imeiMap.get(item.imei_record_id);
+        const product = productMap.get(item.product_id);
+        if (!imeiRecord || imeiRecord.product_id !== item.product_id || imeiRecord.status !== 'in_stock') {
+          return {
+            error: `Selected IMEI for "${product?.name || 'product'}" is invalid, already sold, or assigned to another shop.`,
+          };
+        }
       }
     }
   }
@@ -210,138 +235,153 @@ export async function createSale(payload: CreateSalePayload) {
     return { error: 'Failed to record sale transaction.' };
   }
 
-  // 7. ATOMIC INVENTORY REDUCTION & SALE ITEMS CREATION (Section 13)
-  const decrementedProducts: { productId: string; quantity: number }[] = [];
-  let saleAborted = false;
-  let abortReason = '';
-
-  for (const item of itemsWithPaisas) {
-    // 7a. Atomic stock decrement via PostgreSQL function
-    const { error: decError } = await supabase.rpc('decrement_product_stock', {
-      p_shop_id: user.shop_id,
-      p_product_id: item.product_id,
-      p_quantity: item.quantity,
-    });
-
-    if (decError) {
-      saleAborted = true;
-      abortReason = `Insufficient stock or concurrent checkout conflict for product.`;
-      break;
-    }
-
-    decrementedProducts.push({ productId: item.product_id, quantity: item.quantity });
-
-    // 7b. Insert sale line item
-    const { data: insertedItem, error: itemError } = await supabase
-      .from('sale_items')
-      .insert({
-        sale_id: sale.id,
-        product_id: item.product_id,
-        imei_record_id: item.imei_record_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        total_price: item.total_price,
+  // 7. CONCURRENT INVENTORY REDUCTION & BATCH SALE ITEMS CREATION (Section 13)
+  // 7a. Parallel atomic stock decrement via PostgreSQL function
+  const decrementPromises = Array.from(requestedQtyMap.entries()).map(([productId, quantity]) =>
+    supabase
+      .rpc('decrement_product_stock', {
+        p_shop_id: user.shop_id,
+        p_product_id: productId,
+        p_quantity: quantity,
       })
-      .select('id')
-      .single();
+      .then((res) => ({ productId, quantity, error: res.error }))
+  );
 
-    if (itemError || !insertedItem) {
-      saleAborted = true;
-      abortReason = `Failed to insert sale line item.`;
-      break;
+  const decResults = await Promise.all(decrementPromises);
+  const failedDec = decResults.find((r) => r.error);
+
+  if (failedDec) {
+    const successfulDecs = decResults.filter((r) => !r.error);
+    if (successfulDecs.length > 0) {
+      await Promise.all(
+        successfulDecs.map((s) =>
+          supabase.rpc('increment_product_stock', {
+            p_shop_id: user.shop_id,
+            p_product_id: s.productId,
+            p_quantity: s.quantity,
+          })
+        )
+      );
     }
+    await supabase.from('sales').delete().eq('id', sale.id).eq('shop_id', user.shop_id!);
+    return { error: 'Insufficient stock or concurrent checkout conflict for product.' };
+  }
 
-    // 7c. If item has IMEI, mark IMEI sold atomically
-    if (item.imei_record_id) {
-      const { error: imeiUpdateErr } = await supabase
+  // 7b. Single batch insert for all sale line items
+  const saleItemsPayload = itemsWithPaisas.map((item) => ({
+    sale_id: sale.id,
+    product_id: item.product_id,
+    imei_record_id: item.imei_record_id,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    total_price: item.total_price,
+  }));
+
+  const { data: insertedItems, error: itemsError } = await supabase
+    .from('sale_items')
+    .insert(saleItemsPayload)
+    .select('id, imei_record_id');
+
+  if (itemsError || !insertedItems) {
+    // Rollback stock decrement & sale header
+    await Promise.all(
+      Array.from(requestedQtyMap.entries()).map(([productId, quantity]) =>
+        supabase.rpc('increment_product_stock', {
+          p_shop_id: user.shop_id,
+          p_product_id: productId,
+          p_quantity: quantity,
+        })
+      )
+    );
+    await supabase.from('sales').delete().eq('id', sale.id).eq('shop_id', user.shop_id!);
+    return { error: 'Failed to record sale items.' };
+  }
+
+  // 7c. Concurrently mark IMEI records sold
+  const imeiItems = insertedItems.filter((it) => it.imei_record_id);
+  if (imeiItems.length > 0) {
+    const imeiUpdates = imeiItems.map((it) =>
+      supabase
         .from('imei_records')
         .update({
           status: 'sold',
-          sale_item_id: insertedItem.id,
+          sale_item_id: it.id,
         })
-        .eq('id', item.imei_record_id)
-        .eq('shop_id', user.shop_id!);
-
-      if (imeiUpdateErr) {
-        saleAborted = true;
-        abortReason = `Failed to update IMEI lifecycle status to sold.`;
-        break;
-      }
-    }
+        .eq('id', it.imei_record_id!)
+        .eq('shop_id', user.shop_id!)
+    );
+    await Promise.all(imeiUpdates);
   }
 
-  // 8. ROLLBACK IF SALE ABORTED (Atomicity Guarantee)
-  if (saleAborted) {
-    for (const dp of decrementedProducts) {
-      await supabase.rpc('increment_product_stock', {
-        p_shop_id: user.shop_id,
-        p_product_id: dp.productId,
-        p_quantity: dp.quantity,
-      });
-    }
+  // 8. PARALLEL POST-SALE RECORDING (Payments, Udhaar Ledger, and Audit Log)
+  const postSaleTasks: PromiseLike<unknown>[] = [];
 
-    await supabase.from('sales').delete().eq('id', sale.id).eq('shop_id', user.shop_id!);
-
-    return { error: `Sale transaction aborted for safety: ${abortReason}` };
-  }
-
-  // 9. If actualPaidPaisas > 0, record in payments table
+  // 8a. Payments table
   if (actualPaidPaisas > 0) {
-    await supabase.from('payments').insert({
-      shop_id: user.shop_id,
-      sale_id: sale.id,
-      customer_id: result.data.customer_id || null,
-      amount: actualPaidPaisas,
-      payment_method: result.data.payment_method,
-      payment_type: 'sale_payment',
-      reference: invoiceNumber,
-      notes: `POS payment for invoice ${invoiceNumber}`,
-      created_by: user.id,
-    });
+    postSaleTasks.push(
+      supabase.from('payments').insert({
+        shop_id: user.shop_id,
+        sale_id: sale.id,
+        customer_id: result.data.customer_id || null,
+        amount: actualPaidPaisas,
+        payment_method: result.data.payment_method,
+        payment_type: 'sale_payment',
+        reference: invoiceNumber,
+        notes: `POS payment for invoice ${invoiceNumber}`,
+        created_by: user.id,
+      })
+    );
   }
 
-  // 10. If amountDuePaisas > 0, record in Udhaar ledger
+  // 8b. Udhaar ledger (if amount_due > 0)
   if (amountDuePaisas > 0 && result.data.customer_id) {
-    const { data: latestUdhaar } = await supabase
-      .from('udhaar_ledger')
-      .select('balance_after')
-      .eq('shop_id', user.shop_id!)
-      .eq('customer_id', result.data.customer_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const recordUdhaar = async () => {
+      const { data: latestUdhaar } = await supabase
+        .from('udhaar_ledger')
+        .select('balance_after')
+        .eq('shop_id', user.shop_id!)
+        .eq('customer_id', result.data.customer_id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    const previousBalance = latestUdhaar?.balance_after || 0;
-    const newBalance = previousBalance + amountDuePaisas;
+      const previousBalance = latestUdhaar?.balance_after || 0;
+      const newBalance = previousBalance + amountDuePaisas;
 
-    await supabase.from('udhaar_ledger').insert({
-      shop_id: user.shop_id,
-      customer_id: result.data.customer_id,
-      sale_id: sale.id,
-      type: 'credit',
-      amount: amountDuePaisas,
-      balance_after: newBalance,
-      description: `Remaining balance for Invoice ${invoiceNumber}`,
-    });
+      return supabase.from('udhaar_ledger').insert({
+        shop_id: user.shop_id,
+        customer_id: result.data.customer_id,
+        sale_id: sale.id,
+        type: 'credit',
+        amount: amountDuePaisas,
+        balance_after: newBalance,
+        description: `Remaining balance for Invoice ${invoiceNumber}`,
+      });
+    };
+    postSaleTasks.push(recordUdhaar());
   }
 
-  // 11. Audit log
-  await supabase.from('audit_logs').insert({
-    shop_id: user.shop_id,
-    user_id: user.id,
-    action: 'sale_create',
-    entity_type: 'sale',
-    entity_id: sale.id,
-    metadata: {
-      invoice_number: invoiceNumber,
-      total_amount: totalAmountPaisas,
-      amount_paid: actualPaidPaisas,
-      amount_due: amountDuePaisas,
-      items_count: result.data.items.length,
-      customer_id: result.data.customer_id || null,
-      idempotency_key: result.data.idempotency_key || null,
-    },
-  });
+  // 8c. Audit log
+  postSaleTasks.push(
+    supabase.from('audit_logs').insert({
+      shop_id: user.shop_id,
+      user_id: user.id,
+      action: 'sale_create',
+      entity_type: 'sale',
+      entity_id: sale.id,
+      metadata: {
+        invoice_number: invoiceNumber,
+        total_amount: totalAmountPaisas,
+        amount_paid: actualPaidPaisas,
+        amount_due: amountDuePaisas,
+        items_count: result.data.items.length,
+        customer_id: result.data.customer_id || null,
+        idempotency_key: result.data.idempotency_key || null,
+      },
+    })
+  );
+
+  await Promise.all(postSaleTasks);
 
   revalidatePath('/sales');
   revalidatePath('/products');
@@ -383,28 +423,42 @@ export async function cancelSale(saleId: string) {
     return { error: 'This sale has already been cancelled.' };
   }
 
-  // 2. Revert product stock and IMEI records
-  if (sale.sale_items) {
-    for (const item of sale.sale_items) {
-      // Revert product stock atomically
-      await supabase.rpc('increment_product_stock', {
-        p_shop_id: user.shop_id,
-        p_product_id: item.product_id,
-        p_quantity: item.quantity,
-      });
+  // 2. Revert product stock and IMEI records concurrently in parallel
+  if (sale.sale_items && sale.sale_items.length > 0) {
+    const revertTasks: PromiseLike<unknown>[] = [];
 
-      // Restore IMEI lifecycle: sold -> in_stock
+    // Group items by product_id to increment stock in single RPC per product
+    const productRevertQty = new Map<string, number>();
+    for (const item of sale.sale_items) {
+      productRevertQty.set(
+        item.product_id,
+        (productRevertQty.get(item.product_id) || 0) + item.quantity
+      );
       if (item.imei_record_id) {
-        await supabase
-          .from('imei_records')
-          .update({
-            status: 'in_stock',
-            sale_item_id: null,
-          })
-          .eq('id', item.imei_record_id)
-          .eq('shop_id', user.shop_id!);
+        revertTasks.push(
+          supabase
+            .from('imei_records')
+            .update({
+              status: 'in_stock',
+              sale_item_id: null,
+            })
+            .eq('id', item.imei_record_id)
+            .eq('shop_id', user.shop_id!)
+        );
       }
     }
+
+    for (const [prodId, qty] of productRevertQty.entries()) {
+      revertTasks.push(
+        supabase.rpc('increment_product_stock', {
+          p_shop_id: user.shop_id,
+          p_product_id: prodId,
+          p_quantity: qty,
+        })
+      );
+    }
+
+    await Promise.all(revertTasks);
   }
 
   // 3. Revert udhaar if there was amount_due
