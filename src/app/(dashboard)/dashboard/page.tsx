@@ -156,5 +156,22 @@ export default async function DashboardPage() {
     }),
   };
 
-  return <DashboardContent metrics={metrics} userName={user.full_name} role={user.role} />;
+  // 8. Monthly Subscription Status (Current Month)
+  const currentMonthStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+  const { data: currentSubscription } = await supabase
+    .from('shop_subscriptions')
+    .select('*')
+    .eq('shop_id', user.shop_id!)
+    .eq('billing_month', currentMonthStr)
+    .maybeSingle();
+
+  return (
+    <DashboardContent
+      metrics={metrics}
+      userName={user.full_name}
+      role={user.role}
+      subscription={currentSubscription}
+    />
+  );
 }
+

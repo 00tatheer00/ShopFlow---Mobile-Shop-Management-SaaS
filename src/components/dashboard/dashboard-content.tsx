@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   TrendingUp,
   DollarSign,
@@ -11,32 +12,170 @@ import {
   Receipt,
   TrendingDown,
   ShoppingBag,
+  CreditCard,
+  CheckCircle2,
+  Info,
+  X,
 } from 'lucide-react';
-import type { DashboardMetrics, UserRole } from '@/lib/types';
-import { formatPKR } from '@/lib/types';
+import type { DashboardMetrics, UserRole, ShopSubscription } from '@/lib/types';
+import { formatPKR, toRupees } from '@/lib/types';
 
 interface DashboardContentProps {
   metrics: DashboardMetrics;
   userName: string;
   role: UserRole;
+  subscription?: ShopSubscription | null;
 }
 
-export function DashboardContent({ metrics, userName, role }: DashboardContentProps) {
+export function DashboardContent({ metrics, userName, role, subscription }: DashboardContentProps) {
+  const [showBankDetails, setShowBankDetails] = useState(false);
   const greeting = getGreeting();
   const firstName = userName.split(' ')[0];
   const isPrivileged = role === 'shop_owner' || role === 'manager';
+  const isOwner = role === 'shop_owner';
 
   return (
     <div className="space-y-6 lg:space-y-8">
-      {/* Greeting */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          {greeting}, {firstName} 👋
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Here&apos;s what&apos;s happening with your shop today.
-        </p>
+      {/* Greeting & Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            {greeting}, {firstName} 👋
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Here&apos;s what&apos;s happening with your shop today.
+          </p>
+        </div>
+
+        {/* Subscription Quick Badge for Owner */}
+        {isOwner && subscription && (
+          <div className="flex items-center gap-2">
+            {subscription.status === 'paid' ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                <span>{subscription.month_name} Active (Paid)</span>
+              </span>
+            ) : (
+              <button
+                onClick={() => setShowBankDetails(true)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition cursor-pointer"
+              >
+                <AlertTriangle className="h-3.5 w-3.5" />
+                <span>{subscription.month_name} Due (Rs. 6,500) &bull; Pay Now</span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Subscription Alert Banner if Unpaid */}
+      {isOwner && subscription && subscription.status !== 'paid' && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500 font-bold">
+              <CreditCard className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-foreground">
+                Monthly Subscription Due: Rs. {toRupees(subscription.amount).toLocaleString()} ({subscription.month_name})
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Due Date: {new Date(subscription.due_date).toLocaleDateString()}. Please send Rs. 6,500 to keep uninterrupted POS and inventory access.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowBankDetails(true)}
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 text-xs font-bold shadow-sm transition shrink-0"
+          >
+            <span>View Bank / EasyPaisa Details</span>
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Bank Details Modal */}
+      {showBankDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
+            <div className="flex items-center justify-between pb-4 border-b border-border">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                  <CreditCard className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">ShopFlow Subscription Payment</h3>
+                  <p className="text-xs text-muted-foreground">Official Accounts for Rs. 6,500 / month</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowBankDetails(false)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-accent"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Monthly Fee:</span>
+                  <span className="font-bold text-sm text-foreground font-mono">Rs. 6,500 / month</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Billing Month:</span>
+                  <span className="font-semibold text-foreground">{subscription?.month_name || 'Current Month'}</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-border bg-card space-y-2.5">
+                <div className="font-bold text-xs text-foreground uppercase tracking-wider text-[10px] text-muted-foreground">
+                  Online Bank Transfer (Recommended)
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-[11px]">Bank Name:</div>
+                  <div className="font-bold text-foreground">Meezan Bank Ltd</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-[11px]">Account Title:</div>
+                  <div className="font-bold text-foreground">ShopFlow Technologies SMC-Pvt Ltd</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-[11px]">Account Number:</div>
+                  <div className="font-mono font-bold text-foreground">02890108392101</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground text-[11px]">IBAN:</div>
+                  <div className="font-mono text-xs text-foreground">PK49MEZN0002890108392101</div>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl border border-border bg-card space-y-2">
+                <div className="font-bold text-xs text-foreground uppercase tracking-wider text-[10px] text-muted-foreground">
+                  Mobile Wallet (EasyPaisa / JazzCash)
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">EasyPaisa / JazzCash:</span>
+                  <span className="font-mono font-bold text-foreground">0300-1234567</span>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-primary text-[11px] leading-relaxed">
+                After transfer, send your receipt screenshot to WhatsApp <strong>0300-1234567</strong> or reply to your monthly email. Super Admin will approve your payment within 15 minutes.
+              </div>
+            </div>
+
+            <div className="mt-5 flex justify-end">
+              <button
+                onClick={() => setShowBankDetails(false)}
+                className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Primary KPI Cards Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

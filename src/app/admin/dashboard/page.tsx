@@ -11,8 +11,10 @@ import {
   ArrowRight,
   ShieldCheck,
   Calendar,
+  CreditCard,
 } from 'lucide-react';
 import type { Shop } from '@/lib/types';
+import { toRupees } from '@/lib/types';
 
 export const metadata: Metadata = {
   title: 'Platform Overview',
@@ -58,6 +60,18 @@ export default async function AdminDashboardPage() {
     `)
     .order('created_at', { ascending: false })
     .limit(6);
+
+  // 4. Fetch current month subscription summary (Rs. 6,500/month per shop)
+  const currentMonth = '2026-10';
+  const { data: monthSubs } = await supabase
+    .from('shop_subscriptions')
+    .select('amount, status')
+    .eq('billing_month', currentMonth);
+
+  const monthPaidList = monthSubs?.filter((s) => s.status === 'paid') || [];
+  const monthUnpaidList = monthSubs?.filter((s) => s.status === 'unpaid' || s.status === 'overdue') || [];
+  const monthCollected = monthPaidList.reduce((acc, curr) => acc + curr.amount, 0);
+  const monthPending = monthUnpaidList.reduce((acc, curr) => acc + curr.amount, 0);
 
   type OwnerInfo = { full_name: string; email: string } | null;
 
@@ -183,6 +197,48 @@ export default async function AdminDashboardPage() {
             <span className="text-3xl font-bold tracking-tight text-foreground">{deactivatedShops || 0}</span>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">Archived accounts (data preserved)</p>
+        </div>
+      </div>
+
+      {/* Monthly Subscription & Billing Status Card (Rs. 6,500/month) */}
+      <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-card p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
+              <CreditCard className="h-4 w-4" />
+            </span>
+            <h2 className="text-base font-bold text-foreground">Monthly Subscriptions (October 2026)</h2>
+            <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold">
+              Rs. 6,500 / month
+            </span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Track monthly fee approvals, pending shop transfers, and automated receipt emails.
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-6">
+          <div className="text-left md:text-right">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Collected This Month</div>
+            <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+              Rs. {toRupees(monthCollected).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">({monthPaidList.length} Paid)</span>
+            </div>
+          </div>
+
+          <div className="text-left md:text-right">
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Pending / Unpaid</div>
+            <div className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono">
+              Rs. {toRupees(monthPending).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">({monthUnpaidList.length} Pending)</span>
+            </div>
+          </div>
+
+          <Link
+            href="/admin/subscriptions"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm hover:bg-primary/90 transition"
+          >
+            <span>Manage Subscriptions</span>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       </div>
 

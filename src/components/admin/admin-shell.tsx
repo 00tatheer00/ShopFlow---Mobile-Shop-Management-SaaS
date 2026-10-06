@@ -12,6 +12,7 @@ import {
   X,
   LogOut,
   ShieldAlert,
+  CreditCard,
 } from 'lucide-react';
 import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
@@ -24,6 +25,7 @@ interface AdminShellProps {
 const navItems = [
   { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
   { label: 'Shops', href: '/admin/shops', icon: Store },
+  { label: 'Subscriptions (Rs 6,500)', href: '/admin/subscriptions', icon: CreditCard },
   { label: 'Create Shop', href: '/admin/shops/new', icon: PlusCircle },
   { label: 'Audit Logs', href: '/admin/settings', icon: ShieldCheck },
 ];

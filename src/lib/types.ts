@@ -81,6 +81,44 @@ export interface AdminDashboardMetrics {
   totalUsers: number;
 }
 
+export type SubscriptionStatus = 'unpaid' | 'paid' | 'overdue';
+
+export interface ShopSubscription {
+  id: string;
+  shop_id: string;
+  billing_month: string; // '2026-10'
+  month_name: string;   // 'October 2026'
+  amount: number;       // in paisas (650000 = Rs. 6,500)
+  status: SubscriptionStatus;
+  due_date: string;
+  paid_at?: string | null;
+  payment_method?: string | null;
+  reference_id?: string | null;
+  approved_by?: string | null;
+  approved_at?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+  shop?: Shop;
+  approved_by_user?: Profile;
+}
+
+export interface EmailLog {
+  id: string;
+  shop_id?: string | null;
+  subscription_id?: string | null;
+  recipient_email: string;
+  recipient_name?: string | null;
+  subject: string;
+  template_type: string;
+  content_html: string;
+  status: 'sent' | 'failed' | 'queued';
+  metadata?: Record<string, unknown> | null;
+  sent_by?: string | null;
+  created_at: string;
+  shop?: Shop;
+}
+
 // ---- User Entities ----
 
 export interface Profile {
