@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Store,
@@ -35,7 +35,22 @@ const navItems = [
 
 export function AdminShell({ user, children }: AdminShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const adminRoutes = ['/admin', '/admin/dashboard', '/admin/shops', '/admin/shops/new', '/admin/subscriptions', '/admin/settings'];
+    const timer = setTimeout(() => {
+      adminRoutes.forEach((route) => {
+        try {
+          router.prefetch(route);
+        } catch {
+          // Ignore
+        }
+      });
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [router]);
 
   const isActive = (href: string) => {
     if (href === '/admin/dashboard') {
@@ -96,6 +111,9 @@ export function AdminShell({ user, children }: AdminShellProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
+                onMouseEnter={() => router.prefetch(item.href)}
+                onTouchStart={() => router.prefetch(item.href)}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
                   active

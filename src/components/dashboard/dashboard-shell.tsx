@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -88,8 +88,37 @@ const navItems: NavItem[] = [
 
 export function DashboardShell({ user, children }: DashboardShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+
+  // Proactively warm frequent routes in background during browser idle time for 0ms transitions
+  useEffect(() => {
+    const routesToWarm = [
+      '/dashboard',
+      '/sales/new',
+      '/sales',
+      '/products',
+      '/purchases',
+      '/purchases/new',
+      '/expenses',
+      '/udhaar',
+      '/customers',
+      '/suppliers',
+      '/reports',
+      '/settings',
+    ];
+    const timer = setTimeout(() => {
+      routesToWarm.forEach((route) => {
+        try {
+          router.prefetch(route);
+        } catch {
+          // Ignore prefetch error
+        }
+      });
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [router]);
 
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
@@ -188,6 +217,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                         <Link
                           key={child.href}
                           href={child.href}
+                          prefetch={true}
+                          onMouseEnter={() => router.prefetch(child.href)}
+                          onTouchStart={() => router.prefetch(child.href)}
                           onClick={() => setSidebarOpen(false)}
                           className={`block rounded-md px-3 py-2 text-[13px] transition-colors duration-150 ${
                             pathname === child.href
@@ -208,6 +240,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
+                onMouseEnter={() => router.prefetch(item.href)}
+                onTouchStart={() => router.prefetch(item.href)}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                   active

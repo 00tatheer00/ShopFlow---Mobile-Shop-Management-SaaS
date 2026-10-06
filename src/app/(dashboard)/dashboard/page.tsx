@@ -80,7 +80,8 @@ export default async function DashboardPage() {
       .from('udhaar_ledger')
       .select('customer_id, balance_after, created_at')
       .eq('shop_id', user.shop_id!)
-      .order('created_at', { ascending: false }),
+      .order('created_at', { ascending: false })
+      .limit(300),
 
     // 6. Products & Stock
     supabase
