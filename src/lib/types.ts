@@ -27,6 +27,8 @@ export type AuditAction =
   | 'product_deleted'
   | 'payment_received'
   | 'expense_created'
+  | 'expense_updated'
+  | 'expense_deleted'
   | 'user_created'
   | 'user_updated'
   | 'user_deactivated'
@@ -302,6 +304,8 @@ export interface Expense {
   amount: number; // paisas
   description: string | null;
   expense_date: string;
+  payment_method?: PaymentMethod;
+  notes?: string | null;
   created_by: string;
   created_at: string;
   // Joined
@@ -348,10 +352,15 @@ export interface ShopSettings {
 
 export interface DashboardMetrics {
   today_sales: number;
-  today_profit: number;
+  today_profit: number; // Gross profit (Revenue - COGS)
   today_cash: number;
   total_udhaar: number;
   low_stock_count: number;
+  today_cogs?: number;
+  today_expenses?: number;
+  today_net_profit?: number;
+  today_sales_count?: number;
+  total_products?: number;
   recent_transactions: RecentTransaction[];
 }
 

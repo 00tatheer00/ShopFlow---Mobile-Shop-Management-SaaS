@@ -29,7 +29,8 @@ export default async function SalesPage(props: {
       customers(id, name, phone, address),
       sale_items(
         id, product_id, quantity, unit_price, total_price,
-        products(name, model)
+        products(name, model),
+        imei_records(imei_number)
       )
     `, { count: 'exact' })
     .eq('shop_id', user.shop_id!)
@@ -51,7 +52,7 @@ export default async function SalesPage(props: {
   // Aggregate Metrics (Revenue, Today's Count, Udhaar Due)
   const todayStr = new Date().toISOString().split('T')[0];
 
-  const [{ data: revenueData }, { data: todayData }] = await Promise.all([
+  const [{ data: revenueData }, { data: todayData }, { data: shop }] = await Promise.all([
     supabase
       .from('sales')
       .select('total_amount, amount_due')
@@ -62,6 +63,11 @@ export default async function SalesPage(props: {
       .select('id')
       .eq('shop_id', user.shop_id!)
       .gte('created_at', `${todayStr}T00:00:00Z`),
+    supabase
+      .from('shops')
+      .select('name, phone, address')
+      .eq('id', user.shop_id!)
+      .single(),
   ]);
 
   const totalRevenue = (revenueData || []).reduce((sum, s) => sum + (s.total_amount || 0), 0);
@@ -91,6 +97,7 @@ export default async function SalesPage(props: {
       unit_price: number;
       total_price: number;
       products?: { name: string; model: string | null } | null;
+      imei_records?: { imei_number: string } | null;
     }[]).map((item) => ({
       id: item.id,
       product_id: item.product_id,
@@ -98,6 +105,7 @@ export default async function SalesPage(props: {
       unit_price: item.unit_price,
       total_price: item.total_price,
       product: item.products || null,
+      imei: item.imei_records?.imei_number || null,
     })),
   }));
 
@@ -115,6 +123,9 @@ export default async function SalesPage(props: {
       totalCount={count || 0}
       search={search}
       statusFilter={status}
+      shopName={shop?.name || 'ShopFlow Mobile'}
+      shopPhone={shop?.phone || null}
+      shopAddress={shop?.address || null}
     />
   );
 }

@@ -142,9 +142,18 @@ export default function LoginPage() {
       </div>
 
       {/* Footer */}
-      <p className="mt-6 text-center text-xs text-muted-foreground">
-        ShopFlow — Mobile Shop Management
-      </p>
+      <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground">
+        <p>ShopFlow — Mobile Shop Management SaaS</p>
+        <div className="flex items-center gap-3">
+          <Link href="/privacy" className="hover:text-primary transition underline underline-offset-2">
+            Privacy Policy
+          </Link>
+          <span>&bull;</span>
+          <Link href="/terms" className="hover:text-primary transition underline underline-offset-2">
+            Terms of Service
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Plus,
@@ -14,6 +15,7 @@ import {
   ChevronRight,
   MessageCircle,
   FileText,
+  History,
   X,
 } from 'lucide-react';
 import type { Customer, UserRole } from '@/lib/types';
@@ -117,12 +119,22 @@ export function CustomersClient({
     });
   }
 
-  function getWhatsAppUrl(phone: string) {
+  function getWhatsAppUrl(phone: string, customerName?: string, udhaarBalance?: number) {
     let cleaned = phone.replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0')) {
       cleaned = '92' + cleaned.slice(1);
+    } else if (cleaned.length === 10 && cleaned.startsWith('3')) {
+      cleaned = '92' + cleaned;
     }
-    return `https://wa.me/${cleaned}`;
+    let url = `https://wa.me/${cleaned}`;
+    if (udhaarBalance && udhaarBalance > 0 && customerName) {
+      const amountStr = `Rs. ${Math.round(udhaarBalance / 100).toLocaleString()}`;
+      const msg = encodeURIComponent(
+        `Assalam-o-Alaikum ${customerName},\n\nAapke zimme hamari dukaan ka ${amountStr} baqaya (Udhaar) hai.\nBaraye meherbani jald az jald ada kijiye.\n\nShukriya!`
+      );
+      url += `?text=${msg}`;
+    }
+    return url;
   }
 
   return (
@@ -227,11 +239,11 @@ export function CustomersClient({
                         <div className="flex items-center gap-2">
                           <span className="font-mono text-xs text-foreground">{customer.phone}</span>
                           <a
-                            href={getWhatsAppUrl(customer.phone)}
+                            href={getWhatsAppUrl(customer.phone, customer.name, udhaar)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center justify-center rounded p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
-                            title="Chat on WhatsApp"
+                            title={udhaar > 0 ? "Send Udhaar reminder on WhatsApp" : "Chat on WhatsApp"}
                           >
                             <MessageCircle className="h-3.5 w-3.5" />
                           </a>
@@ -255,9 +267,13 @@ export function CustomersClient({
                       </td>
                       <td className="px-4 py-3.5 text-right font-medium">
                         {udhaar > 0 ? (
-                          <div className="inline-flex justify-end">
-                            <CurrencyDisplay amount={udhaar} isPaisas={false} variant="danger" size="xs" />
-                          </div>
+                          <Link
+                            href={`/udhaar?search=${encodeURIComponent(customer.name)}`}
+                            className="inline-flex justify-end hover:opacity-80 transition-opacity"
+                            title="View customer Udhaar transactions"
+                          >
+                            <CurrencyDisplay amount={udhaar} isPaisas={true} variant="danger" size="xs" />
+                          </Link>
                         ) : (
                           <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
                             Nil (Clear)
@@ -266,6 +282,13 @@ export function CustomersClient({
                       </td>
                       <td className="px-4 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
+                          <Link
+                            href={`/udhaar?search=${encodeURIComponent(customer.name)}`}
+                            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                            title="View Khata / Ledger History"
+                          >
+                            <History className="h-4 w-4" />
+                          </Link>
                           {canEdit && (
                             <button
                               onClick={() => {

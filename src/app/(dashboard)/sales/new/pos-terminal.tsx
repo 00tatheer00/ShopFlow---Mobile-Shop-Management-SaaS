@@ -31,6 +31,8 @@ interface PosTerminalProps {
   categories: ProductCategory[];
   brands: Brand[];
   shopName: string;
+  shopPhone?: string | null;
+  shopAddress?: string | null;
 }
 
 interface CartItem {
@@ -47,6 +49,8 @@ export function PosTerminal({
   categories,
   brands,
   shopName,
+  shopPhone,
+  shopAddress,
 }: PosTerminalProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -56,13 +60,16 @@ export function PosTerminal({
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
 
-  // Cart
+  // Cart & Transaction
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [amountPaid, setAmountPaid] = useState<number | ''>('');
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [notes, setNotes] = useState('');
+  const [txKey, setTxKey] = useState<string>(() =>
+    typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `tx_${Date.now()}_${Math.random()}`
+  );
 
   // Modals & Feedback
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -93,9 +100,11 @@ export function PosTerminal({
 
   // Cart Calculations
   const subtotal = cart.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
-  const total = Math.max(0, subtotal - (Number(discount) || 0));
+  const numDiscount = Number(discount) || 0;
+  const total = Math.max(0, subtotal - numDiscount);
   const effectivePaid = amountPaid === '' ? total : Number(amountPaid);
   const due = Math.max(0, total - effectivePaid);
+  const cashChange = paymentMethod === 'cash' && effectivePaid > total ? effectivePaid - total : 0;
 
   function addToCart(product: ProductWithStock, imei?: { id: string; imei_number: string }) {
     if (product.is_imei_tracked && !imei) {
@@ -184,6 +193,16 @@ export function PosTerminal({
       return;
     }
 
+    if (numDiscount > subtotal) {
+      setErrorMessage('Discount cannot exceed the order subtotal amount.');
+      return;
+    }
+
+    if (cart.some((it) => it.unit_price <= 0)) {
+      setErrorMessage('All item prices must be greater than zero.');
+      return;
+    }
+
     if (due > 0 && !selectedCustomerId) {
       setErrorMessage('Please select a customer for Udhaar sales (payment not made in full).');
       return;
@@ -199,10 +218,11 @@ export function PosTerminal({
         quantity: item.quantity,
         unit_price: item.unit_price,
       })),
-      discount: Number(discount) || 0,
+      discount: numDiscount,
       payment_method: paymentMethod,
       amount_paid: effectivePaid,
       notes: notes || undefined,
+      idempotency_key: txKey,
     };
 
     startTransition(async () => {
@@ -213,6 +233,8 @@ export function PosTerminal({
         const activeCust = customers.find((c) => c.id === selectedCustomerId);
         const receipt: ReceiptData = {
           shopName: shopName || 'ShopFlow Mobile',
+          shopPhone: shopPhone || null,
+          shopAddress: shopAddress || null,
           invoiceNumber: res.invoiceNumber || 'INV',
           date: new Date().toLocaleDateString('en-PK', {
             day: '2-digit',
@@ -232,9 +254,11 @@ export function PosTerminal({
             imei: item.imei_number || null,
           })),
           subtotal: Math.round(subtotal * 100),
-          discount: Math.round((Number(discount) || 0) * 100),
+          discount: Math.round(numDiscount * 100),
           totalAmount: Math.round(total * 100),
-          amountPaid: Math.round(effectivePaid * 100),
+          amountPaid: Math.round(Math.min(effectivePaid, total) * 100),
+          cashTendered: effectivePaid > total && paymentMethod === 'cash' ? Math.round(effectivePaid * 100) : undefined,
+          cashChange: cashChange > 0 ? Math.round(cashChange * 100) : undefined,
           amountDue: Math.round(due * 100),
           paymentMethod: paymentMethod.toUpperCase(),
         };
@@ -254,6 +278,9 @@ export function PosTerminal({
     setErrorMessage(null);
     setReceiptData(null);
     setShowReceipt(false);
+    setTxKey(
+      typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `tx_${Date.now()}_${Math.random()}`
+    );
     router.refresh();
   }
 
@@ -643,6 +670,13 @@ export function PosTerminal({
                 <div className="rounded-xl border border-rose-200 bg-rose-50/80 p-3 text-xs text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-400 flex justify-between items-center font-bold">
                   <span>Balance Due (Udhaar):</span>
                   <CurrencyDisplay amount={due * 100} isPaisas={true} variant="danger" size="sm" />
+                </div>
+              )}
+
+              {cashChange > 0 && paymentMethod === 'cash' && (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-xs text-emerald-800 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300 flex justify-between items-center font-bold">
+                  <span>Change to Return (Wapsi):</span>
+                  <CurrencyDisplay amount={cashChange * 100} isPaisas={true} variant="success" size="sm" />
                 </div>
               )}
             </div>

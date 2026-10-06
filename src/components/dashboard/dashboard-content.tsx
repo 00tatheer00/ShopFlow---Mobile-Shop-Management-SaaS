@@ -9,6 +9,8 @@ import {
   Package,
   Clock,
   Receipt,
+  TrendingDown,
+  ShoppingBag,
 } from 'lucide-react';
 import type { DashboardMetrics, UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
@@ -22,6 +24,7 @@ interface DashboardContentProps {
 export function DashboardContent({ metrics, userName, role }: DashboardContentProps) {
   const greeting = getGreeting();
   const firstName = userName.split(' ')[0];
+  const isPrivileged = role === 'shop_owner' || role === 'manager';
 
   return (
     <div className="space-y-6 lg:space-y-8">
@@ -35,7 +38,7 @@ export function DashboardContent({ metrics, userName, role }: DashboardContentPr
         </p>
       </div>
 
-      {/* Metric Cards */}
+      {/* Primary KPI Cards Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {/* Today's Sales */}
         <MetricCard
@@ -43,27 +46,35 @@ export function DashboardContent({ metrics, userName, role }: DashboardContentPr
           value={formatPKR(metrics.today_sales)}
           icon={TrendingUp}
           variant="sales"
-          subtitle={`${metrics.recent_transactions.length} transactions`}
+          subtitle={`${metrics.today_sales_count ?? 0} completed orders`}
         />
 
-        {/* Today's Profit */}
-        {(role === 'shop_owner' || role === 'manager') && (
+        {/* Today's Gross Profit (Owner/Manager Only) */}
+        {isPrivileged ? (
           <MetricCard
-            title="Est. Profit"
+            title="Gross Profit"
             value={formatPKR(metrics.today_profit)}
             icon={DollarSign}
             variant="profit"
-            subtitle="Today's estimated"
+            subtitle="Sales minus wholesale cost"
+          />
+        ) : (
+          <MetricCard
+            title="Catalog Items"
+            value={String(metrics.total_products ?? 0)}
+            icon={Package}
+            variant="sales"
+            subtitle="Total active products"
           />
         )}
 
-        {/* Today's Cash */}
+        {/* Cash Received */}
         <MetricCard
           title="Cash Received"
           value={formatPKR(metrics.today_cash)}
           icon={Banknote}
           variant="cash"
-          subtitle="Today's payments"
+          subtitle="Today's total payments"
         />
 
         {/* Total Udhaar */}
@@ -72,9 +83,60 @@ export function DashboardContent({ metrics, userName, role }: DashboardContentPr
           value={formatPKR(metrics.total_udhaar)}
           icon={Receipt}
           variant="udhaar"
-          subtitle="Outstanding balance"
+          subtitle="Customer credit balance"
         />
       </div>
+
+      {/* Secondary Financial Snapshot (Owner/Manager Only) */}
+      {isPrivileged && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Today's COGS */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider">Product Cost (COGS)</span>
+              <div className="rounded-lg bg-muted p-1.5 text-muted-foreground">
+                <ShoppingBag className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-2 text-xl font-bold text-foreground">
+              {formatPKR(metrics.today_cogs ?? 0)}
+            </div>
+            <p className="mt-0.5 text-xs text-muted-foreground">Wholesale cost of goods sold</p>
+          </div>
+
+          {/* Today's Expenses */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider">Today&apos;s Expenses</span>
+              <div className="rounded-lg bg-rose-500/10 p-1.5 text-rose-500">
+                <TrendingDown className="h-4 w-4" />
+              </div>
+            </div>
+            <div className="mt-2 text-xl font-bold text-rose-600 dark:text-rose-400">
+              {formatPKR(metrics.today_expenses ?? 0)}
+            </div>
+            <p className="mt-0.5 text-xs text-muted-foreground">Shop overheads & daily bills</p>
+          </div>
+
+          {/* Today's Net Profit */}
+          <div className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider">Net Profit</span>
+              <div className="rounded-lg bg-emerald-500/10 p-1.5 text-emerald-600 dark:text-emerald-400">
+                <DollarSign className="h-4 w-4" />
+              </div>
+            </div>
+            <div className={`mt-2 text-xl font-bold ${
+              (metrics.today_net_profit ?? 0) >= 0
+                ? 'text-emerald-600 dark:text-emerald-400'
+                : 'text-rose-600 dark:text-rose-400'
+            }`}>
+              {formatPKR(metrics.today_net_profit ?? 0)}
+            </div>
+            <p className="mt-0.5 text-xs text-muted-foreground">Gross profit minus expenses</p>
+          </div>
+        </div>
+      )}
 
       {/* Low Stock Alert */}
       {metrics.low_stock_count > 0 && (
@@ -137,7 +199,9 @@ export function DashboardContent({ metrics, userName, role }: DashboardContentPr
                     </p>
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-foreground tabular-nums ml-3">
+                <span className={`text-sm font-semibold tabular-nums ml-3 font-mono ${
+                  txn.amount === 0 ? 'text-muted-foreground line-through' : 'text-foreground'
+                }`}>
                   {formatPKR(txn.amount)}
                 </span>
               </div>

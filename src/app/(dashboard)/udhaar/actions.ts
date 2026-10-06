@@ -46,10 +46,10 @@ export async function recordUdhaarPayment(formData: FormData) {
 
   const supabase = await createClient();
 
-  // Verify customer belongs to shop
+  // 1. Verify customer belongs to shop
   const { data: customer } = await supabase
     .from('customers')
-    .select('id, is_active')
+    .select('id, name, is_active')
     .eq('id', result.data.customer_id)
     .eq('shop_id', user.shop_id!)
     .single();
@@ -59,11 +59,27 @@ export async function recordUdhaarPayment(formData: FormData) {
   }
 
   const amountPaisas = toPaisas(result.data.amount);
+  if (amountPaisas <= 0) {
+    return { error: 'Payment amount must be greater than zero.' };
+  }
 
+  // 2. Fetch authoritative outstanding balance
   const currentBalance = await getCustomerLatestBalance(supabase, user.shop_id!, result.data.customer_id);
-  const newBalance = Math.max(0, currentBalance - amountPaisas);
 
-  // 1. Insert into payments table
+  if (currentBalance <= 0) {
+    return { error: `Customer "${customer.name}" has no outstanding Udhaar balance to settle.` };
+  }
+
+  // 3. Reject overpayment safely (Test F requirement)
+  if (amountPaisas > currentBalance) {
+    return {
+      error: `Payment amount (Rs. ${(amountPaisas / 100).toLocaleString()}) cannot exceed the outstanding balance of Rs. ${(currentBalance / 100).toLocaleString()}.`,
+    };
+  }
+
+  const newBalance = currentBalance - amountPaisas;
+
+  // 4. Insert into payments table
   const { data: payment, error: paymentError } = await supabase
     .from('payments')
     .insert({
@@ -79,26 +95,50 @@ export async function recordUdhaarPayment(formData: FormData) {
     .select('id')
     .single();
 
-  if (paymentError) {
+  if (paymentError || !payment) {
     console.error('Payment insert error:', paymentError);
-    return { error: 'Failed to record payment.' };
+    return { error: 'Failed to record payment transaction.' };
   }
 
-  // 2. Insert into udhaar_ledger table
-  const { error: ledgerError } = await supabase.from('udhaar_ledger').insert({
-    shop_id: user.shop_id,
-    customer_id: result.data.customer_id,
-    payment_id: payment.id,
-    type: 'debit',
-    amount: amountPaisas,
-    balance_after: newBalance,
-    description: result.data.notes || `Udhaar recovery via ${result.data.payment_method}`,
-  });
+  // 5. Insert into udhaar_ledger table
+  const { data: ledgerEntry, error: ledgerError } = await supabase
+    .from('udhaar_ledger')
+    .insert({
+      shop_id: user.shop_id,
+      customer_id: result.data.customer_id,
+      payment_id: payment.id,
+      type: 'debit',
+      amount: amountPaisas,
+      balance_after: newBalance,
+      description: result.data.notes || `Udhaar recovery via ${result.data.payment_method}`,
+    })
+    .select('id')
+    .single();
 
   if (ledgerError) {
     console.error('Ledger insert error:', ledgerError);
-    return { error: 'Payment recorded, but ledger update failed.' };
+    // Rollback payment row to avoid orphaned financial records
+    await supabase.from('payments').delete().eq('id', payment.id).eq('shop_id', user.shop_id!);
+    return { error: 'Payment transaction failed while updating customer ledger.' };
   }
+
+  // 6. Audit log
+  await supabase.from('audit_logs').insert({
+    shop_id: user.shop_id,
+    user_id: user.id,
+    action: 'udhaar_payment',
+    entity_type: 'payment',
+    entity_id: payment.id,
+    metadata: {
+      customer_id: result.data.customer_id,
+      customer_name: customer.name,
+      amount: amountPaisas,
+      previous_balance: currentBalance,
+      balance_after: newBalance,
+      payment_method: result.data.payment_method,
+      ledger_id: ledgerEntry?.id,
+    },
+  });
 
   revalidatePath('/udhaar');
   revalidatePath('/customers');
@@ -134,7 +174,7 @@ export async function addManualUdhaarCredit(formData: FormData) {
   // Verify customer belongs to shop
   const { data: customer } = await supabase
     .from('customers')
-    .select('id, is_active')
+    .select('id, name, is_active')
     .eq('id', result.data.customer_id)
     .eq('shop_id', user.shop_id!)
     .single();
@@ -144,23 +184,43 @@ export async function addManualUdhaarCredit(formData: FormData) {
   }
 
   const amountPaisas = toPaisas(result.data.amount);
-
   const currentBalance = await getCustomerLatestBalance(supabase, user.shop_id!, result.data.customer_id);
   const newBalance = currentBalance + amountPaisas;
 
-  const { error } = await supabase.from('udhaar_ledger').insert({
-    shop_id: user.shop_id,
-    customer_id: result.data.customer_id,
-    type: 'credit',
-    amount: amountPaisas,
-    balance_after: newBalance,
-    description: result.data.description,
-  });
+  const { data: ledgerEntry, error } = await supabase
+    .from('udhaar_ledger')
+    .insert({
+      shop_id: user.shop_id,
+      customer_id: result.data.customer_id,
+      type: 'credit',
+      amount: amountPaisas,
+      balance_after: newBalance,
+      description: result.data.description,
+    })
+    .select('id')
+    .single();
 
   if (error) {
     console.error('Manual credit error:', error);
     return { error: 'Failed to add udhaar credit.' };
   }
+
+  // Audit log
+  await supabase.from('audit_logs').insert({
+    shop_id: user.shop_id,
+    user_id: user.id,
+    action: 'udhaar_credit_add',
+    entity_type: 'udhaar_ledger',
+    entity_id: ledgerEntry?.id,
+    metadata: {
+      customer_id: result.data.customer_id,
+      customer_name: customer.name,
+      amount: amountPaisas,
+      previous_balance: currentBalance,
+      balance_after: newBalance,
+      description: result.data.description,
+    },
+  });
 
   revalidatePath('/udhaar');
   revalidatePath('/customers');

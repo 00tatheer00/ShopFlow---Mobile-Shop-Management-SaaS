@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Printer, X, CheckCircle2 } from 'lucide-react';
 import { CurrencyDisplay } from './currency-display';
 
@@ -28,6 +28,8 @@ export interface ReceiptData {
   amountPaid: number; // in paisas
   amountDue: number; // in paisas
   paymentMethod: string;
+  cashTendered?: number; // in paisas
+  cashChange?: number; // in paisas
 }
 
 interface ReceiptModalProps {
@@ -37,6 +39,8 @@ interface ReceiptModalProps {
 }
 
 export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
+  const [thermalFormat, setThermalFormat] = useState<'80mm' | '58mm'>('80mm');
+
   React.useEffect(() => {
     if (!open) return;
     function handleKeyDown(e: KeyboardEvent) {
@@ -61,32 +65,64 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-sm rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150">
+      <div className={`w-full ${thermalFormat === '58mm' ? 'max-w-xs' : 'max-w-sm'} rounded-2xl border border-border bg-card shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150`}>
         {/* Top Modal Controls (Hidden when printing) */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3 bg-muted/40 print:hidden">
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
             <CheckCircle2 className="h-4 w-4" />
-            <span>Sale Completed Successfully</span>
+            <span>Sale Receipt</span>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          >
-            <X className="h-4 w-4" />
-          </button>
+
+          <div className="flex items-center gap-2">
+            {/* 80mm / 58mm Thermal Size Toggle */}
+            <div className="flex rounded-lg border border-border bg-background p-0.5 text-[10px] font-semibold">
+              <button
+                type="button"
+                onClick={() => setThermalFormat('80mm')}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  thermalFormat === '80mm'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                80mm
+              </button>
+              <button
+                type="button"
+                onClick={() => setThermalFormat('58mm')}
+                className={`rounded px-1.5 py-0.5 transition-colors ${
+                  thermalFormat === '58mm'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                58mm
+              </button>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
-        {/* Thermal Receipt Printable Area (Standard 80mm format) */}
-        <div id="thermal-receipt" className="p-6 overflow-y-auto font-mono text-xs text-foreground bg-white text-black space-y-4">
+        {/* Thermal Receipt Printable Area */}
+        <div
+          id="thermal-receipt"
+          className={`format-${thermalFormat} p-5 overflow-y-auto font-mono text-xs bg-white text-black space-y-3.5`}
+        >
           {/* Header */}
-          <div className="text-center space-y-1 border-b border-dashed border-gray-300 pb-3">
+          <div className="text-center space-y-0.5 border-b border-dashed border-gray-300 pb-2.5">
             <h2 className="text-base font-bold uppercase tracking-wider font-sans">{data.shopName}</h2>
-            {data.shopAddress && <p className="text-[11px] text-gray-600">{data.shopAddress}</p>}
-            {data.shopPhone && <p className="text-[11px] text-gray-600">Tel: {data.shopPhone}</p>}
+            {data.shopAddress && <p className="text-[10px] text-gray-600">{data.shopAddress}</p>}
+            {data.shopPhone && <p className="text-[10px] text-gray-600">Tel: {data.shopPhone}</p>}
           </div>
 
           {/* Invoice Meta */}
-          <div className="space-y-1 text-[11px] border-b border-dashed border-gray-300 pb-3">
+          <div className="space-y-1 text-[11px] border-b border-dashed border-gray-300 pb-2.5">
             <div className="flex justify-between">
               <span className="text-gray-600">Invoice:</span>
               <span className="font-bold">{data.invoiceNumber}</span>
@@ -110,7 +146,7 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
           </div>
 
           {/* Line Items */}
-          <div className="space-y-2 border-b border-dashed border-gray-300 pb-3">
+          <div className="space-y-2 border-b border-dashed border-gray-300 pb-2.5">
             <div className="flex justify-between font-bold text-[11px] text-gray-700">
               <span>Item</span>
               <span>Total</span>
@@ -132,13 +168,13 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
           </div>
 
           {/* Totals & Payments */}
-          <div className="space-y-1.5 text-[11px] border-b border-dashed border-gray-300 pb-3">
+          <div className="space-y-1 text-[11px] border-b border-dashed border-gray-300 pb-2.5">
             <div className="flex justify-between">
               <span className="text-gray-600">Subtotal:</span>
               <CurrencyDisplay amount={data.subtotal} isPaisas={true} size="xs" />
             </div>
             {data.discount > 0 && (
-              <div className="flex justify-between text-emerald-600">
+              <div className="flex justify-between text-emerald-700">
                 <span>Discount:</span>
                 <span>- Rs. {Math.round(data.discount / 100).toLocaleString('en-PK')}</span>
               </div>
@@ -151,6 +187,25 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
               <span className="text-gray-600">Paid ({data.paymentMethod}):</span>
               <CurrencyDisplay amount={data.amountPaid} isPaisas={true} size="xs" />
             </div>
+
+            {/* Cash Change Returned if customer paid excess cash (Section 12) */}
+            {data.cashChange && data.cashChange > 0 ? (
+              <>
+                <div className="flex justify-between text-gray-600">
+                  <span>Cash Handed Over:</span>
+                  <CurrencyDisplay
+                    amount={data.cashTendered || (data.amountPaid + data.cashChange)}
+                    isPaisas={true}
+                    size="xs"
+                  />
+                </div>
+                <div className="flex justify-between font-bold text-emerald-700">
+                  <span>Change Returned (Wapsi):</span>
+                  <CurrencyDisplay amount={data.cashChange} isPaisas={true} size="xs" variant="success" />
+                </div>
+              </>
+            ) : null}
+
             {data.amountDue > 0 && (
               <div className="flex justify-between font-bold text-red-600 bg-red-50 p-1.5 rounded">
                 <span>Balance Due (Udhaar):</span>
@@ -160,9 +215,9 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
           </div>
 
           {/* Footer Note */}
-          <div className="text-center text-[10px] text-gray-500 space-y-1 pt-1">
+          <div className="text-center text-[10px] text-gray-500 space-y-0.5 pt-1">
             <p>Thank you for shopping with us!</p>
-            <p className="text-[9px] text-gray-400">Powered by ShopFlow SaaS</p>
+            <p className="text-[9px] text-gray-400">Powered by ShopFlow Mobile SaaS</p>
           </div>
         </div>
 
@@ -181,7 +236,7 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
             className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-3.5 py-2.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/90 transition-colors"
           >
             <Printer className="h-4 w-4" />
-            <span>Print Receipt</span>
+            <span>Print {thermalFormat}</span>
           </button>
         </div>
       </div>

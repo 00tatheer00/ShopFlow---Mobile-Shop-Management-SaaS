@@ -42,7 +42,7 @@ export default async function NewSalePage() {
       .order('name'),
     supabase
       .from('shops')
-      .select('name')
+      .select('name, phone, address')
       .eq('id', user.shop_id!)
       .single(),
   ]);
@@ -61,6 +61,8 @@ export default async function NewSalePage() {
       categories={categories || []}
       brands={brands || []}
       shopName={shop?.name || 'Mobile Shop'}
+      shopPhone={shop?.phone || null}
+      shopAddress={shop?.address || null}
     />
   );
 }

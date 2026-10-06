@@ -86,11 +86,43 @@ export const brandSchema = z.object({
   name: z.string().min(1, 'Brand name is required').max(100),
 });
 
+// ---- Phone Normalization ----
+
+/**
+ * Normalize Pakistani phone numbers to canonical format: 03XXXXXXXXX
+ * Handles: 03001234567, +923001234567, 923001234567, 3001234567
+ * Returns the normalized string, or the original if it doesn't match PK patterns.
+ */
+export function normalizePhone(raw: string): string {
+  if (!raw) return raw;
+  // Strip everything except digits
+  let digits = raw.replace(/[^0-9]/g, '');
+
+  // Handle +92 / 92 prefix (12 digits total)
+  if (digits.length === 12 && digits.startsWith('92')) {
+    digits = '0' + digits.slice(2);
+  }
+
+  // Handle 10 digits without leading 0 (e.g. 3001234567)
+  if (digits.length === 10 && digits.startsWith('3')) {
+    digits = '0' + digits;
+  }
+
+  return digits;
+}
+
 // ---- Customer ----
 
 export const customerSchema = z.object({
   name: z.string().min(1, 'Customer name is required').max(100),
-  phone: z.string().min(1, 'Phone number is required').max(20),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .max(20)
+    .transform(normalizePhone)
+    .refine(
+      (val) => /^\d{10,12}$/.test(val),
+      'Please enter a valid phone number (e.g. 03001234567)'
+    ),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   address: z.string().max(255).optional().or(z.literal('')),
   notes: z.string().max(500).optional().or(z.literal('')),
@@ -100,7 +132,15 @@ export const customerSchema = z.object({
 
 export const supplierSchema = z.object({
   name: z.string().min(1, 'Supplier name is required').max(100),
-  phone: z.string().max(20).optional().or(z.literal('')),
+  phone: z.string()
+    .max(20)
+    .optional()
+    .or(z.literal(''))
+    .transform((val) => (val ? normalizePhone(val) : val))
+    .refine(
+      (val) => !val || /^\d{10,12}$/.test(val),
+      'Please enter a valid phone number (e.g. 03001234567)'
+    ),
   company: z.string().max(100).optional().or(z.literal('')),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
   address: z.string().max(255).optional().or(z.literal('')),
@@ -113,16 +153,25 @@ export const saleItemSchema = z.object({
   product_id: z.string().uuid('Product is required'),
   imei_record_id: z.string().uuid().optional().or(z.literal('')),
   quantity: z.number().int().min(1, 'Quantity must be at least 1'),
-  unit_price: z.number().min(0, 'Price must be 0 or more'),
+  unit_price: z.number().min(1, 'Price must be greater than zero'),
 });
 
 export const createSaleSchema = z.object({
   customer_id: z.string().uuid().optional().or(z.literal('')),
   items: z.array(saleItemSchema).min(1, 'At least one product is required'),
-  discount: z.number().min(0).optional().default(0),
+  discount: z.number().min(0, 'Discount cannot be negative').optional().default(0),
   payment_method: z.enum(['cash', 'bank_transfer', 'easypaisa', 'jazzcash', 'other']),
   amount_paid: z.number().min(0, 'Payment amount must be 0 or more'),
   notes: z.string().max(500).optional().or(z.literal('')),
+  idempotency_key: z.string().max(100).optional().or(z.literal('')),
+}).refine((data) => {
+  const imeis = data.items
+    .map((it) => it.imei_record_id)
+    .filter((id): id is string => Boolean(id));
+  return new Set(imeis).size === imeis.length;
+}, {
+  message: 'Duplicate IMEI selected in cart.',
+  path: ['items'],
 });
 
 // ---- IMEI Helpers & Validation ----
@@ -248,15 +297,30 @@ export const recordPaymentSchema = z.object({
   payment_method: z.enum(['cash', 'bank_transfer', 'easypaisa', 'jazzcash', 'other']),
   reference: z.string().max(100).optional().or(z.literal('')),
   notes: z.string().max(500).optional().or(z.literal('')),
+  // max_allowed is provided server-side to validate overpayment;
+  // not sent from client (server calculates it)
+  max_allowed: z.number().min(0).optional(),
 });
 
 // ---- Expense ----
 
 export const expenseSchema = z.object({
   category_id: z.string().uuid().optional().or(z.literal('')),
-  amount: z.number().min(1, 'Amount must be greater than 0'),
+  amount: z.number().positive('Amount must be greater than 0'),
   description: z.string().max(500).optional().or(z.literal('')),
   expense_date: z.string().min(1, 'Date is required'),
+  payment_method: z.enum(['cash', 'bank_transfer', 'easypaisa', 'jazzcash', 'other']).default('cash'),
+  notes: z.string().max(500).optional().or(z.literal('')),
+});
+
+export const updateExpenseSchema = z.object({
+  id: z.string().uuid('Valid expense ID required'),
+  category_id: z.string().uuid().optional().or(z.literal('')),
+  amount: z.number().positive('Amount must be greater than 0'),
+  description: z.string().max(500).optional().or(z.literal('')),
+  expense_date: z.string().min(1, 'Date is required'),
+  payment_method: z.enum(['cash', 'bank_transfer', 'easypaisa', 'jazzcash', 'other']).default('cash'),
+  notes: z.string().max(500).optional().or(z.literal('')),
 });
 
 export const expenseCategorySchema = z.object({

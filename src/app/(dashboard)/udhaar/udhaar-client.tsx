@@ -99,6 +99,8 @@ export function UdhaarClient({
     let cleaned = customer.phone.replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0')) {
       cleaned = '92' + cleaned.slice(1);
+    } else if (cleaned.length === 10 && cleaned.startsWith('3')) {
+      cleaned = '92' + cleaned;
     }
     const amountStr = formatPKR(customer.udhaar_balance);
     const message = encodeURIComponent(

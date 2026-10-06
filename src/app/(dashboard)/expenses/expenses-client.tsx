@@ -13,10 +13,12 @@ import {
   Tag,
   X,
   FileText,
+  Pencil,
+  CreditCard,
 } from 'lucide-react';
 import type { Expense, ExpenseCategory, UserRole } from '@/lib/types';
-import { formatPKR } from '@/lib/types';
-import { createExpense, deleteExpense, createExpenseCategory } from './actions';
+import { formatPKR, toRupees } from '@/lib/types';
+import { createExpense, updateExpense, deleteExpense, createExpenseCategory } from './actions';
 import { hasPermission } from '@/lib/permissions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 
@@ -49,11 +51,12 @@ export function ExpensesClient({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddCatModalOpen, setIsAddCatModalOpen] = useState(false);
   const [newCatName, setNewCatName] = useState('');
+  const [expenseToEdit, setExpenseToEdit] = useState<(Expense & { category?: ExpenseCategory | null }) | null>(null);
   const [expenseToDelete, setExpenseToDelete] = useState<(Expense & { category?: ExpenseCategory | null }) | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
   const canCreate = hasPermission(userRole, 'expenses:create');
-  const canDelete = userRole === 'shop_owner' || userRole === 'manager';
+  const canManage = userRole === 'shop_owner' || userRole === 'manager';
 
   function handleFilterCategory(catId: string) {
     const params = new URLSearchParams();
@@ -80,6 +83,22 @@ export function ExpensesClient({
         setFormError(res.error);
       } else {
         setIsAddModalOpen(false);
+        router.refresh();
+      }
+    });
+  }
+
+  async function handleUpdate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setFormError(null);
+    const formData = new FormData(e.currentTarget);
+
+    startTransition(async () => {
+      const res = await updateExpense(formData);
+      if (res.error) {
+        setFormError(res.error);
+      } else {
+        setExpenseToEdit(null);
         router.refresh();
       }
     });
@@ -222,7 +241,10 @@ export function ExpensesClient({
           </p>
           {canCreate && !selectedCategory && (
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                setFormError(null);
+                setIsAddModalOpen(true);
+              }}
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
             >
               <Plus className="h-4 w-4" />
@@ -239,8 +261,9 @@ export function ExpensesClient({
                   <th className="px-4 py-3 font-semibold">Date</th>
                   <th className="px-4 py-3 font-semibold">Category</th>
                   <th className="px-4 py-3 font-semibold">Description</th>
+                  <th className="px-4 py-3 font-semibold">Method</th>
                   <th className="px-4 py-3 font-semibold text-right">Amount</th>
-                  {canDelete && <th className="px-4 py-3 font-semibold text-right">Action</th>}
+                  {canManage && <th className="px-4 py-3 font-semibold text-right">Actions</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -255,27 +278,52 @@ export function ExpensesClient({
                       </span>
                     </td>
                     <td className="px-4 py-3.5 text-xs text-foreground">
-                      {expense.description ? (
-                        <div className="flex items-center gap-1.5">
-                          <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          <span>{expense.description}</span>
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
+                      <div className="space-y-0.5">
+                        {expense.description ? (
+                          <div className="flex items-center gap-1.5 font-medium">
+                            <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            <span>{expense.description}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground/50">—</span>
+                        )}
+                        {expense.notes && (
+                          <div className="text-[11px] text-muted-foreground pl-5">
+                            Note: {expense.notes}
+                          </div>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-4 py-3.5 text-right font-semibold text-rose-600 dark:text-rose-400">
+                    <td className="px-4 py-3.5 text-xs">
+                      <span className="inline-flex items-center gap-1 rounded bg-muted/60 px-2 py-0.5 font-mono text-[11px] text-muted-foreground uppercase">
+                        <CreditCard className="h-3 w-3" />
+                        {expense.payment_method?.replace('_', ' ') || 'cash'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-right font-semibold text-rose-600 dark:text-rose-400 font-mono">
                       -{formatPKR(expense.amount)}
                     </td>
-                    {canDelete && (
-                      <td className="px-4 py-3.5 text-right">
-                        <button
-                          onClick={() => setExpenseToDelete(expense)}
-                          className="rounded p-1.5 text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30 transition-colors"
-                          title="Delete Expense"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                    {canManage && (
+                      <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setFormError(null);
+                              setExpenseToEdit(expense);
+                            }}
+                            className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            title="Edit Expense"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => setExpenseToDelete(expense)}
+                            className="rounded p-1.5 text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30 transition-colors"
+                            title="Delete Expense"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -343,7 +391,7 @@ export function ExpensesClient({
                   step="any"
                   required
                   placeholder="e.g. 1500"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
                 />
               </div>
 
@@ -364,27 +412,58 @@ export function ExpensesClient({
                 </select>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Date <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="expense_date"
+                    required
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Payment Method
+                  </label>
+                  <select
+                    name="payment_method"
+                    defaultValue="cash"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="easypaisa">EasyPaisa</option>
+                    <option value="jazzcash">JazzCash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
-                  Date <span className="text-rose-500">*</span>
+                  Description
                 </label>
                 <input
-                  type="date"
-                  name="expense_date"
-                  required
-                  defaultValue={new Date().toISOString().split('T')[0]}
+                  type="text"
+                  name="description"
+                  placeholder="e.g. Tea & snacks, Electricity bill, Cleaning..."
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-foreground mb-1">
-                  Description / Note
+                  Optional Notes
                 </label>
                 <textarea
-                  name="description"
+                  name="notes"
                   rows={2}
-                  placeholder="e.g. Tea for customers, electricity bill, shop cleaning..."
+                  placeholder="e.g. Bill reference # 491823, paid to landlord..."
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
@@ -403,6 +482,141 @@ export function ExpensesClient({
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isPending ? 'Saving...' : 'Record Expense'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Expense Modal */}
+      {expenseToEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h2 className="text-lg font-bold text-foreground">Edit Expense</h2>
+              <button
+                onClick={() => setExpenseToEdit(null)}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-400">
+                {formError}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdate} className="mt-4 space-y-4">
+              <input type="hidden" name="id" value={expenseToEdit.id} />
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Amount (PKR) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="amount"
+                  min="1"
+                  step="any"
+                  required
+                  defaultValue={toRupees(expenseToEdit.amount)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Category
+                </label>
+                <select
+                  name="category_id"
+                  defaultValue={expenseToEdit.category_id || ''}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="">General / Uncategorized</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Date <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    name="expense_date"
+                    required
+                    defaultValue={expenseToEdit.expense_date}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Payment Method
+                  </label>
+                  <select
+                    name="payment_method"
+                    defaultValue={expenseToEdit.payment_method || 'cash'}
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="easypaisa">EasyPaisa</option>
+                    <option value="jazzcash">JazzCash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Description
+                </label>
+                <input
+                  type="text"
+                  name="description"
+                  defaultValue={expenseToEdit.description || ''}
+                  placeholder="e.g. Tea & snacks, Electricity bill..."
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Optional Notes
+                </label>
+                <textarea
+                  name="notes"
+                  rows={2}
+                  defaultValue={expenseToEdit.notes || ''}
+                  placeholder="e.g. Additional remarks or receipt voucher..."
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => setExpenseToEdit(null)}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {isPending ? 'Updating...' : 'Save Changes'}
                 </button>
               </div>
             </form>
@@ -468,7 +682,7 @@ export function ExpensesClient({
           if (expenseToDelete) executeDelete(expenseToDelete);
         }}
         title="Delete Expense Record?"
-        description={`Are you sure you want to delete this expense record of ${expenseToDelete ? formatPKR(expenseToDelete.amount) : ''} (${expenseToDelete?.category?.name || 'General'})?`}
+        description={`Are you sure you want to delete this expense record of ${expenseToDelete ? formatPKR(expenseToDelete.amount) : ''} (${expenseToDelete?.category?.name || 'General'})? This will be removed from financial outflow totals.`}
         confirmLabel="Delete Expense"
         variant="danger"
         loading={isPending}

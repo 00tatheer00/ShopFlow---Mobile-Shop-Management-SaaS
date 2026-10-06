@@ -28,7 +28,7 @@ export default async function ExpensesPage(props: {
   let query = supabase
     .from('expenses')
     .select(`
-      id, shop_id, category_id, amount, description, expense_date, created_by, created_at,
+      id, shop_id, category_id, amount, description, expense_date, payment_method, notes, created_by, created_at,
       expense_categories(id, name)
     `, { count: 'exact' })
     .eq('shop_id', user.shop_id!)
@@ -71,6 +71,8 @@ export default async function ExpensesPage(props: {
     amount: exp.amount,
     description: exp.description,
     expense_date: exp.expense_date,
+    payment_method: exp.payment_method,
+    notes: exp.notes,
     created_by: exp.created_by,
     created_at: exp.created_at,
     category: (exp.expense_categories as unknown as ExpenseCategory) || undefined,

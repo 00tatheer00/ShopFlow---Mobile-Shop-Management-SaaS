@@ -254,7 +254,7 @@
   }
 }
 
-/* 80mm Thermal Receipt Print Rules */
+/* 80mm and 58mm Thermal Receipt Print Rules */
 @media print {
   body * {
     visibility: hidden;
@@ -267,11 +267,21 @@
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm;
     margin: 0;
-    padding: 4mm;
+    padding: 3mm;
     background: #ffffff !important;
     color: #000000 !important;
     box-shadow: none !important;
+  }
+  #thermal-receipt.format-80mm {
+    width: 80mm;
+    max-width: 80mm;
+    font-size: 11px;
+  }
+  #thermal-receipt.format-58mm {
+    width: 58mm;
+    max-width: 58mm;
+    padding: 2mm;
+    font-size: 9.5px;
   }
 }

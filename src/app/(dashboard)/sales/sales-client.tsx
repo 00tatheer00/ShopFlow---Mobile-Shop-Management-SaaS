@@ -30,6 +30,7 @@ interface SaleWithRelations extends Sale {
     unit_price: number;
     total_price: number;
     product?: { name: string; model: string | null } | null;
+    imei?: string | null;
   }[];
 }
 
@@ -44,6 +45,9 @@ interface SalesClientProps {
   totalCount: number;
   search: string;
   statusFilter: string;
+  shopName?: string;
+  shopPhone?: string | null;
+  shopAddress?: string | null;
 }
 
 export function SalesClient({
@@ -57,6 +61,9 @@ export function SalesClient({
   totalCount,
   search: initialSearch,
   statusFilter,
+  shopName,
+  shopPhone,
+  shopAddress,
 }: SalesClientProps) {
   const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
@@ -106,7 +113,9 @@ export function SalesClient({
 
   function openReceipt(sale: SaleWithRelations) {
     const data: ReceiptData = {
-      shopName: 'ShopFlow Mobile',
+      shopName: shopName || 'ShopFlow Mobile',
+      shopPhone: shopPhone || null,
+      shopAddress: shopAddress || null,
       invoiceNumber: sale.invoice_number,
       date: new Date(sale.created_at).toLocaleString('en-PK', {
         day: '2-digit',
@@ -123,7 +132,7 @@ export function SalesClient({
         quantity: item.quantity,
         unit_price: item.unit_price,
         total_price: item.total_price,
-        imei: null,
+        imei: item.imei || null,
       })),
       subtotal: sale.subtotal,
       discount: sale.discount,

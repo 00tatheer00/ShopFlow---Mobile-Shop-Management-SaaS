@@ -10,56 +10,123 @@ import {
   Wallet,
   ShoppingBag,
   PieChart,
+  Package,
+  Truck,
+  Ban,
+  Tag,
+  AlertTriangle,
 } from 'lucide-react';
+import type { UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
+
+interface ProductInventoryItem {
+  id: string;
+  name: string;
+  model: string | null;
+  stock_quantity: number;
+  low_stock_threshold: number;
+  purchase_price: number;
+  sale_price: number;
+  is_imei_tracked: boolean;
+}
+
+interface ExpenseRow {
+  id: string;
+  amount: number;
+  expense_date: string;
+  payment_method: string | null;
+  description: string | null;
+  notes: string | null;
+  expense_categories?: { name: string } | null;
+}
 
 interface ReportsClientProps {
   dateRange: string;
+  activeTab: string;
+  userRole: UserRole;
   totalRevenue: number;
+  totalDiscounts: number;
+  totalCollected: number;
+  totalUdhaar: number;
+  salesCount: number;
+  cancelledCount: number;
+  cancelledTotal: number;
   cogs: number;
   grossProfit: number;
   totalExpenses: number;
   netProfit: number;
-  totalUdhaar: number;
-  salesCount: number;
+  totalPurchases: number;
+  purchasesCount: number;
+  supplierStats: { name: string; total: number; count: number }[];
+  totalInventoryCostValuation: number;
+  totalPotentialRetailValuation: number;
+  totalStockQuantity: number;
+  lowStockCount: number;
+  inStockImeiCount: number;
+  products: ProductInventoryItem[];
   paymentMethodStats: { method: string; total: number; count: number }[];
   topProducts: { name: string; model: string | null; quantity: number; revenue: number }[];
   expenseCategories: { name: string; amount: number }[];
+  recentExpenses: ExpenseRow[];
 }
 
 export function ReportsClient({
   dateRange,
+  activeTab,
+  userRole,
   totalRevenue,
+  totalDiscounts,
+  totalCollected,
+  totalUdhaar,
+  salesCount,
+  cancelledCount,
+  cancelledTotal,
   cogs,
   grossProfit,
   totalExpenses,
   netProfit,
-  totalUdhaar,
-  salesCount,
+  totalPurchases,
+  purchasesCount,
+  supplierStats,
+  totalInventoryCostValuation,
+  totalPotentialRetailValuation,
+  totalStockQuantity,
+  lowStockCount,
+  inStockImeiCount,
+  products,
   paymentMethodStats,
   topProducts,
   expenseCategories,
+  recentExpenses,
 }: ReportsClientProps) {
   const router = useRouter();
 
-  function handleRangeChange(range: string) {
-    router.push(`/reports?range=${range}`);
+  const isPrivileged = userRole === 'shop_owner' || userRole === 'manager';
+  const isNetPositive = netProfit >= 0;
+
+  function updateQuery(range: string, tab: string) {
+    const params = new URLSearchParams();
+    if (range) params.set('range', range);
+    if (tab) params.set('tab', tab);
+    router.push(`/reports?${params.toString()}`);
   }
 
-  const isNetPositive = netProfit >= 0;
+  const grossMarginPct = totalRevenue > 0 ? ((grossProfit / totalRevenue) * 100).toFixed(1) : '0';
+  const netMarginPct = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0';
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Financial & Sales Reports</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
           <p className="text-sm text-muted-foreground">
-            Complete business analytics, profit & loss statement, inventory sales, and expense breakdown.
+            Authoritative business intelligence, Profit & Loss, sales, inventory valuation, and expenses.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Date Range Selector */}
           <div className="flex rounded-lg border border-border bg-card p-1">
             {[
               { id: 'today', label: 'Today' },
@@ -69,7 +136,7 @@ export function ReportsClient({
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => handleRangeChange(tab.id)}
+                onClick={() => updateQuery(tab.id, activeTab)}
                 className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
                   dateRange === tab.id
                     ? 'bg-primary text-primary-foreground'
@@ -91,224 +158,511 @@ export function ReportsClient({
         </div>
       </div>
 
-      {/* P&L Executive Summary Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Gross Sales */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Gross Sales</span>
-            <div className="rounded-lg bg-primary/10 p-2 text-primary">
-              <DollarSign className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(totalRevenue)}</div>
-          <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed sales</p>
-        </div>
-
-        {/* Cost of Goods */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Cost of Goods (COGS)</span>
-            <div className="rounded-lg bg-muted p-2 text-muted-foreground">
-              <ShoppingBag className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(cogs)}</div>
-          <p className="mt-1 text-xs text-muted-foreground">Wholesale cost of items sold</p>
-        </div>
-
-        {/* Gross Profit */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Gross Profit</span>
-            <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {formatPKR(grossProfit)}
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">Sales minus product cost</p>
-        </div>
-
-        {/* Operating Expenses */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Operating Expenses</span>
-            <div className="rounded-lg bg-rose-500/10 p-2 text-rose-500">
-              <TrendingDown className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400">
-            {formatPKR(totalExpenses)}
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">Rent, utilities, shop petty cash</p>
-        </div>
-
-        {/* Net Profit */}
-        <div
-          className={`rounded-xl border p-5 ${
-            isNetPositive
-              ? 'border-emerald-500/30 bg-emerald-500/5'
-              : 'border-rose-500/30 bg-rose-500/5'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span
-              className={`text-xs font-semibold uppercase tracking-wider ${
-                isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+      {/* Report Module Navigation Tabs */}
+      <div className="flex border-b border-border space-x-2 overflow-x-auto pb-1 text-sm font-medium">
+        {[
+          { id: 'pnl', label: 'Profit & Loss', privilegedOnly: true },
+          { id: 'sales', label: 'Sales Report', privilegedOnly: false },
+          { id: 'purchases', label: 'Purchases Report', privilegedOnly: true },
+          { id: 'expenses', label: 'Expenses Report', privilegedOnly: false },
+          { id: 'inventory', label: 'Inventory Valuation', privilegedOnly: false },
+        ]
+          .filter((t) => !t.privilegedOnly || isPrivileged)
+          .map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => updateQuery(dateRange, tab.id)}
+              className={`px-3 py-2 border-b-2 font-semibold text-xs transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
               }`}
             >
-              Estimated Net Profit
-            </span>
-            <div
-              className={`rounded-lg p-2 ${
-                isNetPositive
-                  ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                  : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
-              }`}
-            >
-              <TrendingUp className="h-4 w-4" />
-            </div>
-          </div>
-          <div
-            className={`mt-2 text-2xl font-extrabold ${
-              isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-            }`}
-          >
-            {formatPKR(netProfit)}
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">Gross profit minus expenses</p>
-        </div>
-
-        {/* Outstanding Udhaar */}
-        <div className="rounded-xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-semibold uppercase tracking-wider">Total Customer Udhaar</span>
-            <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
-              <Wallet className="h-4 w-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
-            {formatPKR(totalUdhaar)}
-          </div>
-          <p className="mt-1 text-xs text-muted-foreground">Outstanding customer credit balance</p>
-        </div>
+              {tab.label}
+            </button>
+          ))}
       </div>
 
-      {/* Two Column Detailed Breakdown */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Top Selling Products */}
-        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <ShoppingBag className="h-4 w-4 text-primary" />
-              Top Selling Products
-            </h2>
-            <span className="text-xs text-muted-foreground">By Units Sold</span>
-          </div>
-
-          {topProducts.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              No product sales recorded in this period.
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {topProducts.map((p, idx) => (
-                <div key={idx} className="flex items-center justify-between py-2.5 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted font-bold text-[10px]">
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <div className="font-semibold text-foreground">{p.name}</div>
-                      {p.model && <div className="text-muted-foreground text-[10px]">{p.model}</div>}
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <div className="font-bold text-foreground">{p.quantity} sold</div>
-                    <div className="text-muted-foreground text-[10px]">{formatPKR(p.revenue)}</div>
-                  </div>
+      {/* ============================================================ */}
+      {/* TAB 1: PROFIT & LOSS STATEMENT */}
+      {/* ============================================================ */}
+      {activeTab === 'pnl' && isPrivileged && (
+        <div className="space-y-6 animate-in fade-in-50">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Gross Revenue */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider">Gross Revenue</span>
+                <div className="rounded-lg bg-primary/10 p-2 text-primary">
+                  <DollarSign className="h-4 w-4" />
                 </div>
-              ))}
+              </div>
+              <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(totalRevenue)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed customer sales</p>
             </div>
-          )}
-        </div>
 
-        {/* Payment Methods Breakdown */}
-        <div className="rounded-xl border border-border bg-card p-5 space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <PieChart className="h-4 w-4 text-primary" />
-              Sales by Payment Channel
-            </h2>
-            <span className="text-xs text-muted-foreground">Total Inflow</span>
+            {/* Cost of Goods Sold */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider">Cost of Goods (COGS)</span>
+                <div className="rounded-lg bg-muted p-2 text-muted-foreground">
+                  <ShoppingBag className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-bold text-foreground">{formatPKR(cogs)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Wholesale cost of goods sold</p>
+            </div>
+
+            {/* Gross Profit */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider">Gross Profit</span>
+                <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                {formatPKR(grossProfit)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Gross Margin: {grossMarginPct}%</p>
+            </div>
+
+            {/* Operating Expenses */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider">Operating Expenses</span>
+                <div className="rounded-lg bg-rose-500/10 p-2 text-rose-500">
+                  <TrendingDown className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400">
+                {formatPKR(totalExpenses)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Shop rent, utilities & overheads</p>
+            </div>
+
+            {/* Net Profit */}
+            <div
+              className={`rounded-xl border p-5 ${
+                isNetPositive
+                  ? 'border-emerald-500/30 bg-emerald-500/5'
+                  : 'border-rose-500/30 bg-rose-500/5'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span
+                  className={`text-xs font-semibold uppercase tracking-wider ${
+                    isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                  }`}
+                >
+                  Net Profit
+                </span>
+                <div
+                  className={`rounded-lg p-2 ${
+                    isNetPositive
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                  }`}
+                >
+                  <TrendingUp className="h-4 w-4" />
+                </div>
+              </div>
+              <div
+                className={`mt-2 text-2xl font-extrabold ${
+                  isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                }`}
+              >
+                {formatPKR(netProfit)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Net Margin: {netMarginPct}%</p>
+            </div>
+
+            {/* Total Udhaar Outflow */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-wider">Period Credit Issued</span>
+                <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400">
+                  <Wallet className="h-4 w-4" />
+                </div>
+              </div>
+              <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
+                {formatPKR(totalUdhaar)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Amount added to customer Udhaar</p>
+            </div>
           </div>
 
-          {paymentMethodStats.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              No payments recorded in this period.
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {paymentMethodStats.map((item) => {
-                const percentage =
-                  totalRevenue > 0 ? Math.round((item.total / totalRevenue) * 100) : 0;
-                return (
-                  <div key={item.method} className="space-y-1 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium text-foreground uppercase">
-                        {item.method.replace('_', ' ')}
-                      </span>
+          {/* Top Selling Products & Payment Distribution */}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <ShoppingBag className="h-4 w-4 text-primary" />
+                  Top Selling Products
+                </h2>
+                <span className="text-xs text-muted-foreground">By Units Sold</span>
+              </div>
+              {topProducts.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  No product sales in this period.
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {topProducts.map((p, idx) => (
+                    <div key={idx} className="flex items-center justify-between py-2.5 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground font-mono">{formatPKR(item.total)}</span>
-                        <span className="font-bold text-foreground">({percentage}%)</span>
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted font-bold text-[10px]">
+                          {idx + 1}
+                        </span>
+                        <div>
+                          <div className="font-semibold text-foreground">{p.name}</div>
+                          {p.model && <div className="text-muted-foreground text-[10px]">{p.model}</div>}
+                        </div>
+                      </div>
+                      <div className="text-right font-mono">
+                        <div className="font-bold text-foreground">{p.quantity} sold</div>
+                        <div className="text-muted-foreground text-[10px]">{formatPKR(p.revenue)}</div>
                       </div>
                     </div>
-                    <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
-                      <div
-                        className="h-full bg-primary rounded-full"
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Expense Category Breakdown */}
-        <div className="rounded-xl border border-border bg-card p-5 space-y-4 lg:col-span-2">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
-              <Receipt className="h-4 w-4 text-rose-500" />
-              Expense Distribution
-            </h2>
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">
-              Total: {formatPKR(totalExpenses)}
-            </span>
+            <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <PieChart className="h-4 w-4 text-primary" />
+                  Sales by Payment Channel
+                </h2>
+                <span className="text-xs text-muted-foreground">Inflow</span>
+              </div>
+              {paymentMethodStats.length === 0 ? (
+                <div className="py-8 text-center text-xs text-muted-foreground">
+                  No payments recorded.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {paymentMethodStats.map((item) => {
+                    const pct = totalRevenue > 0 ? Math.round((item.total / totalRevenue) * 100) : 0;
+                    return (
+                      <div key={item.method} className="space-y-1 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium text-foreground uppercase">
+                            {item.method.replace('_', ' ')}
+                          </span>
+                          <div className="flex items-center gap-2 font-mono">
+                            <span className="text-muted-foreground">{formatPKR(item.total)}</span>
+                            <span className="font-bold text-foreground">({pct}%)</span>
+                          </div>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                          <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 2: SALES REPORT */}
+      {/* ============================================================ */}
+      {activeTab === 'sales' && (
+        <div className="space-y-6 animate-in fade-in-50">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Sales</span>
+              <div className="mt-2 text-2xl font-bold text-foreground font-mono">{formatPKR(totalRevenue)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{salesCount} completed sales</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Discounts Given</span>
+              <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400 font-mono">
+                {formatPKR(totalDiscounts)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Total discount concessions</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Collected (Paid)</span>
+              <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                {formatPKR(totalCollected)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Cash & digital collections</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Credit (Udhaar)</span>
+              <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400 font-mono">
+                {formatPKR(totalUdhaar)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Unpaid balance on credit</p>
+            </div>
           </div>
 
-          {expenseCategories.length === 0 ? (
-            <div className="py-8 text-center text-xs text-muted-foreground">
-              No expense records found for this period.
+          {/* Cancelled Sales Report (Separately Isolated) */}
+          <div className="rounded-xl border border-dashed border-border bg-muted/20 p-5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Ban className="h-4 w-4 text-muted-foreground" />
+                <h3 className="text-sm font-bold text-foreground">Cancelled Transactions (Isolated)</h3>
+              </div>
+              <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-mono font-semibold text-muted-foreground">
+                {cancelledCount} Cancelled
+              </span>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {expenseCategories.map((cat, idx) => (
-                <div key={idx} className="rounded-lg border border-border bg-muted/20 p-3 text-xs">
-                  <div className="font-medium text-muted-foreground">{cat.name}</div>
-                  <div className="text-base font-bold text-foreground mt-1">
-                    {formatPKR(cat.amount)}
-                  </div>
-                </div>
-              ))}
+            <p className="text-xs text-muted-foreground">
+              Cancelled sales are safely excluded from revenue, profit, stock, and Udhaar calculations, preserving full audit history.
+            </p>
+            <div className="text-lg font-bold text-muted-foreground font-mono">
+              Total Void Amount: {formatPKR(cancelledTotal)}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 3: PURCHASES REPORT */}
+      {/* ============================================================ */}
+      {activeTab === 'purchases' && isPrivileged && (
+        <div className="space-y-6 animate-in fade-in-50">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Purchases Spend</span>
+              <div className="mt-2 text-2xl font-bold text-foreground font-mono">{formatPKR(totalPurchases)}</div>
+              <p className="mt-1 text-xs text-muted-foreground">{purchasesCount} wholesale purchase orders</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Active Suppliers</span>
+              <div className="mt-2 text-2xl font-bold text-foreground">{supplierStats.length}</div>
+              <p className="mt-1 text-xs text-muted-foreground">Wholesale vendors with purchases</p>
+            </div>
+          </div>
+
+          {/* Supplier Spend Table */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-border font-bold text-sm flex items-center gap-2">
+              <Truck className="h-4 w-4 text-primary" />
+              Supplier Procurement Breakdown
+            </div>
+            {supplierStats.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No wholesale purchases recorded for this period.
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/30 border-b border-border uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3">Supplier Name</th>
+                    <th className="px-4 py-3 text-right">Orders</th>
+                    <th className="px-4 py-3 text-right">Total Procurement</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {supplierStats.map((s, idx) => (
+                    <tr key={idx} className="hover:bg-muted/30">
+                      <td className="px-4 py-3 font-semibold text-foreground">{s.name}</td>
+                      <td className="px-4 py-3 text-right text-muted-foreground">{s.count}</td>
+                      <td className="px-4 py-3 text-right font-bold text-foreground font-mono">
+                        {formatPKR(s.total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 4: EXPENSES REPORT */}
+      {/* ============================================================ */}
+      {activeTab === 'expenses' && (
+        <div className="space-y-6 animate-in fade-in-50">
+          <div className="rounded-xl border border-border bg-card p-5">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Expenses</span>
+            <div className="mt-2 text-2xl font-bold text-rose-600 dark:text-rose-400 font-mono">
+              {formatPKR(totalExpenses)}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Operational bills and overheads</p>
+          </div>
+
+          {/* Category Distribution Grid */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Expenses by Category
+            </h3>
+            {expenseCategories.length === 0 ? (
+              <div className="rounded-xl border border-border p-8 text-center text-xs text-muted-foreground">
+                No categorized expenses in this date range.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {expenseCategories.map((c, idx) => (
+                  <div key={idx} className="rounded-xl border border-border bg-card p-4 space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Tag className="h-3.5 w-3.5" />
+                      <span>{c.name}</span>
+                    </div>
+                    <div className="text-lg font-bold text-foreground font-mono">{formatPKR(c.amount)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Expense Log */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-border font-bold text-sm flex items-center gap-2">
+              <Receipt className="h-4 w-4 text-primary" />
+              Expense Details Log
+            </div>
+            {recentExpenses.length === 0 ? (
+              <div className="py-8 text-center text-xs text-muted-foreground">
+                No expense records found.
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/30 border-b border-border uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Description</th>
+                    <th className="px-4 py-3">Method</th>
+                    <th className="px-4 py-3 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {recentExpenses.map((e) => (
+                    <tr key={e.id} className="hover:bg-muted/30">
+                      <td className="px-4 py-3 font-mono text-muted-foreground">{e.expense_date}</td>
+                      <td className="px-4 py-3 font-medium text-foreground">{e.expense_categories?.name || 'General'}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{e.description || '—'}</td>
+                      <td className="px-4 py-3 uppercase text-muted-foreground">{e.payment_method || 'cash'}</td>
+                      <td className="px-4 py-3 text-right font-bold text-rose-600 dark:text-rose-400 font-mono">
+                        -{formatPKR(e.amount)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/* TAB 5: INVENTORY VALUATION REPORT */}
+      {/* ============================================================ */}
+      {activeTab === 'inventory' && (
+        <div className="space-y-6 animate-in fade-in-50">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Valuation at Cost</span>
+              <div className="mt-2 text-2xl font-bold text-foreground font-mono">
+                {formatPKR(totalInventoryCostValuation)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Total investment at purchase cost</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Potential Retail Value</span>
+              <div className="mt-2 text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                {formatPKR(totalPotentialRetailValuation)}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Expected revenue at selling price</p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Units in Stock</span>
+              <div className="mt-2 text-2xl font-bold text-foreground font-mono">{totalStockQuantity}</div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Including {inStockImeiCount} IMEI devices
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-border bg-card p-5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Low Stock Warnings</span>
+              <div className={`mt-2 text-2xl font-bold font-mono ${lowStockCount > 0 ? 'text-amber-600' : 'text-foreground'}`}>
+                {lowStockCount}
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">Products at or below threshold</p>
+            </div>
+          </div>
+
+          {/* Products Inventory Status Table */}
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <div className="p-4 border-b border-border font-bold text-sm flex items-center gap-2">
+              <Package className="h-4 w-4 text-primary" />
+              Live Inventory Snapshot
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/30 border-b border-border uppercase text-muted-foreground">
+                  <tr>
+                    <th className="px-4 py-3">Product Name</th>
+                    <th className="px-4 py-3">Model</th>
+                    <th className="px-4 py-3 text-right">Stock</th>
+                    <th className="px-4 py-3 text-right">Cost Price</th>
+                    <th className="px-4 py-3 text-right">Selling Price</th>
+                    <th className="px-4 py-3 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {products.map((p) => {
+                    const isLow = p.stock_quantity <= p.low_stock_threshold;
+                    return (
+                      <tr key={p.id} className="hover:bg-muted/30">
+                        <td className="px-4 py-3 font-semibold text-foreground">
+                          {p.name}
+                          {p.is_imei_tracked && (
+                            <span className="ml-2 inline-flex items-center rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                              IMEI
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{p.model || '—'}</td>
+                        <td className="px-4 py-3 text-right font-mono font-bold text-foreground">
+                          {p.stock_quantity}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-muted-foreground">
+                          {formatPKR(p.purchase_price)}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono font-semibold text-foreground">
+                          {formatPKR(p.sale_price)}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {p.stock_quantity === 0 ? (
+                            <span className="inline-flex items-center rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-semibold text-rose-600">
+                              Out of Stock
+                            </span>
+                          ) : isLow ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+                              <AlertTriangle className="h-3 w-3" /> Low Stock
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold text-emerald-600">
+                              In Stock
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -116,6 +116,8 @@ export function SuppliersClient({
     let cleaned = phone.replace(/[^0-9]/g, '');
     if (cleaned.startsWith('0')) {
       cleaned = '92' + cleaned.slice(1);
+    } else if (cleaned.length === 10 && cleaned.startsWith('3')) {
+      cleaned = '92' + cleaned;
     }
     return `https://wa.me/${cleaned}`;
   }
