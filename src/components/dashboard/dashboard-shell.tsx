@@ -319,8 +319,20 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl px-4 py-6 lg:px-6 lg:py-8">
+        <main
+          className={`flex-1 ${
+            pathname === '/sales/new'
+              ? 'overflow-y-auto lg:overflow-hidden flex flex-col p-2 sm:p-2.5 lg:p-2.5 max-w-[1920px] w-full mx-auto'
+              : 'overflow-y-auto'
+          }`}
+        >
+          <div
+            className={
+              pathname === '/sales/new'
+                ? 'h-full w-full flex flex-col min-h-0'
+                : 'mx-auto max-w-7xl px-4 py-6 lg:px-6 lg:py-8'
+            }
+          >
             {children}
           </div>
         </main>
