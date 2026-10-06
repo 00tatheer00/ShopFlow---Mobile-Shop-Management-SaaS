@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 11: Scale & Index Optimization
+-- ShopFlow: Scale & Composite Index Optimization
 -- ============================================
 
 -- 1. Fast active product lookup for POS

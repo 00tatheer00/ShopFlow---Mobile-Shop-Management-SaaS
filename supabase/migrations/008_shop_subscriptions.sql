@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 12: Monthly Shop Subscriptions (Rs. 6,500 / month)
+-- ShopFlow: Monthly Shop Subscriptions (Rs. 6,500 / month)
 -- ============================================
 
 -- 1. Create or update Standard Plan for Rs. 6,500 / month (650,000 paisas)

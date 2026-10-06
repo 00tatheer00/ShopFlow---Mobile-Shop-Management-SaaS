@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 5: Customers, Suppliers, Purchases & Udhaar Hardening
+-- ShopFlow: Customers, Suppliers, Purchases & Udhaar Hardening
 -- ============================================
 
 -- 1. Phone Normalization Function
@@ -35,15 +35,11 @@ END;
 $$;
 
 -- 2. Index on suppliers for duplicate detection (shop_id, name, phone)
--- This is advisory; we don't enforce unique because suppliers can share names.
--- But we add a partial unique index on (shop_id, phone) WHERE phone IS NOT NULL AND phone != ''
--- to prevent duplicate suppliers with the same phone number within a shop.
 CREATE UNIQUE INDEX IF NOT EXISTS idx_suppliers_unique_phone
   ON suppliers(shop_id, phone)
   WHERE phone IS NOT NULL AND phone != '';
 
 -- 3. Non-negative balance_after constraint on udhaar_ledger
--- Prevents accidental negative balances in the ledger
 DO $$
 BEGIN
   IF NOT EXISTS (

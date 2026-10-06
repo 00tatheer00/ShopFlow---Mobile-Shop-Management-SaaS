@@ -151,9 +151,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 ### 4. Database Setup & Migrations
 Execute the SQL migrations found in `supabase/migrations/` sequentially in your Supabase SQL Editor:
-1. `001_initial_schema.sql` — Base tables, RLS policies, indexes, and triggers.
-2. `002_rls_policies.sql` — Tenant isolation policies.
-3. `003_seed_data.sql` — Initial categories, brands, and subscription plans.
+1. `001_initial_schema.sql` — Base schema, tables, RLS policies, and triggers.
+2. `002_tenant_provisioning.sql` — Tenant isolation and subscription provisioning.
+3. `003_inventory_adjustments.sql` — Atomic stock adjustment procedures.
+4. `004_customer_supplier_udhaar.sql` — Phone normalization and ledger constraints.
+5. `005_pos_sales_hardening.sql` — POS idempotency and checkout safeguards.
+6. `006_expenses_reports_hardening.sql` — Expense categorization and analytics indexes.
+7. `007_scale_indexes.sql` — Production composite query indexes.
+8. `008_shop_subscriptions.sql` — Monthly subscription billing engine.
 
 ### 5. Run the Development Server
 ```bash

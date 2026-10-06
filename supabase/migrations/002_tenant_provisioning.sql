@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 2: Super Admin & Tenant Provisioning Migration
+-- ShopFlow: Super Admin & Tenant Provisioning
 -- ============================================
 
 -- 1. Add display_shop_id and subscription fields to shops table

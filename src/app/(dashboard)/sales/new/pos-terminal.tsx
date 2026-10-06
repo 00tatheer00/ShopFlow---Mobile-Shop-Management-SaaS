@@ -108,7 +108,7 @@ export function PosTerminal({
 
   function addToCart(product: ProductWithStock, imei?: { id: string; imei_number: string }) {
     if (product.is_imei_tracked && !imei) {
-      // Prompt user to select an available IMEI
+      // Ask user to select an available IMEI
       setImeiSelectProduct(product);
       return;
     }

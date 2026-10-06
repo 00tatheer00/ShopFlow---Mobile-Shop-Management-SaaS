@@ -1,10 +1,10 @@
-# ShopFlow — Phase 3 Future Notes & Post-MVP Roadmap
+# ShopFlow — Product Roadmap & Extended Feature Backlog
 
-This document catalogs non-MVP and extended feature candidates identified during the Phase 3 UI/UX Design System audit and implementation. As per project constraints, these features are explicitly deferred to subsequent phases to maintain architectural integrity, avoid scope bloat, and prioritize core shopkeeper usability.
+This document catalogs non-MVP and extended feature candidates identified for future releases. These features are intentionally scheduled for subsequent iterations to maintain system stability, optimize shopkeeper workflows, and preserve high performance.
 
 ---
 
-## 1. Hardware & Scanner Integration (Phase 4+)
+## 1. Hardware & Scanner Integration
 - **Integrated Camera Barcode/QR Scanner**: Browser-based camera scanner (HTML5 / WebRTC `BarcodeDetector` API) for instant SKU and IMEI scanning without requiring dedicated USB/Bluetooth hardware.
 - **USB / Bluetooth POS Handheld Scanner Auto-focus**: Background keypress listener that captures raw 1D/2D HID barcode inputs and auto-injects them into the POS cart without requiring the search input to be focused.
 - **ESC/POS Direct Thermal Printing**: Direct network (LAN/WiFi/Bluetooth) thermal printer integration via raw ESC/POS commands bypassing OS print dialogs for high-volume retail checkout counters.

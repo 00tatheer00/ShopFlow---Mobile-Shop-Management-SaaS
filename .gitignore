@@ -40,3 +40,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE / editor configs
+.vscode/
+.idea/
+.agents/
+AGENTS.md
+CLAUDE.md
+*.agent*

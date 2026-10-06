@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 6: POS, Sales, Invoice & Payment Hardening
+-- ShopFlow: POS, Sales, Invoice & Payment Hardening
 -- ============================================
 
 -- 1. Add idempotency_key to sales table for double-submission protection

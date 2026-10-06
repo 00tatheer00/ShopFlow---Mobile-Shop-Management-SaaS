@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 4: Products, Inventory & IMEI Hardening Migration
+-- ShopFlow: Products, Inventory & Stock Adjustments
 -- ============================================
 
 -- 1. Non-negative stock constraint on products

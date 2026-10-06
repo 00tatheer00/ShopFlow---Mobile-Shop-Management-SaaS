@@ -1,5 +1,5 @@
 -- ============================================
--- ShopFlow — Phase 7: Expenses, Dashboard & Essential Reports Hardening
+-- ShopFlow: Expenses, Dashboard & Essential Reports Hardening
 -- ============================================
 
 -- 1. Add payment_method and notes to expenses table
