@@ -441,3 +441,7 @@
     page-break-inside: avoid !important;
   }
 }
+
+.font-urdu {
+  font-family: var(--font-urdu), "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", Tahoma, sans-serif;
+}

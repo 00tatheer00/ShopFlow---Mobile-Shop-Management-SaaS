@@ -627,7 +627,7 @@ export function PosTerminal({
               <h2 className="font-black text-xs sm:text-sm text-foreground tracking-tight">Sale Basket</h2>
               <CardInfoTooltip
                 title="Sale Basket"
-                urduDetail="Gahak ke liye select kiye gaye items ki list. Yahan se aap item ki qeemat ya quantity kam ya zyada kar sakte hain."
+                urduDetail="گاہک کے لیے منتخب کردہ اشیاء کی فہرست۔ یہاں سے آپ قیمت یا تعداد کم یا زیادہ کر سکتے ہیں۔"
               />
               <span className="rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-extrabold text-[10px] px-2 py-0.5 border border-indigo-500/30 shrink-0">
                 {cart.reduce((s, i) => s + i.quantity, 0)} item(s)
@@ -743,7 +743,7 @@ export function PosTerminal({
                   </label>
                   <CardInfoTooltip
                     title="Customer (Gahak)"
-                    urduDetail="Aam naqd gahak ke liye Walk-in Customer rehne dein. Agar Udhaar par maal dena hai to gahak select karna lazmi hai."
+                    urduDetail="عام نقد گاہک کے لیے واک ان کسٹمر رہنے دیں۔ اگر ادھار پر مال دینا ہو تو گاہک کا نام منتخب کرنا لازمی ہے۔"
                   />
                 </div>
                 <button
@@ -796,7 +796,7 @@ export function PosTerminal({
                   </span>
                   <CardInfoTooltip
                     title="Net Payable Total"
-                    urduDetail="Subtotal mein se discount minus karne ke baad gahak se lene wali aakhri kul raqam."
+                    urduDetail="رعایت (ڈسکاؤنٹ) منہا کرنے کے بعد گاہک سے وصول کرنے کے لیے حتمی کل رقم۔"
                   />
                 </div>
                 <span className="text-xs text-indigo-100 font-medium">

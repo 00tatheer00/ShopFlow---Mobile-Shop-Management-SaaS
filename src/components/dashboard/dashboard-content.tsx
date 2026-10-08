@@ -199,7 +199,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
           icon={TrendingUp}
           variant="sales"
           subtitle={`${metrics.today_sales_count ?? 0} orders completed today`}
-          urduDetail="Aj ke din dukan mein kul kitni bikri (sales) hui hai, chahay cash par biki ho ya udhaar par."
+          urduDetail="آج کے دن دکان میں کل کتنی فروخت (سیل) ہوئی ہے، چاہے نقد بکا ہو یا ادھار پر۔"
         />
 
         {/* Today Profit (Owner/Manager Only) */}
@@ -210,7 +210,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
             icon={DollarSign}
             variant="profit"
             subtitle="Sale minus item wholesale cost"
-            urduDetail="Aj jitna samaan bika hai, uski wholesale khareed qeemat nikaal kar dukan ka kitna munafa banta hai."
+            urduDetail="آج جتنا سامان فروخت ہوا ہے، اس کی ہول سیل قیمتِ خرید نکال کر دکان کا کل منافع کتنا بنتا ہے۔"
           />
         ) : (
           <MetricCard
@@ -219,7 +219,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
             icon={Package}
             variant="sales"
             subtitle="Active items in shop catalog"
-            urduDetail="Aapki dukan mein is waqt kitni mukhtalif items active mojood hain."
+            urduDetail="آپ کی دکان میں اس وقت کتنی مختلف مصنوعات (آئٹمز) موجود ہیں۔"
           />
         )}
 
@@ -230,7 +230,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
           icon={Banknote}
           variant="cash"
           subtitle="Total cash collected in counter"
-          urduDetail="Aj dukan ke galle (cash counter) mein total kitna cash jama hua hai (sales aur purani wasooli mila kar)."
+          urduDetail="آج دکان کے گلے (کاؤنٹر) میں نقد رقم کتنی وصول ہوئی ہے، جس میں نقد فروخت اور پرانی ادھار وصولی شامل ہے۔"
         />
 
         {/* Customer Udhaar */}
@@ -240,7 +240,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
           icon={Receipt}
           variant="udhaar"
           subtitle="Total market credit to collect"
-          urduDetail="Gahakon ke zimay kul kitna udhaar baqi khara hai jo dukan ko wapas lena hai."
+          urduDetail="گاہکوں کے ذمے کل کتنا ادھار باقی ہے جو دکان کو مارکیٹ سے وصول کرنا ہے۔"
         />
       </div>
 
@@ -254,7 +254,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
             icon={ShoppingBag}
             variant="cogs"
             subtitle="Wholesale cost of goods sold"
-            urduDetail="Jo samaan aj dukan se bika hai, wo aap ne wholesale se kitnay ka khareeda tha (asal laagat)."
+            urduDetail="آج جو سامان فروخت ہوا ہے، اس کی اصل ہول سیل قیمتِ خرید (لاگت) کتنی تھی۔"
           />
 
           {/* Today Shop Expenses */}
@@ -264,7 +264,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
             icon={TrendingDown}
             variant="expense"
             subtitle="Daily shop bills, food & tea"
-            urduDetail="Aj dukan ke roz marrah ke kharchay (roti, chai, bijli, dukan ka kiraya waghera) kitnay huay."
+            urduDetail="آج دکان کے روزمرہ اخراجات (چائے، کھانا، بجلی، کرایہ وغیرہ) پر کتنا خرچ ہوا۔"
           />
 
           {/* Net Profit */}
@@ -274,7 +274,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
             icon={DollarSign}
             variant={(metrics.today_net_profit ?? 0) >= 0 ? 'net_profit' : 'expense'}
             subtitle="Profit after all shop expenses"
-            urduDetail="Samaan ki khareed laagat aur dukan ke saare kharchay nikaal kar aj ki asal saaf bachat kitni bachi."
+            urduDetail="سامان کی اصل لاگت اور دکان کے تمام اخراجات نکال کر آج کی اصل خالص بچت۔"
           />
         </div>
       )}
@@ -290,7 +290,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
               </p>
               <CardInfoTooltip
                 title="Stock Ending Soon"
-                urduDetail="Wo items jinka stock bohot kam reh gaya hai taakay aap waqt par wholesale se naya maal mangwa sakein."
+                urduDetail="وہ سامان جس کا اسٹاک ختم ہونے کے قریب ہے تاکہ آپ بروقت نیا مال منگوا سکیں۔"
               />
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">

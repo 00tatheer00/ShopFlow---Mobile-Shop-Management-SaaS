@@ -213,7 +213,7 @@ export function ExpensesClient({
               </span>
               <CardInfoTooltip
                 title="Today Shop Expenses"
-                urduDetail="Aj ke din dukan se kitna kharcha hua hai (chai, roti, bijli, petrol waghera)."
+                urduDetail="آج کے دن دکان سے کتنا خرچہ ہوا ہے (چائے، کھانا، بجلی، پیٹرول وغیرہ)۔"
               />
             </div>
             <div className="rounded-xl p-2 border shrink-0 bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
@@ -233,7 +233,7 @@ export function ExpensesClient({
               </span>
               <CardInfoTooltip
                 title="This Month Total Expense"
-                urduDetail="Is poore maheenay mein dukan ke kul kitnay kharchay ho chukay hain."
+                urduDetail="اس پورے مہینے میں دکان کے کل کتنے اخراجات ہو چکے ہیں۔"
               />
             </div>
             <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
@@ -253,7 +253,7 @@ export function ExpensesClient({
               </span>
               <CardInfoTooltip
                 title="Total Expense Slips"
-                urduDetail="Ab tak kitni expense slips ya kharcha entries system mein darj hain."
+                urduDetail="اب تک کتنی خرچہ پرچیاں (اخراجات کے ریکارڈ) سسٹم میں درج ہو چکے ہیں۔"
               />
             </div>
             <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">

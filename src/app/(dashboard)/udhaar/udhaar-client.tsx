@@ -189,7 +189,7 @@ export function UdhaarClient({
               </span>
               <CardInfoTooltip
                 title="Total Udhaar to Collect"
-                urduDetail="Market aur gahakon se total kitna udhaar wapas lena hai jo dukan ka baqi khara hai."
+                urduDetail="مارکیٹ اور گاہکوں سے دکان کا کل کتنا ادھار وصول ہونا باقی ہے۔"
               />
             </div>
             <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
@@ -211,7 +211,7 @@ export function UdhaarClient({
               </span>
               <CardInfoTooltip
                 title="Customers with Balance"
-                urduDetail="Kitnay gahakon ke naam par is waqt dukan ka udhaar baqi khara hai."
+                urduDetail="اس وقت کتنے گاہکوں کے کھاتے میں ادھار کی رقم واجب الادا ہے۔"
               />
             </div>
             <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
@@ -231,7 +231,7 @@ export function UdhaarClient({
               </span>
               <CardInfoTooltip
                 title="Total Khata Entries"
-                urduDetail="Udhaar aur wasooli (recovery) ki kitni transactions record ho chuki hain."
+                urduDetail="ادھار دینے اور وصولی کرنے کی اب تک کل کتنی انٹریز درج ہو چکی ہیں۔"
               />
             </div>
             <div className="rounded-xl p-2 border shrink-0 bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">

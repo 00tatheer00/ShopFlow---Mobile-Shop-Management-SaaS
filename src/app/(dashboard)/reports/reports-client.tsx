@@ -297,7 +297,7 @@ export function ReportsClient({
                   </span>
                   <CardInfoTooltip
                     title="Total Sale Income"
-                    urduDetail="Muntakhib muddat mein dukan ki kul kitni sales hui hain (cash aur udhaar dono mila kar)."
+                    urduDetail="منتخب مدت میں دکان کی کل کتنی فروخت (سیلز) ہوئی ہے (نقد اور ادھار دونوں ملا کر)۔"
                   />
                 </div>
                 <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
@@ -317,7 +317,7 @@ export function ReportsClient({
                   </span>
                   <CardInfoTooltip
                     title="Item Purchase Cost (COGS)"
-                    urduDetail="Biknay walay samaan ki asal wholesale khareed qeemat jo dukan ne dealer ko ada ki thi."
+                    urduDetail="فروخت شدہ سامان کی اصل ہول سیل قیمتِ خرید جو دکان نے ڈیلر کو ادا کی تھی۔"
                   />
                 </div>
                 <div className="rounded-xl p-2 border shrink-0 bg-violet-100/90 dark:bg-violet-900/60 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400">
@@ -337,7 +337,7 @@ export function ReportsClient({
                   </span>
                   <CardInfoTooltip
                     title="Sales Profit (Munafa)"
-                    urduDetail="Bikri mein se maal ki wholesale khareed qeemat nikaal kar bacha hua munafa."
+                    urduDetail="سیلز میں سے سامان کی ہول سیل قیمتِ خرید نکال کر حاصل ہونے والا منافع۔"
                   />
                 </div>
                 <div className="rounded-xl p-2 border shrink-0 bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
@@ -359,7 +359,7 @@ export function ReportsClient({
                   </span>
                   <CardInfoTooltip
                     title="Shop Operating Expenses"
-                    urduDetail="Dukan ke bijli, kiraya, chai, roti, aur roz marrah ke total kharchay."
+                    urduDetail="دکان کے بجلی، کرایہ، چائے، کھانا اور روزمرہ کے کل اخراجات۔"
                   />
                 </div>
                 <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
@@ -391,7 +391,7 @@ export function ReportsClient({
                   </span>
                   <CardInfoTooltip
                     title="Net Profit (Asal Bachat)"
-                    urduDetail="Dukan ke saare kharchay aur samaan ki laagat nikaal kar aakhri asal saaf bachat."
+                    urduDetail="دکان کے تمام اخراجات اور سامان کی اصل لاگت نکال کر آخری خالص بچت۔"
                   />
                 </div>
                 <div
@@ -429,7 +429,7 @@ export function ReportsClient({
                   </span>
                   <CardInfoTooltip
                     title="New Udhaar Given"
-                    urduDetail="Is muddat mein gahakon ko naya kitna udhaar samaan diya gaya."
+                    urduDetail="اس مدت میں گاہکوں کو کتنا نیا ادھار سامان دیا گیا۔"
                   />
                 </div>
                 <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400 shrink-0">
@@ -534,7 +534,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Total Sale Income"
-                  urduDetail="Muntakhib muddat mein dukan ki kul sales ki aamdan."
+                  urduDetail="منتخب مدت میں دکان کی کل فروخت سے حاصل ہونے والی آمدن۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalRevenue)}</div>
@@ -549,7 +549,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Total Discount Given"
-                  urduDetail="Gahakon ko di gayi kul riayat ya discount."
+                  urduDetail="گاہکوں کو دی گئی کل رعایت (ڈسکاؤنٹ)۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">
@@ -566,7 +566,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Cash / Digital Received"
-                  urduDetail="Gahakon se wasool ki gayi naqd aur online payments."
+                  urduDetail="گاہکوں سے کاؤنٹر پر وصول کی گئی نقد اور آن لائن رقم۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
@@ -583,7 +583,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Customer Udhaar (Khata)"
-                  urduDetail="Bikri mein se kitni raqam gahakon par udhaar chorr di gayi."
+                  urduDetail="سیلز میں سے کتنی رقم گاہکوں کے کھاتے میں ادھار رکھی گئی۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
@@ -760,7 +760,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Shop Stock Value (Cost)"
-                  urduDetail="Dukan mein mojood saare maal ki wholesale khareed qeemat kitni banti hai."
+                  urduDetail="دکان میں موجود تمام سامان کی ہول سیل قیمتِ خرید کی کل مالیت۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">
@@ -777,7 +777,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Expected Sale Value (Retail)"
-                  urduDetail="Agar dukan ka poora maal bikk jaye to dukan ko kul kitnay rupay milenge."
+                  urduDetail="اگر دکان کا سارا مال فروخت ہو جائے تو متوقع کل ریٹیل فروخت کی مالیت۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
@@ -794,7 +794,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Total Items in Stock"
-                  urduDetail="Dukan mein is waqt kul kitnay pieces aur mobile sets mojood hain."
+                  urduDetail="دکان میں اس وقت تمام اشیاء اور موبائل فونز کے کل کتنے پیسز موجود ہیں۔"
                 />
               </div>
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-cyan-950 dark:text-cyan-50">{totalStockQuantity}</div>
@@ -811,7 +811,7 @@ export function ReportsClient({
                 </span>
                 <CardInfoTooltip
                   title="Stock Ending Soon"
-                  urduDetail="Wo items jinka stock bohot kam reh gaya hai taakay aap waqt par naya maal mangwa sakein."
+                  urduDetail="وہ سامان جس کا اسٹاک ختم ہونے والا ہے تاکہ آپ بروقت نیا مال منگوا سکیں۔"
                 />
               </div>
               <div className={`mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono ${lowStockCount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-amber-950 dark:text-amber-50'}`}>
