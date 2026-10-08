@@ -841,7 +841,7 @@ export function PosTerminal({
                     setAmountPaid(total);
                   }}
                   className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
-                    paymentMethod === 'cash' && amountPaid === total
+                    paymentMethod === 'cash' && (amountPaid === total || amountPaid === '') && effectivePaid > 0
                       ? 'bg-emerald-600 text-white border-2 border-emerald-700 shadow-xs'
                       : 'border-2 border-border bg-card text-foreground hover:border-emerald-500'
                   }`}
@@ -857,7 +857,7 @@ export function PosTerminal({
                     setAmountPaid(total);
                   }}
                   className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
-                    paymentMethod === 'easypaisa'
+                    paymentMethod === 'easypaisa' && (amountPaid === total || amountPaid === '') && effectivePaid > 0
                       ? 'bg-teal-600 text-white border-2 border-teal-700 shadow-xs'
                       : 'border-2 border-border bg-card text-foreground hover:border-teal-500'
                   }`}
@@ -873,7 +873,7 @@ export function PosTerminal({
                     setAmountPaid(total);
                   }}
                   className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
-                    paymentMethod === 'jazzcash'
+                    paymentMethod === 'jazzcash' && (amountPaid === total || amountPaid === '') && effectivePaid > 0
                       ? 'bg-amber-600 text-white border-2 border-amber-700 shadow-xs'
                       : 'border-2 border-border bg-card text-foreground hover:border-amber-500'
                   }`}
@@ -886,6 +886,9 @@ export function PosTerminal({
                   type="button"
                   onClick={() => {
                     setAmountPaid(0);
+                    if (!selectedCustomerId) {
+                      toast.info('Udhaar sale ke liye customer muntakhab (select) karein.');
+                    }
                   }}
                   className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
                     effectivePaid === 0 && total > 0
