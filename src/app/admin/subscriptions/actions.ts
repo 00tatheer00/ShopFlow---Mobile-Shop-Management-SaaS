@@ -12,7 +12,7 @@ import { toRupees } from '@/lib/types';
 
 export interface ApprovePaymentPayload {
   subscriptionId: string;
-  amountRupees?: number; // Defaults to 6500
+  amountRupees?: number; // Defaults to 8000
   paymentMethod: string; // 'bank_transfer', 'easypaisa', 'jazzcash', 'cash'
   referenceId?: string;  // e.g. TR-8921829
   notes?: string;
@@ -37,7 +37,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
     return { error: 'Subscription record not found.' };
   }
 
-  const amountPaisas = payload.amountRupees ? payload.amountRupees * 100 : sub.amount || 650000;
+  const amountPaisas = payload.amountRupees ? payload.amountRupees * 100 : sub.amount || 800000;
   const now = new Date().toISOString();
 
   // 2. Mark subscription as PAID

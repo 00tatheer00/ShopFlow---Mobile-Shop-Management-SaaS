@@ -10,13 +10,13 @@ VALUES (
   'Full access to POS, Inventory, IMEI, Udhaar, and Daily Reports — Rs. 6,500/month',
   10,
   10000,
-  650000, -- 6,500 PKR in paisas
+  800000, -- 8,000 PKR in paisas
   'active'
 )
 ON CONFLICT (id) DO UPDATE SET 
   name = EXCLUDED.name,
   description = EXCLUDED.description,
-  price = 650000,
+  price = 800000,
   status = 'active';
 
 -- Update all existing shops to link to this standard 6,500 plan if null
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS shop_subscriptions (
   shop_id UUID NOT NULL REFERENCES shops(id) ON DELETE CASCADE,
   billing_month VARCHAR(7) NOT NULL, -- Format: 'YYYY-MM', e.g. '2026-10'
   month_name VARCHAR(50) NOT NULL,   -- e.g. 'October 2026'
-  amount INTEGER NOT NULL DEFAULT 650000, -- 6,500 PKR in paisas
+  amount INTEGER NOT NULL DEFAULT 800000, -- 8,000 PKR in paisas
   status VARCHAR(20) NOT NULL DEFAULT 'unpaid' CHECK (status IN ('unpaid', 'paid', 'overdue')),
   due_date DATE NOT NULL,
   paid_at TIMESTAMPTZ,
@@ -115,7 +115,7 @@ BEGIN
     SELECT id FROM shops WHERE status = 'active'
   LOOP
     INSERT INTO shop_subscriptions (shop_id, billing_month, month_name, amount, due_date, status)
-    VALUES (shop_record.id, p_month, p_month_name, 650000, p_due_date, 'unpaid')
+    VALUES (shop_record.id, p_month, p_month_name, 800000, p_due_date, 'unpaid')
     ON CONFLICT (shop_id, billing_month) DO NOTHING;
     
     IF FOUND THEN

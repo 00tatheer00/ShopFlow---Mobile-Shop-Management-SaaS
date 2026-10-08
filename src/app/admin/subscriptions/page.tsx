@@ -5,7 +5,7 @@ import type { Metadata } from 'next';
 import type { ShopSubscription, Shop, EmailLog } from '@/lib/types';
 
 export const metadata: Metadata = {
-  title: 'Monthly Subscriptions & Billing (Rs. 6,500) | Super Admin',
+  title: 'Monthly Subscriptions & Billing (Rs. 8,000) | Super Admin',
 };
 
 export default async function SubscriptionsPage() {

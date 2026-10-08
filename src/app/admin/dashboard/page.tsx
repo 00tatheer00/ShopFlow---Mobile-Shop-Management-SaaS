@@ -61,7 +61,7 @@ export default async function AdminDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(6);
 
-  // 4. Fetch current month subscription summary (Rs. 6,500/month per shop)
+  // 4. Fetch current month subscription summary (Rs. 8,000/month per shop)
   const currentMonth = '2026-10';
   const { data: monthSubs } = await supabase
     .from('shop_subscriptions')
@@ -200,7 +200,7 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Monthly Subscription & Billing Status Card (Rs. 6,500/month) */}
+      {/* Monthly Subscription & Billing Status Card (Rs. 8,000/month) */}
       <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-card p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ export default async function AdminDashboardPage() {
             </span>
             <h2 className="text-base font-bold text-foreground">Monthly Subscriptions (October 2026)</h2>
             <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold">
-              Rs. 6,500 / month
+              Rs. 8,000 / month
             </span>
           </div>
           <p className="text-xs text-muted-foreground">

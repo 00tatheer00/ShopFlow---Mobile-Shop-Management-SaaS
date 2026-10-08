@@ -26,7 +26,7 @@ export const SHOPFLOW_PAYMENT_CHANNELS = {
   iban: 'PK49MEZN0002890108392101',
   easyPaisa: '0300-1234567 (ShopFlow Admin)',
   jazzCash: '0300-1234567 (ShopFlow Admin)',
-  monthlyFee: 'Rs. 6,500 / month',
+  monthlyFee: 'Rs. 8,000 / month',
 };
 
 /**
@@ -195,7 +195,7 @@ export function generatePaymentReminderEmail({
       </div>
 
       <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
-        After sending <strong>Rs. 6,500</strong>, please share your receipt screenshot or Transaction ID on WhatsApp (<strong>0300-1234567</strong>) or reply to this email for instant approval.
+        After sending <strong>Rs. 8,000</strong>, please share your receipt screenshot or Transaction ID on WhatsApp (<strong>0300-1234567</strong>) or reply to this email for instant approval.
       </p>
     </div>
     <div class="footer">

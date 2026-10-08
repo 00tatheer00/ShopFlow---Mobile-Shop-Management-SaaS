@@ -88,7 +88,7 @@ export interface ShopSubscription {
   shop_id: string;
   billing_month: string; // '2026-10'
   month_name: string;   // 'October 2026'
-  amount: number;       // in paisas (650000 = Rs. 6,500)
+  amount: number;       // in paisas (800000 = Rs. 8,000)
   status: SubscriptionStatus;
   due_date: string;
   paid_at?: string | null;

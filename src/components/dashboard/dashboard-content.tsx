@@ -62,7 +62,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition cursor-pointer"
               >
                 <AlertTriangle className="h-3.5 w-3.5" />
-                <span>{subscription.month_name} Due (Rs. 6,500) &bull; Pay Now</span>
+                <span>{subscription.month_name} Due (Rs. 8,000) &bull; Pay Now</span>
               </button>
             )}
           </div>
@@ -81,7 +81,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 Monthly Subscription Due: Rs. {toRupees(subscription.amount).toLocaleString()} ({subscription.month_name})
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Due Date: {new Date(subscription.due_date).toLocaleDateString()}. Please send Rs. 6,500 to keep uninterrupted POS and inventory access.
+                Due Date: {new Date(subscription.due_date).toLocaleDateString()}. Please send Rs. 8,000 to keep uninterrupted POS and inventory access.
               </p>
             </div>
           </div>
@@ -106,7 +106,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground">ShopFlow Subscription Payment</h3>
-                  <p className="text-xs text-muted-foreground">Official Accounts for Rs. 6,500 / month</p>
+                  <p className="text-xs text-muted-foreground">Official Accounts for Rs. 8,000 / month</p>
                 </div>
               </div>
               <button
@@ -121,7 +121,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
               <div className="p-3.5 rounded-xl border border-border bg-muted/40 space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monthly Fee:</span>
-                  <span className="font-bold text-sm text-foreground font-mono">Rs. 6,500 / month</span>
+                  <span className="font-bold text-sm text-foreground font-mono">Rs. 8,000 / month</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Billing Month:</span>

@@ -61,7 +61,7 @@ export function SubscriptionsClient({
 
   // Approve form state
   const [payMethod, setPayMethod] = useState('easypaisa');
-  const [payAmount, setPayAmount] = useState('6500');
+  const [payAmount, setPayAmount] = useState('8000');
   const [payRefId, setPayRefId] = useState('');
   const [payNotes, setPayNotes] = useState('');
   const [sendConfirmationEmail, setSendConfirmationEmail] = useState(true);
@@ -131,7 +131,7 @@ export function SubscriptionsClient({
     startTransition(async () => {
       const res = await approveSubscriptionPayment({
         subscriptionId: approveModalSub.id,
-        amountRupees: parseInt(payAmount, 10) || 6500,
+        amountRupees: parseInt(payAmount, 10) || 8000,
         paymentMethod: payMethod,
         referenceId: payRefId,
         notes: payNotes,
@@ -234,7 +234,7 @@ export function SubscriptionsClient({
                 Shop Subscriptions & Billing
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Monthly SaaS billing &bull; Standard rate: <strong className="text-emerald-400 font-mono">Rs. 6,500 / month</strong> per shop
+                Monthly SaaS billing &bull; Standard rate: <strong className="text-emerald-400 font-mono">Rs. 8,000 / month</strong> per shop
               </p>
             </div>
           </div>
@@ -280,7 +280,7 @@ export function SubscriptionsClient({
             <Building2 className="h-4 w-4 text-primary" />
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground">Rs. 6,500</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground">Rs. 8,000</span>
             <span className="text-xs text-muted-foreground">/ shop / month</span>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
@@ -738,7 +738,7 @@ export function SubscriptionsClient({
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-foreground">Generate Monthly Invoices</h3>
-                  <p className="text-xs text-muted-foreground">Creates Rs. 6,500 bills for all active shops</p>
+                  <p className="text-xs text-muted-foreground">Creates Rs. 8,000 bills for all active shops</p>
                 </div>
               </div>
               <button
