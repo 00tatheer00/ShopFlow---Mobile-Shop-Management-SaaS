@@ -70,30 +70,33 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
       </div>
 
       {/* Subscription Alert Banner if Unpaid */}
-      {isOwner && subscription && subscription.status !== 'paid' && (
-        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500 font-bold">
-              <CreditCard className="h-5 w-5" />
+      {isOwner && subscription && subscription.status !== 'paid' && (() => {
+        const effectiveAmount = (subscription.amount === 650000 || subscription.amount < 800000) ? 800000 : subscription.amount;
+        return (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500 font-bold">
+                <CreditCard className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Monthly Subscription Due: Rs. {toRupees(effectiveAmount).toLocaleString()} ({subscription.month_name})
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Due Date: {new Date(subscription.due_date).toLocaleDateString()}. Please send Rs. 8,000 to keep uninterrupted POS and inventory access.
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-foreground">
-                Monthly Subscription Due: Rs. {toRupees(subscription.amount).toLocaleString()} ({subscription.month_name})
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Due Date: {new Date(subscription.due_date).toLocaleDateString()}. Please send Rs. 8,000 to keep uninterrupted POS and inventory access.
-              </p>
-            </div>
+            <button
+              onClick={() => setShowBankDetails(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 text-xs font-bold shadow-sm transition shrink-0 cursor-pointer"
+            >
+              <span>View Bank / EasyPaisa Details</span>
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
           </div>
-          <button
-            onClick={() => setShowBankDetails(true)}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 text-xs font-bold shadow-sm transition shrink-0"
-          >
-            <span>View Bank / EasyPaisa Details</span>
-            <ArrowUpRight className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Bank Details Modal */}
       {showBankDetails && (
@@ -111,7 +114,7 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
               </div>
               <button
                 onClick={() => setShowBankDetails(false)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-accent"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-accent cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -129,9 +132,28 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 </div>
               </div>
 
+              {/* EasyPaisa & Mobile Wallet (Primary) */}
               <div className="p-3.5 rounded-xl border border-border bg-card space-y-2.5">
+                <div className="font-bold text-xs text-emerald-600 dark:text-emerald-400 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                  <span>📱</span>
+                  <span>EasyPaisa / JazzCash Mobile Account</span>
+                </div>
+                <div className="flex justify-between items-center py-1 border-b border-border/50">
+                  <span className="text-muted-foreground text-[11px]">Account Name:</span>
+                  <span className="font-bold text-foreground text-sm">Syed Muhammad SAqlain</span>
+                </div>
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-muted-foreground text-[11px]">EasyPaisa / Number:</span>
+                  <span className="font-mono font-black text-emerald-600 dark:text-emerald-400 text-base tracking-wide select-all">
+                    03143176526
+                  </span>
+                </div>
+              </div>
+
+              {/* Online Bank Transfer */}
+              <div className="p-3.5 rounded-xl border border-border bg-card space-y-2">
                 <div className="font-bold text-xs text-foreground uppercase tracking-wider text-[10px] text-muted-foreground">
-                  Online Bank Transfer (Recommended)
+                  Online Bank Transfer (Meezan Bank)
                 </div>
                 <div>
                   <div className="text-muted-foreground text-[11px]">Bank Name:</div>
@@ -139,11 +161,11 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 </div>
                 <div>
                   <div className="text-muted-foreground text-[11px]">Account Title:</div>
-                  <div className="font-bold text-foreground">ShopFlow Technologies SMC-Pvt Ltd</div>
+                  <div className="font-bold text-foreground">Syed Muhammad SAqlain</div>
                 </div>
                 <div>
-                  <div className="text-muted-foreground text-[11px]">Account Number:</div>
-                  <div className="font-mono font-bold text-foreground">02890108392101</div>
+                  <div className="text-muted-foreground text-[11px]">Account / Mobile:</div>
+                  <div className="font-mono font-bold text-foreground">03143176526</div>
                 </div>
                 <div>
                   <div className="text-muted-foreground text-[11px]">IBAN:</div>
@@ -151,25 +173,15 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl border border-border bg-card space-y-2">
-                <div className="font-bold text-xs text-foreground uppercase tracking-wider text-[10px] text-muted-foreground">
-                  Mobile Wallet (EasyPaisa / JazzCash)
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">EasyPaisa / JazzCash:</span>
-                  <span className="font-mono font-bold text-foreground">0300-1234567</span>
-                </div>
-              </div>
-
               <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 text-primary text-[11px] leading-relaxed">
-                After transfer, send your receipt screenshot to WhatsApp <strong>0300-1234567</strong> or reply to your monthly email. Super Admin will approve your payment within 15 minutes.
+                After transfer, send your receipt screenshot to WhatsApp <strong className="font-mono">03143176526</strong> or reply to your monthly email. Super Admin will approve your payment within 15 minutes.
               </div>
             </div>
 
             <div className="mt-5 flex justify-end">
               <button
                 onClick={() => setShowBankDetails(false)}
-                className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition"
+                className="rounded-xl bg-primary px-5 py-2 text-xs font-bold text-primary-foreground hover:bg-primary/90 transition cursor-pointer"
               >
                 Close
               </button>

@@ -177,6 +177,17 @@ export default async function DashboardPage() {
     }),
   };
 
+  // Auto-migrate any existing unpaid subscription from old 6,500 to new 8,000 standard rate
+  if (currentSubscription && currentSubscription.status !== 'paid' && currentSubscription.amount === 650000) {
+    currentSubscription.amount = 800000;
+    // Async DB update so the row stays updated in Supabase
+    supabase
+      .from('shop_subscriptions')
+      .update({ amount: 800000 })
+      .eq('id', currentSubscription.id)
+      .then(() => {});
+  }
+
   return (
     <DashboardContent
       metrics={metrics}

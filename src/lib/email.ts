@@ -21,11 +21,11 @@ export interface SendEmailParams {
  */
 export const SHOPFLOW_PAYMENT_CHANNELS = {
   bankName: 'Meezan Bank Ltd',
-  accountTitle: 'ShopFlow Technologies SMC-Pvt Ltd',
-  accountNumber: '02890108392101',
+  accountTitle: 'Syed Muhammad SAqlain',
+  accountNumber: '03143176526',
   iban: 'PK49MEZN0002890108392101',
-  easyPaisa: '0300-1234567 (ShopFlow Admin)',
-  jazzCash: '0300-1234567 (ShopFlow Admin)',
+  easyPaisa: '03143176526 (Syed Muhammad SAqlain)',
+  jazzCash: '03143176526 (Syed Muhammad SAqlain)',
   monthlyFee: 'Rs. 8,000 / month',
 };
 
@@ -120,7 +120,7 @@ export function generatePaymentApprovedEmail({
     </div>
     <div class="footer">
       &copy; ${new Date().getFullYear()} ShopFlow Technologies. Hall Road & Hafeez Centre Support Desk.<br>
-      Email: support@shopflow.pk &bull; Helpline: 0300-1234567
+      Email: support@shopflow.pk &bull; Helpline: 03143176526
     </div>
   </div>
 </body>
@@ -195,12 +195,12 @@ export function generatePaymentReminderEmail({
       </div>
 
       <p style="color: #94a3b8; font-size: 13px; line-height: 1.5;">
-        After sending <strong>Rs. 8,000</strong>, please share your receipt screenshot or Transaction ID on WhatsApp (<strong>0300-1234567</strong>) or reply to this email for instant approval.
+        After sending <strong>Rs. 8,000</strong>, please share your receipt screenshot or Transaction ID on WhatsApp (<strong>03143176526</strong>) or reply to this email for instant approval.
       </p>
     </div>
     <div class="footer">
       &copy; ${new Date().getFullYear()} ShopFlow Technologies. Pakistan's Premier Mobile Shop SaaS.<br>
-      Email: support@shopflow.pk &bull; Helpline: 0300-1234567
+      Email: support@shopflow.pk &bull; Helpline: 03143176526
     </div>
   </div>
 </body>
