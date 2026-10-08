@@ -127,6 +127,12 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
     return () => clearTimeout(timer);
   }, [router]);
 
+  useEffect(() => {
+    const handler = () => setSidebarOpen((prev) => !prev);
+    window.addEventListener('shopflow:toggle-sidebar', handler);
+    return () => window.removeEventListener('shopflow:toggle-sidebar', handler);
+  }, []);
+
   const toggleExpand = (label: string) => {
     setExpandedItems((prev) =>
       prev.includes(label)
@@ -302,32 +308,34 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
       {/* Main Content Area */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top Header */}
-        <header className="flex h-16 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground lg:hidden transition-colors"
-            aria-label="Open sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
+        {/* Top Header — Hidden on POS (/sales/new) to allow full-screen cashier workflow */}
+        {pathname !== '/sales/new' && (
+          <header className="flex h-16 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground lg:hidden transition-colors"
+              aria-label="Open sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
 
-          {/* Header Right — User Quick Info & PWA Install */}
-          <div className="flex items-center gap-2">
-            <PwaInstallButton />
-            {user.shop?.name && (
-              <span className="hidden sm:inline-block text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
-                {user.shop.name}
-              </span>
-            )}
-          </div>
-        </header>
+            {/* Header Right — User Quick Info & PWA Install */}
+            <div className="flex items-center gap-2 ml-auto">
+              <PwaInstallButton />
+              {user.shop?.name && (
+                <span className="hidden sm:inline-block text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+                  {user.shop.name}
+                </span>
+              )}
+            </div>
+          </header>
+        )}
 
         {/* Page Content */}
         <main
           className={`flex-1 ${
             pathname === '/sales/new'
-              ? 'overflow-y-auto lg:overflow-hidden flex flex-col p-2 sm:p-2.5 lg:p-2.5 max-w-[1920px] w-full mx-auto'
+              ? 'overflow-hidden flex flex-col p-1.5 sm:p-2 lg:p-2.5 max-w-[1920px] w-full mx-auto'
               : 'overflow-y-auto'
           }`}
         >

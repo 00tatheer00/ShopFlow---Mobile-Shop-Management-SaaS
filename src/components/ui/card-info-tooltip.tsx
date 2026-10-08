@@ -8,6 +8,7 @@ interface CardInfoTooltipProps {
   title?: string;
   urduDetail: string;
   className?: string;
+  variant?: 'default' | 'invert';
 }
 
 interface Coords {
@@ -17,7 +18,7 @@ interface Coords {
   placeAbove: boolean;
 }
 
-export function CardInfoTooltip({ title, urduDetail, className = '' }: CardInfoTooltipProps) {
+export function CardInfoTooltip({ title, urduDetail, className = '', variant = 'default' }: CardInfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState<Coords | null>(null);
@@ -80,6 +81,11 @@ export function CardInfoTooltip({ title, urduDetail, className = '' }: CardInfoT
     };
   }, [isOpen, updatePosition]);
 
+  const buttonStyle =
+    variant === 'invert'
+      ? 'bg-white/20 hover:bg-white text-white hover:text-slate-900 border-2 border-white/60'
+      : 'bg-primary/15 hover:bg-primary text-primary hover:text-white border-2 border-primary/40';
+
   return (
     <div className={`relative inline-flex items-center ${className}`}>
       <button
@@ -90,7 +96,7 @@ export function CardInfoTooltip({ title, urduDetail, className = '' }: CardInfoT
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary/15 hover:bg-primary text-primary hover:text-white border-2 border-primary/40 text-[11px] font-black font-serif italic shadow-xs transition-all duration-150 cursor-pointer active:scale-95 shrink-0"
+        className={`inline-flex items-center justify-center h-5 w-5 rounded-full ${buttonStyle} text-[11px] font-black font-serif italic shadow-xs transition-all duration-150 cursor-pointer active:scale-95 shrink-0`}
         aria-label="اردو تفصیل"
         title="اردو میں تفصیل دیکھنے کے لیے کلک کریں"
       >

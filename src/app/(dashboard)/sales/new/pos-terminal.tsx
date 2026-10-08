@@ -13,6 +13,8 @@ import {
   AlertCircle,
   RotateCcw,
   ArrowLeft,
+  Menu,
+  Check,
 } from 'lucide-react';
 import type { Customer, Product, ProductCategory, Brand, PaymentMethod } from '@/lib/types';
 import { formatPKR, toRupees } from '@/lib/types';
@@ -413,13 +415,22 @@ export function PosTerminal({
   }
 
   return (
-    <div className="flex flex-col h-full min-h-0 gap-2 sm:gap-2.5">
-      {/* Compact Top Bar */}
-      <div className="shrink-0 flex items-center justify-between gap-2 bg-card border border-border rounded-xl px-3 py-2 shadow-2xs">
+    <div className="flex flex-col h-full min-h-0 gap-1.5 sm:gap-2">
+      {/* Compact Top Bar — High Contrast & Integrated */}
+      <div className="shrink-0 flex items-center justify-between gap-2 bg-card border-2 border-border rounded-xl px-3 py-1.5 shadow-2xs">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('shopflow:toggle-sidebar'))}
+            className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground lg:hidden cursor-pointer"
+            aria-label="Toggle navigation menu"
+            title="Menu"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
           <Link
             href="/sales"
-            className="inline-flex items-center gap-1 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted shrink-0"
+            className="inline-flex items-center gap-1 text-xs font-black text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted shrink-0"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Back</span>
@@ -429,12 +440,12 @@ export function PosTerminal({
             <h1 className="text-sm sm:text-base font-black tracking-tight text-foreground truncate">
               POS Terminal
             </h1>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 shrink-0">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-950 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-500/40 shrink-0">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
               LIVE
             </span>
             {shopName && (
-              <span className="hidden md:inline-flex text-[11px] font-semibold text-muted-foreground bg-muted/80 px-2 py-0.5 rounded-md truncate max-w-[200px]">
+              <span className="hidden md:inline-flex text-[11px] font-bold text-foreground bg-muted border border-border px-2 py-0.5 rounded-md truncate max-w-[200px]">
                 {shopName}
               </span>
             )}
@@ -445,7 +456,7 @@ export function PosTerminal({
           <button
             type="button"
             onClick={resetSale}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-lg border-2 border-border bg-card px-2.5 py-1 text-xs font-black text-foreground hover:bg-muted transition-colors cursor-pointer active:scale-95 shadow-2xs"
             title="Reset Terminal"
           >
             <RotateCcw className="h-3.5 w-3.5" />
@@ -619,17 +630,21 @@ export function PosTerminal({
         </div>
 
         {/* Right Column: Basket & Checkout (5-4 Cols) */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col min-h-0 h-full rounded-2xl border border-indigo-500/20 bg-card shadow-2xs overflow-hidden">
+        <div className="lg:col-span-5 xl:col-span-4 flex flex-col min-h-0 h-full rounded-2xl border-2 border-border bg-card shadow-sm overflow-hidden">
           {/* Basket Header */}
-          <div className="shrink-0 px-3 py-2.5 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-transparent border-b border-border flex items-center justify-between">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <ShoppingCart className="h-4 w-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <h2 className="font-black text-xs sm:text-sm text-foreground tracking-tight">Sale Basket</h2>
-              <CardInfoTooltip
-                title="Sale Basket"
-                urduDetail="گاہک کے لیے منتخب کردہ اشیاء کی فہرست۔ یہاں سے آپ قیمت یا تعداد کم یا زیادہ کر سکتے ہیں۔"
-              />
-              <span className="rounded-full bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-extrabold text-[10px] px-2 py-0.5 border border-indigo-500/30 shrink-0">
+          <div className="shrink-0 px-3 py-2 bg-muted/60 border-b-2 border-border flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="h-6 w-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <ShoppingCart className="h-3.5 w-3.5" />
+              </div>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <h2 className="font-black text-xs sm:text-sm text-foreground tracking-tight">Sale Basket</h2>
+                <CardInfoTooltip
+                  title="Sale Basket"
+                  urduDetail="گاہک کے لیے منتخب کردہ اشیاء کی فہرست۔ یہاں سے آپ قیمت یا تعداد کم یا زیادہ کر سکتے ہیں۔"
+                />
+              </div>
+              <span className="rounded-full bg-primary/15 text-primary font-black text-[10px] px-2 py-0.5 border border-primary/30 shrink-0">
                 {cart.reduce((s, i) => s + i.quantity, 0)} item(s)
               </span>
             </div>
@@ -638,9 +653,9 @@ export function PosTerminal({
               <button
                 type="button"
                 onClick={() => setCart([])}
-                className="text-[11px] font-bold text-rose-600 hover:text-rose-700 transition-colors cursor-pointer"
+                className="text-[11px] font-black text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 px-2 py-0.5 rounded transition-colors cursor-pointer"
               >
-                Clear
+                Clear Cart
               </button>
             )}
           </div>
@@ -649,7 +664,7 @@ export function PosTerminal({
           <div className="flex-1 min-h-0 overflow-y-auto p-2 space-y-1.5">
             {cart.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center py-6 text-center px-4">
-                <div className="h-10 w-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-1.5">
+                <div className="h-10 w-10 rounded-2xl bg-muted text-muted-foreground/60 flex items-center justify-center mb-1.5 border border-border">
                   <ShoppingCart className="h-5 w-5" />
                 </div>
                 <p className="text-xs font-bold text-foreground">Basket is empty</p>
@@ -661,35 +676,35 @@ export function PosTerminal({
               cart.map((item, idx) => (
                 <div
                   key={`${item.product.id}-${item.imei_record_id || idx}`}
-                  className="flex items-center justify-between rounded-xl border border-border/80 bg-background/80 p-2 text-xs shadow-2xs hover:border-indigo-400/50 transition-colors"
+                  className="flex items-center justify-between rounded-xl border-2 border-border bg-card p-2 text-xs shadow-2xs hover:border-primary/50 transition-colors"
                 >
                   <div className="flex-1 min-w-0 pr-2">
-                    <div className="font-bold text-foreground text-xs truncate">
+                    <div className="font-extrabold text-foreground text-xs truncate">
                       {item.product.name}
                     </div>
                     {item.imei_number && (
-                      <div className="font-mono text-[10px] font-bold text-indigo-600 dark:text-indigo-400 truncate">
+                      <div className="font-mono text-[10px] font-bold text-primary truncate mt-0.5">
                         IMEI: {item.imei_number}
                       </div>
                     )}
                     <div className="mt-1 flex items-center gap-1">
-                      <span className="text-[11px] text-muted-foreground font-semibold">Rs</span>
+                      <span className="text-[10px] text-muted-foreground font-bold">Rs</span>
                       <input
                         type="number"
                         value={item.unit_price}
                         onChange={(e) => updatePrice(idx, Number(e.target.value))}
-                        className="w-20 rounded border border-border bg-card px-1.5 py-0.5 text-xs font-black text-foreground focus:outline-none focus:border-indigo-500"
+                        className="w-20 rounded border-2 border-border bg-background px-1.5 py-0.5 text-xs font-black text-foreground focus:outline-none focus:border-primary"
                       />
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
                     {!item.imei_record_id ? (
-                      <div className="flex items-center border border-border rounded-lg overflow-hidden bg-card">
+                      <div className="flex items-center border-2 border-border rounded-lg overflow-hidden bg-background">
                         <button
                           type="button"
                           onClick={() => updateQuantity(idx, -1)}
-                          className="p-1 hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
+                          className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                           title="Decrease"
                         >
                           <Minus className="h-3 w-3" />
@@ -700,14 +715,14 @@ export function PosTerminal({
                         <button
                           type="button"
                           onClick={() => updateQuantity(idx, 1)}
-                          className="p-1 hover:bg-muted text-muted-foreground transition-colors cursor-pointer"
+                          className="p-1 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
                           title="Increase"
                         >
                           <Plus className="h-3 w-3" />
                         </button>
                       </div>
                     ) : (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground border border-border">
                         1 unit
                       </span>
                     )}
@@ -719,10 +734,10 @@ export function PosTerminal({
                       <button
                         type="button"
                         onClick={() => removeFromCart(idx)}
-                        className="text-rose-500 hover:text-rose-700 p-0.5 mt-0.5 transition-colors cursor-pointer"
+                        className="text-rose-600 hover:text-rose-700 p-0.5 mt-0.5 transition-colors cursor-pointer text-[10px] font-bold inline-flex items-center gap-0.5"
                         title="Remove"
                       >
-                        <Trash2 className="h-3.5 w-3.5 inline" />
+                        <Trash2 className="h-3 w-3 inline" />
                       </button>
                     </div>
                   </div>
@@ -731,16 +746,16 @@ export function PosTerminal({
             )}
           </div>
 
-          {/* Checkout Controls Panel (Pinned Bottom) */}
-          <div className="shrink-0 p-2.5 sm:p-3 bg-muted/40 border-t border-border space-y-2">
+          {/* Checkout Controls Panel (Pinned Bottom - Clean & Professional) */}
+          <div className="shrink-0 p-2.5 sm:p-3 bg-muted/30 border-t-2 border-border space-y-2">
             {/* Customer Selector */}
             <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
-                  <label className="font-bold text-foreground flex items-center gap-1 text-[11px]">
-                    <User className="h-3 w-3 text-indigo-500" />
+                  <User className="h-3 w-3 text-primary" />
+                  <span className="font-black text-foreground text-[11px]">
                     Customer (Gahak)
-                  </label>
+                  </span>
                   <CardInfoTooltip
                     title="Customer (Gahak)"
                     urduDetail="عام نقد گاہک کے لیے واک ان کسٹمر رہنے دیں۔ اگر ادھار پر مال دینا ہو تو گاہک کا نام منتخب کرنا لازمی ہے۔"
@@ -749,15 +764,15 @@ export function PosTerminal({
                 <button
                   type="button"
                   onClick={() => setIsAddCustomerOpen(true)}
-                  className="text-[11px] text-indigo-600 dark:text-indigo-400 font-bold hover:underline cursor-pointer"
+                  className="text-[11px] text-primary font-black hover:underline cursor-pointer flex items-center gap-0.5"
                 >
-                  + Add New
+                  <Plus className="h-3 w-3" /> Add New
                 </button>
               </div>
               <select
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-card px-2.5 py-1 text-xs text-foreground focus:border-indigo-500 focus:outline-none cursor-pointer"
+                className="w-full rounded-lg border-2 border-border bg-card px-2.5 py-1 text-xs font-bold text-foreground focus:border-primary focus:outline-none cursor-pointer"
               >
                 <option value="">Walk-in Customer (Cash Only)</option>
                 {customers.map((c) => (
@@ -769,55 +784,131 @@ export function PosTerminal({
             </div>
 
             {/* Subtotal & Discount */}
-            <div className="flex items-center justify-between text-xs pt-1 border-t border-border/60">
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-border/80">
               <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground text-[11px] font-medium">Subtotal:</span>
-                <span className="font-bold text-foreground">{formatPKR(subtotal * 100)}</span>
+                <span className="text-muted-foreground text-[11px] font-bold">Subtotal:</span>
+                <span className="font-black text-foreground">{formatPKR(subtotal * 100)}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground text-[11px] font-medium">Discount (Rs):</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={discount || ''}
-                  onChange={(e) => setDiscount(Number(e.target.value) || 0)}
-                  placeholder="0"
-                  className="w-20 rounded border border-border bg-card px-2 py-0.5 text-right text-xs font-bold focus:border-indigo-500 focus:outline-none"
-                />
+                <span className="text-muted-foreground text-[11px] font-bold">Discount:</span>
+                <div className="relative">
+                  <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground font-bold">Rs</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={discount || ''}
+                    onChange={(e) => setDiscount(Number(e.target.value) || 0)}
+                    placeholder="0"
+                    className="w-20 rounded border-2 border-border bg-card pl-6 pr-1.5 py-0.5 text-right text-xs font-black focus:border-primary focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Vibrant Net Total Banner */}
-            <div className="rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 text-white p-2 sm:p-2.5 shadow-md flex items-center justify-between">
+            {/* Premium High-Contrast Net Total Banner */}
+            <div className="rounded-xl bg-slate-900 dark:bg-slate-950 text-white p-2 sm:p-2.5 border-2 border-slate-800 shadow-sm flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-indigo-200 block">
+                  <span className="text-[10px] uppercase font-black tracking-wider text-slate-300 block">
                     Net Payable Total
                   </span>
                   <CardInfoTooltip
                     title="Net Payable Total"
+                    variant="invert"
                     urduDetail="رعایت (ڈسکاؤنٹ) منہا کرنے کے بعد گاہک سے وصول کرنے کے لیے حتمی کل رقم۔"
                   />
                 </div>
-                <span className="text-xs text-indigo-100 font-medium">
+                <span className="text-xs text-slate-400 font-semibold">
                   {cart.reduce((s, i) => s + i.quantity, 0)} Items Selected
                 </span>
               </div>
-              <span className="text-lg sm:text-xl font-black tracking-tight text-white">
+              <span className="text-lg sm:text-xl font-black tracking-tight text-emerald-400">
                 {formatPKR(total * 100)}
               </span>
             </div>
 
-            {/* Payment Method & Amount Paid */}
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
+            {/* 1-Touch Payment Presets Bar */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                <span>Quick Payment Mode</span>
+                <span className="text-slate-500">Auto-fills amount</span>
+              </div>
+              <div className="grid grid-cols-4 gap-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod('cash');
+                    setAmountPaid(total);
+                  }}
+                  className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
+                    paymentMethod === 'cash' && amountPaid === total
+                      ? 'bg-emerald-600 text-white border-2 border-emerald-700 shadow-xs'
+                      : 'border-2 border-border bg-card text-foreground hover:border-emerald-500'
+                  }`}
+                >
+                  <span>💵 Cash</span>
+                  <span className="text-[9px] opacity-90 font-bold">Exact</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod('easypaisa');
+                    setAmountPaid(total);
+                  }}
+                  className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
+                    paymentMethod === 'easypaisa'
+                      ? 'bg-teal-600 text-white border-2 border-teal-700 shadow-xs'
+                      : 'border-2 border-border bg-card text-foreground hover:border-teal-500'
+                  }`}
+                >
+                  <span>📱 EasyPaisa</span>
+                  <span className="text-[9px] opacity-90 font-bold">Online</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentMethod('jazzcash');
+                    setAmountPaid(total);
+                  }}
+                  className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
+                    paymentMethod === 'jazzcash'
+                      ? 'bg-amber-600 text-white border-2 border-amber-700 shadow-xs'
+                      : 'border-2 border-border bg-card text-foreground hover:border-amber-500'
+                  }`}
+                >
+                  <span>📲 JazzCash</span>
+                  <span className="text-[9px] opacity-90 font-bold">Online</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAmountPaid(0);
+                  }}
+                  className={`rounded-lg py-1 px-0.5 text-[11px] font-black transition-all cursor-pointer text-center flex flex-col items-center ${
+                    effectivePaid === 0 && total > 0
+                      ? 'bg-rose-600 text-white border-2 border-rose-700 shadow-xs'
+                      : 'border-2 border-border bg-card text-foreground hover:border-rose-500'
+                  }`}
+                >
+                  <span>📒 Udhaar</span>
+                  <span className="text-[9px] opacity-90 font-bold">Credit</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Payment Method Details & Amount Tendered */}
+            <div className="flex items-center gap-2">
+              <div className="w-1/2">
+                <label className="block text-[10px] font-black uppercase tracking-wider text-muted-foreground mb-0.5">
                   Payment Method
                 </label>
                 <select
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
-                  className="w-full rounded-lg border border-border bg-card p-1 text-xs font-semibold text-foreground focus:border-indigo-500 focus:outline-none cursor-pointer"
+                  className="w-full rounded-lg border-2 border-border bg-card py-1 px-2 text-xs font-bold text-foreground focus:border-primary focus:outline-none cursor-pointer"
                 >
                   <option value="cash">Cash</option>
                   <option value="easypaisa">EasyPaisa</option>
@@ -827,10 +918,19 @@ export function PosTerminal({
                 </select>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">
-                  Amount Paid (PKR)
-                </label>
+              <div className="w-1/2">
+                <div className="flex items-center justify-between mb-0.5">
+                  <label className="block text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+                    Received (PKR)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setAmountPaid(total)}
+                    className="text-[10px] font-black text-primary hover:underline cursor-pointer"
+                  >
+                    Exact
+                  </button>
+                </div>
                 <input
                   type="number"
                   min="0"
@@ -839,81 +939,39 @@ export function PosTerminal({
                   onChange={(e) =>
                     setAmountPaid(e.target.value === '' ? '' : Number(e.target.value))
                   }
-                  className="w-full rounded-lg border border-border bg-card p-1 text-xs text-foreground focus:border-indigo-500 focus:outline-none font-bold text-right"
+                  className="w-full rounded-lg border-2 border-border bg-card py-1 px-2 text-xs text-foreground focus:border-primary focus:outline-none font-black text-right"
                 />
               </div>
             </div>
 
-            {/* Quick 1-touch Presets (Color-coded High Contrast) */}
-            <div className="grid grid-cols-4 gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentMethod('cash');
-                  setAmountPaid(total);
-                }}
-                className="rounded-lg border-2 border-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
-              >
-                Exact Cash
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentMethod('easypaisa');
-                  setAmountPaid(total);
-                }}
-                className="rounded-lg border-2 border-teal-500 bg-teal-600 hover:bg-teal-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
-              >
-                EasyPaisa
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setPaymentMethod('jazzcash');
-                  setAmountPaid(total);
-                }}
-                className="rounded-lg border-2 border-amber-600 bg-amber-600 hover:bg-amber-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
-              >
-                JazzCash
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAmountPaid(0);
-                }}
-                className="rounded-lg border-2 border-rose-500 bg-rose-600 hover:bg-rose-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
-              >
-                Full Udhaar
-              </button>
-            </div>
-
             {/* Udhaar / Change alert strip */}
             {due > 0 && (
-              <div className="rounded-lg border-2 border-rose-400 bg-rose-100 p-2 text-xs text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200 flex justify-between items-center font-black shadow-2xs">
+              <div className="rounded-lg border-2 border-rose-400 bg-rose-100 p-1.5 text-xs text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200 flex justify-between items-center font-black shadow-2xs">
                 <span>Balance Due (Udhaar):</span>
-                <span className="font-mono text-sm">{formatPKR(due * 100)}</span>
+                <span className="font-mono text-xs sm:text-sm">{formatPKR(due * 100)}</span>
               </div>
             )}
 
             {cashChange > 0 && paymentMethod === 'cash' && (
-              <div className="rounded-lg border-2 border-emerald-400 bg-emerald-100 p-2 text-xs text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200 flex justify-between items-center font-black shadow-2xs">
+              <div className="rounded-lg border-2 border-emerald-400 bg-emerald-100 p-1.5 text-xs text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200 flex justify-between items-center font-black shadow-2xs">
                 <span>Change to Return (Wapsi):</span>
-                <span className="font-mono text-sm">{formatPKR(cashChange * 100)}</span>
+                <span className="font-mono text-xs sm:text-sm">{formatPKR(cashChange * 100)}</span>
               </div>
             )}
 
-            {/* Complete Sale Action Button */}
+            {/* Complete Sale Action Button — Vibrant, Full Contrast, Solid */}
             <button
               onClick={handleCheckout}
               disabled={cart.length === 0 || isPending}
-              className="w-full rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white py-2.5 px-4 text-xs sm:text-sm font-black shadow-md transition-all active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 sm:py-3 px-4 text-xs sm:text-sm font-black shadow-md transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer border-2 border-emerald-700"
             >
               {isPending ? (
                 'Processing Sale...'
               ) : (
                 <>
+                  <Check className="h-4 w-4" />
                   <span>Complete Sale</span>
-                  <span className="opacity-70">—</span>
+                  <span className="opacity-80">—</span>
                   <span>{formatPKR(total * 100)}</span>
                 </>
               )}
