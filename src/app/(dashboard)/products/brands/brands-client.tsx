@@ -159,7 +159,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
       {/* Add Modal */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Add Brand</h3>
               <button onClick={() => setIsAddOpen(false)}>
@@ -209,7 +209,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
       {/* Edit Modal */}
       {editingBrand && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl">
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Edit Brand</h3>
               <button onClick={() => setEditingBrand(null)}>

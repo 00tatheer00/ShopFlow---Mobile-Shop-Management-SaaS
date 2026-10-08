@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -69,8 +70,63 @@ export function ProductsTable({
   const [adjustReason, setAdjustReason] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuCoords, setMenuCoords] = useState<{ top: number; left: number; placeAbove: boolean } | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleToggleMenu = (e: React.MouseEvent<HTMLButtonElement>, prodId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (openMenuId === prodId) {
+      setOpenMenuId(null);
+      setMenuCoords(null);
+      return;
+    }
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuWidth = 180;
+    const menuHeight = 175;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const placeAbove = spaceBelow < menuHeight + 12 && rect.top > menuHeight;
+
+    let left = rect.right - menuWidth;
+    if (left < 12) left = 12;
+    if (left + menuWidth > window.innerWidth - 12) {
+      left = window.innerWidth - 12 - menuWidth;
+    }
+
+    setMenuCoords({
+      top: placeAbove ? rect.top - 4 : rect.bottom + 4,
+      left,
+      placeAbove,
+    });
+    setOpenMenuId(prodId);
+  };
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handleClose = () => {
+      setOpenMenuId(null);
+      setMenuCoords(null);
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('scroll', handleClose, true);
+    window.addEventListener('resize', handleClose);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('scroll', handleClose, true);
+      window.removeEventListener('resize', handleClose);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [openMenuId]);
+
+  const activeMenuProduct = products.find((p) => p.id === openMenuId);
 
   // IMEI Lookup Modal State
   const [isImeiModalOpen, setIsImeiModalOpen] = useState(false);
@@ -377,84 +433,15 @@ export function ProductsTable({
                     </td>
                     {(canEdit || canDelete) && (
                       <td className="px-4 py-3.5 text-right">
-                        <div className="relative">
-                          <button
-                            onClick={() =>
-                              setOpenMenuId(openMenuId === product.id ? null : product.id)
-                            }
-                            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                          >
-                            <MoreHorizontal className="h-4 w-4" />
-                          </button>
-
-                          {openMenuId === product.id && (
-                            <>
-                              <div
-                                className="fixed inset-0 z-40"
-                                onClick={() => setOpenMenuId(null)}
-                              />
-                              <div className="absolute right-0 top-full z-50 mt-1 w-44 rounded-lg border border-border bg-popover p-1 shadow-lg animate-in fade-in-0 zoom-in-95 duration-100">
-                                {canEdit && (
-                                  <Link
-                                    href={`/products/${product.id}/edit`}
-                                    onClick={() => setOpenMenuId(null)}
-                                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-foreground hover:bg-accent transition-colors"
-                                  >
-                                    <Pencil className="h-3.5 w-3.5" />
-                                    Edit Details
-                                  </Link>
-                                )}
-
-                                {canEdit && !product.is_imei_tracked && (
-                                  <button
-                                    onClick={() => {
-                                      setOpenMenuId(null);
-                                      setAdjustingProduct(product);
-                                      setAdjustQty(0);
-                                      setAdjustReason('');
-                                    }}
-                                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-foreground hover:bg-accent transition-colors"
-                                  >
-                                    <Sliders className="h-3.5 w-3.5" />
-                                    Adjust Stock
-                                  </button>
-                                )}
-
-                                {canEdit && (
-                                  <button
-                                    onClick={() => handleToggleStatus(product.id, !product.is_active)}
-                                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-foreground hover:bg-accent transition-colors"
-                                  >
-                                    {product.is_active ? (
-                                      <>
-                                        <Archive className="h-3.5 w-3.5 text-muted-foreground" />
-                                        Archive Product
-                                      </>
-                                    ) : (
-                                      <>
-                                        <RefreshCw className="h-3.5 w-3.5 text-primary" />
-                                        Reactivate Product
-                                      </>
-                                    )}
-                                  </button>
-                                )}
-
-                                {canDelete && (
-                                  <button
-                                    onClick={() => {
-                                      setOpenMenuId(null);
-                                      setProductToDelete(product);
-                                    }}
-                                    className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                    Delete
-                                  </button>
-                                )}
-                              </div>
-                            </>
-                          )}
-                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleMenu(e, product.id)}
+                          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                          title="Actions"
+                          aria-label="Actions"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </button>
                       </td>
                     )}
                   </tr>
@@ -464,6 +451,104 @@ export function ProductsTable({
           </table>
         </div>
       </div>
+
+      {/* Floating Portal Action Menu (Completely immune to table overflow/clipping) */}
+      {mounted && openMenuId && menuCoords && activeMenuProduct && createPortal(
+        <div className="fixed inset-0 z-[99999] pointer-events-none">
+          <div
+            className="fixed inset-0 pointer-events-auto bg-transparent"
+            onClick={() => {
+              setOpenMenuId(null);
+              setMenuCoords(null);
+            }}
+          />
+          <div
+            style={{
+              position: 'fixed',
+              left: `${menuCoords.left}px`,
+              ...(menuCoords.placeAbove
+                ? { bottom: `${window.innerHeight - menuCoords.top}px` }
+                : { top: `${menuCoords.top}px` }),
+              width: '180px',
+            }}
+            className="pointer-events-auto z-[99999] rounded-xl border border-border bg-popover/98 backdrop-blur-md p-1.5 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-100 ring-1 ring-border/60"
+          >
+            {canEdit && (
+              <Link
+                href={`/products/${activeMenuProduct.id}/edit`}
+                onClick={() => {
+                  setOpenMenuId(null);
+                  setMenuCoords(null);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors"
+              >
+                <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
+                Edit Details
+              </Link>
+            )}
+
+            {canEdit && !activeMenuProduct.is_imei_tracked && (
+              <button
+                type="button"
+                onClick={() => {
+                  const prod = activeMenuProduct;
+                  setOpenMenuId(null);
+                  setMenuCoords(null);
+                  setAdjustingProduct(prod);
+                  setAdjustQty(0);
+                  setAdjustReason('');
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+              >
+                <Sliders className="h-3.5 w-3.5 text-muted-foreground" />
+                Adjust Stock
+              </button>
+            )}
+
+            {canEdit && (
+              <button
+                type="button"
+                onClick={() => {
+                  const prod = activeMenuProduct;
+                  setOpenMenuId(null);
+                  setMenuCoords(null);
+                  handleToggleStatus(prod.id, !prod.is_active);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+              >
+                {activeMenuProduct.is_active ? (
+                  <>
+                    <Archive className="h-3.5 w-3.5 text-muted-foreground" />
+                    Archive Product
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-3.5 w-3.5 text-primary" />
+                    Reactivate Product
+                  </>
+                )}
+              </button>
+            )}
+
+            {canDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  const prod = activeMenuProduct;
+                  setOpenMenuId(null);
+                  setMenuCoords(null);
+                  setProductToDelete(prod);
+                }}
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </button>
+            )}
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Pagination */}
       {totalPages > 1 && (
@@ -523,7 +608,7 @@ export function ProductsTable({
       {/* Stock Adjustment Dialog (Section 13) */}
       {adjustingProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
                 <h3 className="font-bold text-base text-foreground">Adjust Stock Quantity</h3>
