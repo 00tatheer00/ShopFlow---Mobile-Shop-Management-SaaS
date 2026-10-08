@@ -205,10 +205,10 @@ export function ExpensesClient({
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Today's Expenses */}
-        <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out relative">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 truncate">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
                 Today Shop Expenses
               </span>
               <CardInfoTooltip
@@ -216,19 +216,19 @@ export function ExpensesClient({
                 urduDetail="آج کے دن دکان سے کتنا خرچہ ہوا ہے (چائے، کھانا، بجلی، پیٹرول وغیرہ)۔"
               />
             </div>
-            <div className="rounded-xl p-2 border shrink-0 bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
-              <Calendar className="h-4 w-4" />
+            <div className="rounded-xl p-2.5 border shrink-0 bg-amber-600 text-white border-amber-500 shadow-xs shadow-amber-500/30">
+              <Calendar className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">{formatPKR(todayTotal)}</div>
-          <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Outflow recorded today</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">{formatPKR(todayTotal)}</div>
+          <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Outflow recorded today</p>
         </div>
 
         {/* This Month */}
-        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out relative">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 truncate">
+              <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
                 This Month Total Expense
               </span>
               <CardInfoTooltip
@@ -236,19 +236,19 @@ export function ExpensesClient({
                 urduDetail="اس پورے مہینے میں دکان کے کل کتنے اخراجات ہو چکے ہیں۔"
               />
             </div>
-            <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
-              <TrendingDown className="h-4 w-4" />
+            <div className="rounded-xl p-2.5 border shrink-0 bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30">
+              <TrendingDown className="h-4.5 w-4.5" />
             </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">{formatPKR(monthTotal)}</div>
-          <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Total overhead for current month</p>
+          <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Total overhead for current month</p>
         </div>
 
         {/* Total Records */}
-        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+              <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
                 Total Expense Slips
               </span>
               <CardInfoTooltip
@@ -256,12 +256,12 @@ export function ExpensesClient({
                 urduDetail="اب تک کتنی خرچہ پرچیاں (اخراجات کے ریکارڈ) سسٹم میں درج ہو چکے ہیں۔"
               />
             </div>
-            <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
-              <Receipt className="h-4 w-4" />
+            <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
+              <Receipt className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{totalCount}</div>
-          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Logged expense slips</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{totalCount}</div>
+          <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Logged expense slips</p>
         </div>
       </div>
 
@@ -269,10 +269,10 @@ export function ExpensesClient({
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => handleFilterCategory('')}
-          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+          className={`rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
             !selectedCategory
-              ? 'bg-primary text-primary-foreground'
-              : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
           }`}
         >
           All Categories
@@ -281,10 +281,10 @@ export function ExpensesClient({
           <button
             key={cat.id}
             onClick={() => handleFilterCategory(cat.id)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
               selectedCategory === cat.id
-                ? 'bg-primary text-primary-foreground'
-                : 'border border-border bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
+                ? 'bg-primary text-primary-foreground shadow-xs'
+                : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
             }`}
           >
             {cat.name}

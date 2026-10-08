@@ -39,69 +39,69 @@ function getProductTheme(product: ProductWithStock, categories: ProductCategory[
   const cat = categories.find((c) => c.id === product.category_id)?.name?.toLowerCase() || '';
   if (cat.includes('smart') || cat.includes('phone') || product.is_imei_tracked) {
     return {
-      bg: 'bg-emerald-500/10 dark:bg-emerald-950/40',
-      border: 'border-emerald-500/25 dark:border-emerald-800/40',
-      hoverBorder: 'hover:border-emerald-500 dark:hover:border-emerald-400',
-      badge: 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border-emerald-500/30',
-      price: 'text-emerald-700 dark:text-emerald-300',
-      stock: 'text-emerald-600 dark:text-emerald-400',
+      bg: 'bg-emerald-50/90 dark:bg-emerald-950/40',
+      border: 'border-2 border-emerald-300 dark:border-emerald-700',
+      hoverBorder: 'hover:border-emerald-500 dark:hover:border-emerald-400 hover:shadow-md',
+      badge: 'bg-emerald-600 text-white border-emerald-700 shadow-2xs',
+      price: 'text-emerald-950 dark:text-emerald-200 font-black',
+      stock: 'text-emerald-800 dark:text-emerald-300 font-bold',
     };
   }
   if (cat.includes('used') || cat.includes('second') || cat.includes('kit') || cat.includes('old')) {
     return {
-      bg: 'bg-amber-500/10 dark:bg-amber-950/40',
-      border: 'border-amber-500/25 dark:border-amber-800/40',
-      hoverBorder: 'hover:border-amber-500 dark:hover:border-amber-400',
-      badge: 'bg-amber-500/20 text-amber-800 dark:text-amber-200 border-amber-500/30',
-      price: 'text-amber-700 dark:text-amber-300',
-      stock: 'text-amber-600 dark:text-amber-400',
+      bg: 'bg-amber-50/90 dark:bg-amber-950/40',
+      border: 'border-2 border-amber-300 dark:border-amber-700',
+      hoverBorder: 'hover:border-amber-500 dark:hover:border-amber-400 hover:shadow-md',
+      badge: 'bg-amber-600 text-white border-amber-700 shadow-2xs',
+      price: 'text-amber-950 dark:text-amber-200 font-black',
+      stock: 'text-amber-800 dark:text-amber-300 font-bold',
     };
   }
   if (cat.includes('access') || cat.includes('charger') || cat.includes('cable') || cat.includes('handfree') || cat.includes('ear') || cat.includes('airpod')) {
     return {
-      bg: 'bg-sky-500/10 dark:bg-sky-950/40',
-      border: 'border-sky-500/25 dark:border-sky-800/40',
-      hoverBorder: 'hover:border-sky-500 dark:hover:border-sky-400',
-      badge: 'bg-sky-500/20 text-sky-800 dark:text-sky-200 border-sky-500/30',
-      price: 'text-sky-700 dark:text-sky-300',
-      stock: 'text-sky-600 dark:text-sky-400',
+      bg: 'bg-sky-50/90 dark:bg-sky-950/40',
+      border: 'border-2 border-sky-300 dark:border-sky-700',
+      hoverBorder: 'hover:border-sky-500 dark:hover:border-sky-400 hover:shadow-md',
+      badge: 'bg-sky-600 text-white border-sky-700 shadow-2xs',
+      price: 'text-sky-950 dark:text-sky-200 font-black',
+      stock: 'text-sky-800 dark:text-sky-300 font-bold',
     };
   }
   if (cat.includes('glass') || cat.includes('protect') || cat.includes('sheet') || cat.includes('cover') || cat.includes('case')) {
     return {
-      bg: 'bg-purple-500/10 dark:bg-purple-950/40',
-      border: 'border-purple-500/25 dark:border-purple-800/40',
-      hoverBorder: 'hover:border-purple-500 dark:hover:border-purple-400',
-      badge: 'bg-purple-500/20 text-purple-800 dark:text-purple-200 border-purple-500/30',
-      price: 'text-purple-700 dark:text-purple-300',
-      stock: 'text-purple-600 dark:text-purple-400',
+      bg: 'bg-purple-50/90 dark:bg-purple-950/40',
+      border: 'border-2 border-purple-300 dark:border-purple-700',
+      hoverBorder: 'hover:border-purple-500 dark:hover:border-purple-400 hover:shadow-md',
+      badge: 'bg-purple-600 text-white border-purple-700 shadow-2xs',
+      price: 'text-purple-950 dark:text-purple-200 font-black',
+      stock: 'text-purple-800 dark:text-purple-300 font-bold',
     };
   }
 
   const palettes: ProductTheme[] = [
     {
-      bg: 'bg-indigo-500/10 dark:bg-indigo-950/40',
-      border: 'border-indigo-500/25 dark:border-indigo-800/40',
-      hoverBorder: 'hover:border-indigo-500 dark:hover:border-indigo-400',
-      badge: 'bg-indigo-500/20 text-indigo-800 dark:text-indigo-200 border-indigo-500/30',
-      price: 'text-indigo-700 dark:text-indigo-300',
-      stock: 'text-indigo-600 dark:text-indigo-400',
+      bg: 'bg-indigo-50/90 dark:bg-indigo-950/40',
+      border: 'border-2 border-indigo-300 dark:border-indigo-700',
+      hoverBorder: 'hover:border-indigo-500 dark:hover:border-indigo-400 hover:shadow-md',
+      badge: 'bg-indigo-600 text-white border-indigo-700 shadow-2xs',
+      price: 'text-indigo-950 dark:text-indigo-200 font-black',
+      stock: 'text-indigo-800 dark:text-indigo-300 font-bold',
     },
     {
-      bg: 'bg-rose-500/10 dark:bg-rose-950/40',
-      border: 'border-rose-500/25 dark:border-rose-800/40',
-      hoverBorder: 'hover:border-rose-500 dark:hover:border-rose-400',
-      badge: 'bg-rose-500/20 text-rose-800 dark:text-rose-200 border-rose-500/30',
-      price: 'text-rose-700 dark:text-rose-300',
-      stock: 'text-rose-600 dark:text-rose-400',
+      bg: 'bg-rose-50/90 dark:bg-rose-950/40',
+      border: 'border-2 border-rose-300 dark:border-rose-700',
+      hoverBorder: 'hover:border-rose-500 dark:hover:border-rose-400 hover:shadow-md',
+      badge: 'bg-rose-600 text-white border-rose-700 shadow-2xs',
+      price: 'text-rose-950 dark:text-rose-200 font-black',
+      stock: 'text-rose-800 dark:text-rose-300 font-bold',
     },
     {
-      bg: 'bg-teal-500/10 dark:bg-teal-950/40',
-      border: 'border-teal-500/25 dark:border-teal-800/40',
-      hoverBorder: 'hover:border-teal-500 dark:hover:border-teal-400',
-      badge: 'bg-teal-500/20 text-teal-800 dark:text-teal-200 border-teal-500/30',
-      price: 'text-teal-700 dark:text-teal-300',
-      stock: 'text-teal-600 dark:text-teal-400',
+      bg: 'bg-teal-50/90 dark:bg-teal-950/40',
+      border: 'border-2 border-teal-300 dark:border-teal-700',
+      hoverBorder: 'hover:border-teal-500 dark:hover:border-teal-400 hover:shadow-md',
+      badge: 'bg-teal-600 text-white border-teal-700 shadow-2xs',
+      price: 'text-teal-950 dark:text-teal-200 font-black',
+      stock: 'text-teal-800 dark:text-teal-300 font-bold',
     },
   ];
   return palettes[index % palettes.length];
@@ -497,10 +497,10 @@ export function PosTerminal({
               <button
                 type="button"
                 onClick={() => setSelectedCategory('')}
-                className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all shrink-0 cursor-pointer ${
                   !selectedCategory
                     ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                    : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-indigo-400'
                 }`}
               >
                 All ({localProducts.filter((p) => p.is_active && p.stock_quantity > 0).length})
@@ -518,10 +518,10 @@ export function PosTerminal({
                     key={c.id}
                     type="button"
                     onClick={() => setSelectedCategory(c.id)}
-                    className={`rounded-lg px-2.5 py-1 text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                    className={`rounded-lg px-2.5 py-1 text-xs font-black transition-all shrink-0 cursor-pointer ${
                       isSelected
                         ? `${activeColor} shadow-xs`
-                        : 'border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
+                        : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
                     }`}
                   >
                     {c.name}
@@ -532,15 +532,15 @@ export function PosTerminal({
 
             {/* Brand Chips */}
             {brands && brands.length > 0 && (
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1.5 border-t border-border/50">
-                <span className="text-[11px] font-bold text-muted-foreground shrink-0 mr-1">Brand:</span>
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1.5 border-t border-border">
+                <span className="text-[11px] font-black text-slate-700 dark:text-slate-300 shrink-0 mr-1">Brand:</span>
                 <button
                   type="button"
                   onClick={() => setSelectedBrand('')}
-                  className={`rounded-md px-2 py-0.5 text-[11px] font-bold transition shrink-0 cursor-pointer ${
+                  className={`rounded-md px-2 py-0.5 text-[11px] font-black transition shrink-0 cursor-pointer ${
                     !selectedBrand
-                      ? 'bg-secondary text-secondary-foreground shadow-2xs'
-                      : 'border border-border bg-background text-muted-foreground hover:bg-muted'
+                      ? 'bg-primary text-white shadow-2xs'
+                      : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/40'
                   }`}
                 >
                   All Brands
@@ -550,10 +550,10 @@ export function PosTerminal({
                     key={b.id}
                     type="button"
                     onClick={() => setSelectedBrand(b.id)}
-                    className={`rounded-md px-2 py-0.5 text-[11px] font-semibold transition shrink-0 cursor-pointer ${
+                    className={`rounded-md px-2 py-0.5 text-[11px] font-black transition shrink-0 cursor-pointer ${
                       selectedBrand === b.id
-                        ? 'bg-secondary text-secondary-foreground font-bold shadow-2xs'
-                        : 'border border-border bg-background text-muted-foreground hover:bg-muted'
+                        ? 'bg-primary text-white shadow-2xs'
+                        : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/40'
                     }`}
                   >
                     {b.name}
@@ -844,7 +844,7 @@ export function PosTerminal({
               </div>
             </div>
 
-            {/* Quick 1-touch Presets (Color-coded) */}
+            {/* Quick 1-touch Presets (Color-coded High Contrast) */}
             <div className="grid grid-cols-4 gap-1.5">
               <button
                 type="button"
@@ -852,7 +852,7 @@ export function PosTerminal({
                   setPaymentMethod('cash');
                   setAmountPaid(total);
                 }}
-                className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 py-1 text-[11px] font-bold transition-colors text-center cursor-pointer"
+                className="rounded-lg border-2 border-emerald-500 bg-emerald-600 hover:bg-emerald-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
               >
                 Exact Cash
               </button>
@@ -862,7 +862,7 @@ export function PosTerminal({
                   setPaymentMethod('easypaisa');
                   setAmountPaid(total);
                 }}
-                className="rounded-lg border border-teal-500/30 bg-teal-500/10 hover:bg-teal-500/20 text-teal-800 dark:text-teal-300 py-1 text-[11px] font-bold transition-colors text-center cursor-pointer"
+                className="rounded-lg border-2 border-teal-500 bg-teal-600 hover:bg-teal-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
               >
                 EasyPaisa
               </button>
@@ -872,7 +872,7 @@ export function PosTerminal({
                   setPaymentMethod('jazzcash');
                   setAmountPaid(total);
                 }}
-                className="rounded-lg border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-800 dark:text-orange-300 py-1 text-[11px] font-bold transition-colors text-center cursor-pointer"
+                className="rounded-lg border-2 border-amber-600 bg-amber-600 hover:bg-amber-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
               >
                 JazzCash
               </button>
@@ -881,7 +881,7 @@ export function PosTerminal({
                 onClick={() => {
                   setAmountPaid(0);
                 }}
-                className="rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-800 dark:text-rose-300 py-1 text-[11px] font-bold transition-colors text-center cursor-pointer"
+                className="rounded-lg border-2 border-rose-500 bg-rose-600 hover:bg-rose-700 text-white py-1.5 text-[11px] font-black transition-colors text-center cursor-pointer shadow-xs active:scale-95"
               >
                 Full Udhaar
               </button>
@@ -889,16 +889,16 @@ export function PosTerminal({
 
             {/* Udhaar / Change alert strip */}
             {due > 0 && (
-              <div className="rounded-lg border border-rose-300 bg-rose-500/15 p-1.5 text-xs text-rose-800 dark:text-rose-300 flex justify-between items-center font-bold">
+              <div className="rounded-lg border-2 border-rose-400 bg-rose-100 p-2 text-xs text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200 flex justify-between items-center font-black shadow-2xs">
                 <span>Balance Due (Udhaar):</span>
-                <span>{formatPKR(due * 100)}</span>
+                <span className="font-mono text-sm">{formatPKR(due * 100)}</span>
               </div>
             )}
 
             {cashChange > 0 && paymentMethod === 'cash' && (
-              <div className="rounded-lg border border-emerald-300 bg-emerald-500/15 p-1.5 text-xs text-emerald-800 dark:text-emerald-300 flex justify-between items-center font-bold">
+              <div className="rounded-lg border-2 border-emerald-400 bg-emerald-100 p-2 text-xs text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200 flex justify-between items-center font-black shadow-2xs">
                 <span>Change to Return (Wapsi):</span>
-                <span>{formatPKR(cashChange * 100)}</span>
+                <span className="font-mono text-sm">{formatPKR(cashChange * 100)}</span>
               </div>
             )}
 

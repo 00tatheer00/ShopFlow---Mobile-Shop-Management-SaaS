@@ -388,12 +388,12 @@ export function ProductsTable({
                       <div className="flex items-center justify-center gap-1.5">
                         {product.is_imei_tracked ? (
                           <span
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ${
+                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${
                               isOutOfStock
-                                ? 'bg-destructive/10 text-destructive'
+                                ? 'bg-rose-100 border border-rose-300 text-rose-950 dark:bg-rose-950/70 dark:border-rose-700 dark:text-rose-200'
                                 : isLowStock
-                                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
-                                : 'bg-primary/10 text-primary'
+                                ? 'bg-amber-100 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-700 dark:text-amber-200'
+                                : 'bg-primary/15 border border-primary/30 text-primary dark:text-primary-foreground'
                             }`}
                           >
                             <Smartphone className="h-3 w-3" />
@@ -402,14 +402,14 @@ export function ProductsTable({
                         ) : (
                           <>
                             {isLowStock && (
-                              <AlertTriangle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
                             )}
                             <span
-                              className={`font-semibold ${
+                              className={`font-black ${
                                 isOutOfStock
-                                  ? 'text-destructive'
+                                  ? 'text-rose-700 dark:text-rose-300'
                                   : isLowStock
-                                  ? 'text-warning'
+                                  ? 'text-amber-700 dark:text-amber-300'
                                   : 'text-foreground'
                               }`}
                             >
@@ -422,10 +422,10 @@ export function ProductsTable({
                     </td>
                     <td className="px-4 py-3.5 text-center hidden sm:table-cell">
                       <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider ${
                           product.is_active
-                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
-                            : 'bg-muted text-muted-foreground'
+                            ? 'bg-emerald-100 border border-emerald-400 text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200'
+                            : 'bg-muted border border-border text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         {product.is_active ? 'Active' : 'Archived'}

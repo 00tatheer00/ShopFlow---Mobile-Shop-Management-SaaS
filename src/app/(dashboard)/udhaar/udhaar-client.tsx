@@ -181,10 +181,10 @@ export function UdhaarClient({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Total Outstanding Udhaar */}
-        <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out relative">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 truncate">
+              <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
                 Total Udhaar to Collect
               </span>
               <CardInfoTooltip
@@ -192,21 +192,21 @@ export function UdhaarClient({
                 urduDetail="مارکیٹ اور گاہکوں سے دکان کا کل کتنا ادھار وصول ہونا باقی ہے۔"
               />
             </div>
-            <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
-              <Wallet className="h-4 w-4" />
+            <div className="rounded-xl p-2.5 border shrink-0 bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30">
+              <Wallet className="h-4.5 w-4.5" />
             </div>
           </div>
           <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
             {formatPKR(totalUdhaar)}
           </div>
-          <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Market credit pending collection</p>
+          <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Market credit pending collection</p>
         </div>
 
         {/* Customers with Udhaar */}
-        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+              <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
                 Customers with Balance
               </span>
               <CardInfoTooltip
@@ -214,19 +214,19 @@ export function UdhaarClient({
                 urduDetail="اس وقت کتنے گاہکوں کے کھاتے میں ادھار کی رقم واجب الادا ہے۔"
               />
             </div>
-            <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
-              <Building className="h-4 w-4" />
+            <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
+              <Building className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{debtorsCount}</div>
-          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Customers who owe balance</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{debtorsCount}</div>
+          <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Customers who owe balance</p>
         </div>
 
         {/* Ledger Transactions */}
-        <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out relative">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 truncate">
+              <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
                 Total Khata Entries
               </span>
               <CardInfoTooltip
@@ -234,12 +234,12 @@ export function UdhaarClient({
                 urduDetail="ادھار دینے اور وصولی کرنے کی اب تک کل کتنی انٹریز درج ہو چکی ہیں۔"
               />
             </div>
-            <div className="rounded-xl p-2 border shrink-0 bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
-              <History className="h-4 w-4" />
+            <div className="rounded-xl p-2.5 border shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30">
+              <History className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">{recentLedger.length}</div>
-          <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Recent credits & wasooli entries</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{recentLedger.length}</div>
+          <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Recent credits & wasooli entries</p>
         </div>
       </div>
 
@@ -320,7 +320,7 @@ export function UdhaarClient({
                           {customer.phone}
                         </td>
                         <td className="px-4 py-3.5 text-right">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-sm font-bold text-rose-600 dark:bg-rose-950/40 dark:text-rose-400">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 border border-rose-400 px-2.5 py-0.5 text-sm font-black text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200">
                             {formatPKR(customer.udhaar_balance)}
                           </span>
                         </td>
@@ -330,10 +330,10 @@ export function UdhaarClient({
                               href={getWhatsAppReminderUrl(customer)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600 hover:bg-emerald-500/20 dark:text-emerald-400"
+                              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-emerald-400 bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-950 hover:bg-emerald-200 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200 shadow-2xs transition-colors"
                               title="Send WhatsApp Payment Reminder"
                             >
-                              <MessageCircle className="h-3.5 w-3.5" />
+                              <MessageCircle className="h-3.5 w-3.5 text-emerald-700" />
                               Reminder
                             </a>
                             {canManage && (
@@ -342,7 +342,7 @@ export function UdhaarClient({
                                   setFormError(null);
                                   setPaymentModalCustomer(customer);
                                 }}
-                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-emerald-500"
+                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1 text-xs font-black text-white shadow-xs transition-colors cursor-pointer"
                               >
                                 <ArrowDownLeft className="h-3.5 w-3.5" />
                                 Receive

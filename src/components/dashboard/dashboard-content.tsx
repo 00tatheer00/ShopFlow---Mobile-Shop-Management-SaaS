@@ -52,16 +52,16 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
         {isOwner && subscription && (
           <div className="flex items-center gap-2">
             {subscription.status === 'paid' ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                <CheckCircle2 className="h-3.5 w-3.5" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border-2 border-emerald-400 px-3 py-1 text-xs font-black text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
                 <span>{subscription.month_name} Active (Paid)</span>
               </span>
             ) : (
               <button
                 onClick={() => setShowBankDetails(true)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-3 py-1 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/25 transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border-2 border-amber-500 px-3.5 py-1 text-xs font-black text-amber-950 hover:bg-amber-200 dark:bg-amber-950/80 dark:border-amber-500 dark:text-amber-200 transition cursor-pointer shadow-xs"
               >
-                <AlertTriangle className="h-3.5 w-3.5" />
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
                 <span>{subscription.month_name} Due (Rs. 8,000) &bull; Pay Now</span>
               </button>
             )}
@@ -73,23 +73,23 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
       {isOwner && subscription && subscription.status !== 'paid' && (() => {
         const effectiveAmount = (subscription.amount === 650000 || subscription.amount < 800000) ? 800000 : subscription.amount;
         return (
-          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/40 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
             <div className="flex items-start sm:items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500 font-bold">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-600 text-white font-bold shadow-xs">
                 <CreditCard className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-foreground">
+                <h3 className="text-sm font-black text-amber-950 dark:text-amber-100">
                   Monthly Subscription Due: Rs. {toRupees(effectiveAmount).toLocaleString()} ({subscription.month_name})
                 </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
+                <p className="text-xs font-medium text-amber-900/80 dark:text-amber-200/80 mt-0.5">
                   Due Date: {new Date(subscription.due_date).toLocaleDateString()}. Please send Rs. 8,000 to keep uninterrupted POS and inventory access.
                 </p>
               </div>
             </div>
             <button
               onClick={() => setShowBankDetails(true)}
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 text-xs font-bold shadow-sm transition shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-4 py-2.5 text-xs font-black shadow-md transition shrink-0 cursor-pointer"
             >
               <span>View Bank / EasyPaisa Details</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
@@ -281,11 +281,11 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
 
       {/* Low Stock Alert */}
       {metrics.low_stock_count > 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-warning/20 bg-warning/5 px-4 py-3">
-          <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
+        <div className="flex items-center gap-3 rounded-xl border-2 border-amber-400 bg-amber-50 dark:bg-amber-950/40 px-4 py-3 shadow-xs">
+          <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0" />
           <div className="flex-1">
             <div className="flex items-center gap-1.5">
-              <p className="text-sm font-bold text-foreground">
+              <p className="text-sm font-black text-amber-950 dark:text-amber-100">
                 Stock Ending Soon: {metrics.low_stock_count} item{metrics.low_stock_count > 1 ? 's' : ''}
               </p>
               <CardInfoTooltip
@@ -293,13 +293,13 @@ export function DashboardContent({ metrics, userName, role, subscription }: Dash
                 urduDetail="وہ سامان جس کا اسٹاک ختم ہونے کے قریب ہے تاکہ آپ بروقت نیا مال منگوا سکیں۔"
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs font-semibold text-amber-900/80 dark:text-amber-200/80 mt-0.5">
               Check items to reorder before stock runs out
             </p>
           </div>
           <a
             href="/products"
-            className="flex items-center gap-1 text-xs font-semibold text-warning hover:text-warning/80 transition-colors"
+            className="flex items-center gap-1 text-xs font-black text-amber-800 hover:text-amber-950 dark:text-amber-300 dark:hover:text-amber-100 transition-colors"
           >
             View Items
             <ArrowUpRight className="h-3 w-3" />
@@ -392,74 +392,74 @@ function MetricCard({
 }) {
   const variantStyles: Record<MetricVariant, MetricStyle> = {
     sales: {
-      cardBg: 'bg-blue-50/80 dark:bg-blue-950/30',
-      cardBorder: 'border-blue-200/50 dark:border-blue-900/40',
-      hoverBorder: 'hover:border-blue-500 dark:hover:border-blue-400',
-      titleColor: 'text-blue-700 dark:text-blue-300',
-      iconBg: 'bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800',
-      iconColor: 'text-blue-600 dark:text-blue-400',
-      valueColor: 'text-blue-950 dark:text-blue-50',
-      subColor: 'text-blue-600/80 dark:text-blue-400/80',
+      cardBg: 'bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card',
+      cardBorder: 'border-2 border-blue-300 dark:border-blue-700 shadow-xs',
+      hoverBorder: 'hover:border-blue-600 dark:hover:border-blue-400 hover:shadow-md',
+      titleColor: 'text-blue-900 dark:text-blue-200',
+      iconBg: 'bg-blue-600 text-white shadow-xs shadow-blue-500/30 border-blue-500',
+      iconColor: 'text-white',
+      valueColor: 'text-slate-950 dark:text-white',
+      subColor: 'text-blue-900/80 dark:text-blue-200/90',
     },
     profit: {
-      cardBg: 'bg-emerald-50/80 dark:bg-emerald-950/30',
-      cardBorder: 'border-emerald-200/50 dark:border-emerald-900/40',
-      hoverBorder: 'hover:border-emerald-500 dark:hover:border-emerald-400',
-      titleColor: 'text-emerald-700 dark:text-emerald-300',
-      iconBg: 'bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      valueColor: 'text-emerald-950 dark:text-emerald-50',
-      subColor: 'text-emerald-600/80 dark:text-emerald-400/80',
+      cardBg: 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card',
+      cardBorder: 'border-2 border-emerald-300 dark:border-emerald-700 shadow-xs',
+      hoverBorder: 'hover:border-emerald-600 dark:hover:border-emerald-400 hover:shadow-md',
+      titleColor: 'text-emerald-900 dark:text-emerald-200',
+      iconBg: 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/30 border-emerald-500',
+      iconColor: 'text-white',
+      valueColor: 'text-slate-950 dark:text-white',
+      subColor: 'text-emerald-900/80 dark:text-emerald-200/90',
     },
     cash: {
-      cardBg: 'bg-cyan-50/80 dark:bg-cyan-950/30',
-      cardBorder: 'border-cyan-200/50 dark:border-cyan-900/40',
-      hoverBorder: 'hover:border-cyan-500 dark:hover:border-cyan-400',
-      titleColor: 'text-cyan-700 dark:text-cyan-300',
-      iconBg: 'bg-cyan-100/90 dark:bg-cyan-900/60 border-cyan-200 dark:border-cyan-800',
-      iconColor: 'text-cyan-600 dark:text-cyan-400',
-      valueColor: 'text-cyan-950 dark:text-cyan-50',
-      subColor: 'text-cyan-600/80 dark:text-cyan-400/80',
+      cardBg: 'bg-gradient-to-br from-cyan-100/90 via-cyan-50/70 to-card dark:from-cyan-950/70 dark:via-cyan-900/40 dark:to-card',
+      cardBorder: 'border-2 border-cyan-300 dark:border-cyan-700 shadow-xs',
+      hoverBorder: 'hover:border-cyan-600 dark:hover:border-cyan-400 hover:shadow-md',
+      titleColor: 'text-cyan-900 dark:text-cyan-200',
+      iconBg: 'bg-cyan-600 text-white shadow-xs shadow-cyan-500/30 border-cyan-500',
+      iconColor: 'text-white',
+      valueColor: 'text-slate-950 dark:text-white',
+      subColor: 'text-cyan-900/80 dark:text-cyan-200/90',
     },
     udhaar: {
-      cardBg: 'bg-amber-50/80 dark:bg-amber-950/30',
-      cardBorder: 'border-amber-200/50 dark:border-amber-900/40',
-      hoverBorder: 'hover:border-amber-500 dark:hover:border-amber-400',
-      titleColor: 'text-amber-700 dark:text-amber-300',
-      iconBg: 'bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800',
-      iconColor: 'text-amber-600 dark:text-amber-400',
-      valueColor: 'text-amber-950 dark:text-amber-50',
-      subColor: 'text-amber-600/80 dark:text-amber-400/80',
+      cardBg: 'bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card',
+      cardBorder: 'border-2 border-amber-300 dark:border-amber-700 shadow-xs',
+      hoverBorder: 'hover:border-amber-600 dark:hover:border-amber-400 hover:shadow-md',
+      titleColor: 'text-amber-950 dark:text-amber-200',
+      iconBg: 'bg-amber-600 text-white shadow-xs shadow-amber-500/30 border-amber-500',
+      iconColor: 'text-white',
+      valueColor: 'text-amber-950 dark:text-amber-100',
+      subColor: 'text-amber-900/80 dark:text-amber-200/90',
     },
     cogs: {
-      cardBg: 'bg-violet-50/80 dark:bg-violet-950/30',
-      cardBorder: 'border-violet-200/50 dark:border-violet-900/40',
-      hoverBorder: 'hover:border-violet-500 dark:hover:border-violet-400',
-      titleColor: 'text-violet-700 dark:text-violet-300',
-      iconBg: 'bg-violet-100/90 dark:bg-violet-900/60 border-violet-200 dark:border-violet-800',
-      iconColor: 'text-violet-600 dark:text-violet-400',
-      valueColor: 'text-violet-950 dark:text-violet-50',
-      subColor: 'text-violet-600/80 dark:text-violet-400/80',
+      cardBg: 'bg-gradient-to-br from-violet-100/90 via-violet-50/70 to-card dark:from-violet-950/70 dark:via-violet-900/40 dark:to-card',
+      cardBorder: 'border-2 border-violet-300 dark:border-violet-700 shadow-xs',
+      hoverBorder: 'hover:border-violet-600 dark:hover:border-violet-400 hover:shadow-md',
+      titleColor: 'text-violet-900 dark:text-violet-200',
+      iconBg: 'bg-violet-600 text-white shadow-xs shadow-violet-500/30 border-violet-500',
+      iconColor: 'text-white',
+      valueColor: 'text-slate-950 dark:text-white',
+      subColor: 'text-violet-900/80 dark:text-violet-200/90',
     },
     expense: {
-      cardBg: 'bg-rose-50/80 dark:bg-rose-950/30',
-      cardBorder: 'border-rose-200/50 dark:border-rose-900/40',
-      hoverBorder: 'hover:border-rose-500 dark:hover:border-rose-400',
-      titleColor: 'text-rose-700 dark:text-rose-300',
-      iconBg: 'bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800',
-      iconColor: 'text-rose-600 dark:text-rose-400',
+      cardBg: 'bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card',
+      cardBorder: 'border-2 border-rose-300 dark:border-rose-700 shadow-xs',
+      hoverBorder: 'hover:border-rose-600 dark:hover:border-rose-400 hover:shadow-md',
+      titleColor: 'text-rose-950 dark:text-rose-200',
+      iconBg: 'bg-rose-600 text-white shadow-xs shadow-rose-500/30 border-rose-500',
+      iconColor: 'text-white',
       valueColor: 'text-rose-700 dark:text-rose-300',
-      subColor: 'text-rose-600/80 dark:text-rose-400/80',
+      subColor: 'text-rose-900/80 dark:text-rose-200/90',
     },
     net_profit: {
-      cardBg: 'bg-emerald-50/80 dark:bg-emerald-950/30',
-      cardBorder: 'border-emerald-200/50 dark:border-emerald-900/40',
-      hoverBorder: 'hover:border-emerald-500 dark:hover:border-emerald-400',
-      titleColor: 'text-emerald-700 dark:text-emerald-300',
-      iconBg: 'bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800',
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      cardBg: 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card',
+      cardBorder: 'border-2 border-emerald-300 dark:border-emerald-700 shadow-xs',
+      hoverBorder: 'hover:border-emerald-600 dark:hover:border-emerald-400 hover:shadow-md',
+      titleColor: 'text-emerald-900 dark:text-emerald-200',
+      iconBg: 'bg-emerald-600 text-white shadow-xs shadow-emerald-500/30 border-emerald-500',
+      iconColor: 'text-white',
       valueColor: 'text-emerald-700 dark:text-emerald-300',
-      subColor: 'text-emerald-600/80 dark:text-emerald-400/80',
+      subColor: 'text-emerald-900/80 dark:text-emerald-200/90',
     },
   };
 
@@ -467,23 +467,23 @@ function MetricCard({
 
   return (
     <div
-      className={`rounded-2xl border p-5 transition-colors duration-300 ease-out relative ${style.cardBg} ${style.cardBorder} ${style.hoverBorder}`}
+      className={`rounded-2xl border p-5 transition-all duration-200 ease-out relative ${style.cardBg} ${style.cardBorder} ${style.hoverBorder}`}
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 min-w-0">
-          <p className={`text-xs font-bold uppercase tracking-wider truncate ${style.titleColor}`}>
+          <p className={`text-xs font-black uppercase tracking-wider truncate ${style.titleColor}`}>
             {title}
           </p>
           <CardInfoTooltip title={title} urduDetail={urduDetail} />
         </div>
-        <div className={`rounded-xl p-2 border shrink-0 ${style.iconBg} ${style.iconColor}`}>
-          <Icon className="h-4 w-4" />
+        <div className={`rounded-xl p-2.5 border shrink-0 ${style.iconBg} ${style.iconColor}`}>
+          <Icon className="h-4.5 w-4.5" />
         </div>
       </div>
       <p className={`mt-3 text-2xl sm:text-3xl font-black tracking-tight tabular-nums font-mono ${style.valueColor}`}>
         {value}
       </p>
-      <p className={`mt-1 text-xs font-medium ${style.subColor}`}>{subtitle}</p>
+      <p className={`mt-1 text-xs font-semibold ${style.subColor}`}>{subtitle}</p>
     </div>
   );
 }

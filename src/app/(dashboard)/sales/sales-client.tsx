@@ -212,39 +212,39 @@ export function SalesClient({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {/* Total Sales Revenue */}
-        <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Total Sales Revenue</span>
-            <div className="rounded-xl p-2 border bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
-              <DollarSign className="h-4 w-4" />
+            <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200">Total Sales Revenue</span>
+            <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
+              <DollarSign className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalRevenue)}</div>
-          <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Gross completed sales volume</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(totalRevenue)}</div>
+          <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Gross completed sales volume</p>
         </div>
 
         {/* Today's Invoices */}
-        <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Today&apos;s Invoices</span>
-            <div className="rounded-xl p-2 border bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
-              <TrendingUp className="h-4 w-4" />
+            <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200">Today&apos;s Invoices</span>
+            <div className="rounded-xl p-2.5 border shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30">
+              <TrendingUp className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">{todaySalesCount}</div>
-          <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Transactions created today</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{todaySalesCount}</div>
+          <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Transactions created today</p>
         </div>
 
         {/* Sales on Credit (Udhaar) */}
-        <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out">
+        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Sales on Credit (Udhaar)</span>
-            <div className="rounded-xl p-2 border bg-amber-100/90 dark:bg-amber-900/60 border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400">
-              <Receipt className="h-4 w-4" />
+            <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200">Sales on Credit (Udhaar)</span>
+            <div className="rounded-xl p-2.5 border shrink-0 bg-amber-600 text-white border-amber-500 shadow-xs shadow-amber-500/30">
+              <Receipt className="h-4.5 w-4.5" />
             </div>
           </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">{formatPKR(totalUdhaarDue)}</div>
-          <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Unpaid balances from credit invoices</p>
+          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">{formatPKR(totalUdhaarDue)}</div>
+          <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Unpaid balances from credit invoices</p>
         </div>
       </div>
 
@@ -364,10 +364,10 @@ export function SalesClient({
                       </td>
                       <td className="px-4 py-3.5 text-center">
                         <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
+                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${
                             isCancelled
-                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400'
-                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400'
+                              ? 'bg-rose-100 border border-rose-400 text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200'
+                              : 'bg-emerald-100 border border-emerald-400 text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200'
                           }`}
                         >
                           {sale.status}

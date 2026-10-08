@@ -306,7 +306,7 @@ export function CustomersClient({
                             <CurrencyDisplay amount={udhaar} isPaisas={true} variant="danger" size="xs" />
                           </Link>
                         ) : (
-                          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 border border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:border-emerald-600 dark:text-emerald-300">
                             Nil (Clear)
                           </span>
                         )}

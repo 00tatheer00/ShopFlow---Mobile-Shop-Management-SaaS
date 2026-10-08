@@ -289,10 +289,10 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {/* Gross Revenue */}
-            <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+                  <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
                     Total Sale Income
                   </span>
                   <CardInfoTooltip
@@ -300,19 +300,19 @@ export function ReportsClient({
                     urduDetail="منتخب مدت میں دکان کی کل کتنی فروخت (سیلز) ہوئی ہے (نقد اور ادھار دونوں ملا کر)۔"
                   />
                 </div>
-                <div className="rounded-xl p-2 border shrink-0 bg-blue-100/90 dark:bg-blue-900/60 border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400">
-                  <DollarSign className="h-4 w-4" />
+                <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
+                  <DollarSign className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalRevenue)}</div>
-              <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">{salesCount} completed customer sales</p>
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(totalRevenue)}</div>
+              <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">{salesCount} completed customer sales</p>
             </div>
 
             {/* Cost of Goods Sold */}
-            <div className="rounded-2xl p-5 border bg-violet-50/80 dark:bg-violet-950/30 border-violet-200/50 dark:border-violet-900/40 hover:border-violet-500 dark:hover:border-violet-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-violet-100/90 via-violet-50/70 to-card dark:from-violet-950/70 dark:via-violet-900/40 dark:to-card border-violet-300 dark:border-violet-700 hover:border-violet-600 dark:hover:border-violet-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-violet-700 dark:text-violet-300 truncate">
+                  <span className="text-xs font-black uppercase tracking-wider text-violet-900 dark:text-violet-200 truncate">
                     Item Purchase Cost (COGS)
                   </span>
                   <CardInfoTooltip
@@ -320,19 +320,19 @@ export function ReportsClient({
                     urduDetail="فروخت شدہ سامان کی اصل ہول سیل قیمتِ خرید جو دکان نے ڈیلر کو ادا کی تھی۔"
                   />
                 </div>
-                <div className="rounded-xl p-2 border shrink-0 bg-violet-100/90 dark:bg-violet-900/60 border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400">
-                  <ShoppingBag className="h-4 w-4" />
+                <div className="rounded-xl p-2.5 border shrink-0 bg-violet-600 text-white border-violet-500 shadow-xs shadow-violet-500/30">
+                  <ShoppingBag className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-violet-950 dark:text-violet-50">{formatPKR(cogs)}</div>
-              <p className="mt-1 text-xs font-medium text-violet-600/80 dark:text-violet-400/80">Wholesale cost of goods sold</p>
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(cogs)}</div>
+              <p className="mt-1 text-xs font-semibold text-violet-900/80 dark:text-violet-200/90">Wholesale cost of goods sold</p>
             </div>
 
             {/* Gross Profit */}
-            <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 truncate">
+                  <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
                     Sales Profit (Munafa)
                   </span>
                   <CardInfoTooltip
@@ -340,21 +340,21 @@ export function ReportsClient({
                     urduDetail="سیلز میں سے سامان کی ہول سیل قیمتِ خرید نکال کر حاصل ہونے والا منافع۔"
                   />
                 </div>
-                <div className="rounded-xl p-2 border shrink-0 bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400">
-                  <TrendingUp className="h-4 w-4" />
+                <div className="rounded-xl p-2.5 border shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30">
+                  <TrendingUp className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-700 dark:text-emerald-300">
                 {formatPKR(grossProfit)}
               </div>
-              <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Gross Margin: {grossMarginPct}%</p>
+              <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Gross Margin: {grossMarginPct}%</p>
             </div>
 
             {/* Operating Expenses */}
-            <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 truncate">
+                  <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
                     Shop Operating Expenses
                   </span>
                   <CardInfoTooltip
@@ -362,29 +362,29 @@ export function ReportsClient({
                     urduDetail="دکان کے بجلی، کرایہ، چائے، کھانا اور روزمرہ کے کل اخراجات۔"
                   />
                 </div>
-                <div className="rounded-xl p-2 border shrink-0 bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400">
-                  <TrendingDown className="h-4 w-4" />
+                <div className="rounded-xl p-2.5 border shrink-0 bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30">
+                  <TrendingDown className="h-4.5 w-4.5" />
                 </div>
               </div>
               <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
                 {formatPKR(totalExpenses)}
               </div>
-              <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Shop rent, utilities & overheads</p>
+              <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Shop rent, utilities & overheads</p>
             </div>
 
             {/* Net Profit */}
             <div
-              className={`rounded-2xl p-5 border transition-colors duration-300 ease-out relative ${
+              className={`rounded-2xl p-5 border-2 transition-all duration-200 ease-out relative shadow-xs ${
                 isNetPositive
-                  ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400'
-                  : 'bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400'
+                  ? 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600'
+                  : 'bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600'
               }`}
             >
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
-                    className={`text-xs font-bold uppercase tracking-wider truncate ${
-                      isNetPositive ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'
+                    className={`text-xs font-black uppercase tracking-wider truncate ${
+                      isNetPositive ? 'text-emerald-900 dark:text-emerald-200' : 'text-rose-950 dark:text-rose-200'
                     }`}
                   >
                     Net Profit (Asal Bachat)
@@ -395,13 +395,13 @@ export function ReportsClient({
                   />
                 </div>
                 <div
-                  className={`rounded-xl p-2 border shrink-0 ${
+                  className={`rounded-xl p-2.5 border shrink-0 ${
                     isNetPositive
-                      ? 'bg-emerald-100/90 dark:bg-emerald-900/60 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
-                      : 'bg-rose-100/90 dark:bg-rose-900/60 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400'
+                      ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30'
+                      : 'bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30'
                   }`}
                 >
-                  <TrendingUp className="h-4 w-4" />
+                  <TrendingUp className="h-4.5 w-4.5" />
                 </div>
               </div>
               <div
@@ -412,8 +412,8 @@ export function ReportsClient({
                 {formatPKR(netProfit)}
               </div>
               <p
-                className={`mt-1 text-xs font-medium ${
-                  isNetPositive ? 'text-emerald-600/80 dark:text-emerald-400/80' : 'text-rose-600/80 dark:text-rose-400/80'
+                className={`mt-1 text-xs font-semibold ${
+                  isNetPositive ? 'text-emerald-900/80 dark:text-emerald-200/90' : 'text-rose-900/80 dark:text-rose-200/90'
                 }`}
               >
                 Net Margin: {netMarginPct}%
@@ -421,10 +421,10 @@ export function ReportsClient({
             </div>
 
             {/* Total Udhaar Outflow */}
-            <div className="rounded-xl border border-border bg-card p-5 relative">
-              <div className="flex items-center justify-between gap-2 text-muted-foreground">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
+              <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-semibold uppercase tracking-wider truncate">
+                  <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
                     New Udhaar Given
                   </span>
                   <CardInfoTooltip
@@ -432,14 +432,14 @@ export function ReportsClient({
                     urduDetail="اس مدت میں گاہکوں کو کتنا نیا ادھار سامان دیا گیا۔"
                   />
                 </div>
-                <div className="rounded-lg bg-amber-500/10 p-2 text-amber-600 dark:text-amber-400 shrink-0">
-                  <Wallet className="h-4 w-4" />
+                <div className="rounded-xl p-2.5 border shrink-0 bg-amber-600 text-white border-amber-500 shadow-xs shadow-amber-500/30">
+                  <Wallet className="h-4.5 w-4.5" />
                 </div>
               </div>
-              <div className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-400">
+              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">
                 {formatPKR(totalUdhaar)}
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Amount added to customer Udhaar</p>
+              <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Amount added to customer Udhaar</p>
             </div>
           </div>
 
@@ -527,9 +527,9 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Total Sales */}
-            <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
                   Total Sale Income
                 </span>
                 <CardInfoTooltip
@@ -537,14 +537,14 @@ export function ReportsClient({
                   urduDetail="منتخب مدت میں دکان کی کل فروخت سے حاصل ہونے والی آمدن۔"
                 />
               </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">{formatPKR(totalRevenue)}</div>
-              <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">{salesCount} completed sales</p>
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(totalRevenue)}</div>
+              <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">{salesCount} completed sales</p>
             </div>
 
             {/* Discounts Given */}
-            <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
                   Total Discount Given
                 </span>
                 <CardInfoTooltip
@@ -552,16 +552,16 @@ export function ReportsClient({
                   urduDetail="گاہکوں کو دی گئی کل رعایت (ڈسکاؤنٹ)۔"
                 />
               </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-50">
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">
                 {formatPKR(totalDiscounts)}
               </div>
-              <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Total discount concessions</p>
+              <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Total discount concessions</p>
             </div>
 
             {/* Collected (Paid) */}
-            <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
                   Cash / Digital Received
                 </span>
                 <CardInfoTooltip
@@ -569,16 +569,16 @@ export function ReportsClient({
                   urduDetail="گاہکوں سے کاؤنٹر پر وصول کی گئی نقد اور آن لائن رقم۔"
                 />
               </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-700 dark:text-emerald-300">
                 {formatPKR(totalCollected)}
               </div>
-              <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Cash & digital collections</p>
+              <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Cash & digital collections</p>
             </div>
 
             {/* Credit (Udhaar) */}
-            <div className="rounded-2xl p-5 border bg-rose-50/80 dark:bg-rose-950/30 border-rose-200/50 dark:border-rose-900/40 hover:border-rose-500 dark:hover:border-rose-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
                   Customer Udhaar (Khata)
                 </span>
                 <CardInfoTooltip
@@ -589,7 +589,7 @@ export function ReportsClient({
               <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
                 {formatPKR(totalUdhaar)}
               </div>
-              <p className="mt-1 text-xs font-medium text-rose-600/80 dark:text-rose-400/80">Unpaid balance on credit</p>
+              <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Unpaid balance on credit</p>
             </div>
           </div>
 
@@ -753,9 +753,9 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Valuation at Cost */}
-            <div className="rounded-2xl p-5 border bg-blue-50/80 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-900/40 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
                   Shop Stock Value (Cost)
                 </span>
                 <CardInfoTooltip
@@ -763,16 +763,16 @@ export function ReportsClient({
                   urduDetail="دکان میں موجود تمام سامان کی ہول سیل قیمتِ خرید کی کل مالیت۔"
                 />
               </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-blue-950 dark:text-blue-50">
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">
                 {formatPKR(totalInventoryCostValuation)}
               </div>
-              <p className="mt-1 text-xs font-medium text-blue-600/80 dark:text-blue-400/80">Total investment at purchase cost</p>
+              <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Total investment at purchase cost</p>
             </div>
 
             {/* Potential Retail Value */}
-            <div className="rounded-2xl p-5 border bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200/50 dark:border-emerald-900/40 hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
                   Expected Sale Value (Retail)
                 </span>
                 <CardInfoTooltip
@@ -780,16 +780,16 @@ export function ReportsClient({
                   urduDetail="اگر دکان کا سارا مال فروخت ہو جائے تو متوقع کل ریٹیل فروخت کی مالیت۔"
                 />
               </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-950 dark:text-emerald-50">
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-700 dark:text-emerald-300">
                 {formatPKR(totalPotentialRetailValuation)}
               </div>
-              <p className="mt-1 text-xs font-medium text-emerald-600/80 dark:text-emerald-400/80">Expected revenue at selling price</p>
+              <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Expected revenue at selling price</p>
             </div>
 
             {/* Total Units in Stock */}
-            <div className="rounded-2xl p-5 border bg-cyan-50/80 dark:bg-cyan-950/30 border-cyan-200/50 dark:border-cyan-900/40 hover:border-cyan-500 dark:hover:border-cyan-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-cyan-100/90 via-cyan-50/70 to-card dark:from-cyan-950/70 dark:via-cyan-900/40 dark:to-card border-cyan-300 dark:border-cyan-700 hover:border-cyan-600 dark:hover:border-cyan-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-cyan-900 dark:text-cyan-200 truncate">
                   Total Items in Stock
                 </span>
                 <CardInfoTooltip
@@ -797,16 +797,16 @@ export function ReportsClient({
                   urduDetail="دکان میں اس وقت تمام اشیاء اور موبائل فونز کے کل کتنے پیسز موجود ہیں۔"
                 />
               </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-cyan-950 dark:text-cyan-50">{totalStockQuantity}</div>
-              <p className="mt-1 text-xs font-medium text-cyan-600/80 dark:text-cyan-400/80">
+              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{totalStockQuantity}</div>
+              <p className="mt-1 text-xs font-semibold text-cyan-900/80 dark:text-cyan-200/90">
                 Including {inStockImeiCount} IMEI devices
               </p>
             </div>
 
             {/* Low Stock Warnings */}
-            <div className="rounded-2xl p-5 border bg-amber-50/80 dark:bg-amber-950/30 border-amber-200/50 dark:border-amber-900/40 hover:border-amber-500 dark:hover:border-amber-400 transition-colors duration-300 ease-out relative">
+            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 truncate">
+                <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
                   Stock Ending Soon
                 </span>
                 <CardInfoTooltip
@@ -814,10 +814,10 @@ export function ReportsClient({
                   urduDetail="وہ سامان جس کا اسٹاک ختم ہونے والا ہے تاکہ آپ بروقت نیا مال منگوا سکیں۔"
                 />
               </div>
-              <div className={`mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono ${lowStockCount > 0 ? 'text-amber-700 dark:text-amber-400' : 'text-amber-950 dark:text-amber-50'}`}>
+              <div className={`mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono ${lowStockCount > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-950 dark:text-white'}`}>
                 {lowStockCount}
               </div>
-              <p className="mt-1 text-xs font-medium text-amber-600/80 dark:text-amber-400/80">Products at or below threshold</p>
+              <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Products at or below threshold</p>
             </div>
           </div>
 

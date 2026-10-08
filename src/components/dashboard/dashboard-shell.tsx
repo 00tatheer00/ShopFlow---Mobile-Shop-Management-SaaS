@@ -204,10 +204,10 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                 <div key={item.label}>
                   <button
                     onClick={() => toggleExpand(item.label)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-150 cursor-pointer ${
                       active
-                        ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                        : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                        ? 'bg-primary/15 text-primary font-bold border-l-4 border-primary'
+                        : 'text-slate-800 dark:text-slate-200 hover:bg-sidebar-accent hover:text-primary'
                     }`}
                   >
                     <Icon className="h-4.5 w-4.5 flex-shrink-0" />
@@ -230,8 +230,8 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                           onClick={() => setSidebarOpen(false)}
                           className={`block rounded-md px-3 py-2 text-[13px] transition-colors duration-150 ${
                             pathname === child.href
-                              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                              : 'text-sidebar-foreground/60 hover:text-sidebar-accent-foreground hover:bg-sidebar-accent/30'
+                              ? 'bg-primary/15 text-primary font-bold border-l-2 border-primary'
+                              : 'text-slate-700 dark:text-slate-300 font-medium hover:text-primary hover:bg-sidebar-accent/50'
                           }`}
                         >
                           {child.label}
@@ -251,10 +251,10 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                 onMouseEnter={() => router.prefetch(item.href)}
                 onTouchStart={() => router.prefetch(item.href)}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
+                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
                   active
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground'
+                    ? 'bg-primary/15 text-primary font-bold border-l-4 border-primary'
+                    : 'text-slate-800 dark:text-slate-200 hover:bg-sidebar-accent hover:text-primary'
                 }`}
               >
                 <Icon className="h-4.5 w-4.5 flex-shrink-0" />
@@ -265,16 +265,16 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         </nav>
 
         {/* Sidebar Footer — User Info */}
-        <div className="border-t border-sidebar-border p-3">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary/10 text-sidebar-primary text-xs font-bold">
+        <div className="border-t-2 border-sidebar-border p-3">
+          <div className="flex items-center gap-3 rounded-lg px-3 py-2 bg-sidebar-accent/30 border border-sidebar-border/60">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white text-xs font-black shadow-2xs">
               {initials}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-sidebar-foreground truncate">
+              <p className="text-sm font-bold text-sidebar-foreground truncate">
                 {user.full_name}
               </p>
-              <p className="text-[11px] text-sidebar-foreground/50 capitalize">
+              <p className="text-[11px] font-semibold text-sidebar-foreground/75 capitalize">
                 {user.role.replace('_', ' ')}
               </p>
             </div>
@@ -282,7 +282,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           <form action={logoutAction}>
             <button
               type="submit"
-              className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/60 hover:bg-destructive/10 hover:text-destructive transition-colors duration-150"
+              className="mt-1.5 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-rose-100 hover:text-rose-700 dark:hover:bg-rose-950/50 dark:hover:text-rose-300 transition-colors duration-150 cursor-pointer"
             >
               <LogOut className="h-4 w-4" />
               <span>Sign out</span>
@@ -290,9 +290,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           </form>
 
           {/* Version Indicator */}
-          <div className="mt-2 pt-2 border-t border-sidebar-border/60 px-3 flex items-center justify-between text-[11px] text-sidebar-foreground/50">
-            <span className="font-mono font-medium">ShopFlow v{CURRENT_APP_VERSION.version}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 font-medium">
+          <div className="mt-2 pt-2 border-t border-sidebar-border/60 px-3 flex items-center justify-between text-[11px] font-semibold text-sidebar-foreground/70">
+            <span className="font-mono">ShopFlow v{CURRENT_APP_VERSION.version}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
             </span>

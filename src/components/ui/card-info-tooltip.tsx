@@ -90,7 +90,7 @@ export function CardInfoTooltip({ title, urduDetail, className = '' }: CardInfoT
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className="inline-flex items-center justify-center h-4.5 w-4.5 rounded-full bg-foreground/10 hover:bg-primary/20 text-foreground/80 hover:text-primary border border-border/80 text-[11px] font-black font-serif italic shadow-2xs transition-all duration-150 cursor-pointer active:scale-95"
+        className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-primary/15 hover:bg-primary text-primary hover:text-white border-2 border-primary/40 text-[11px] font-black font-serif italic shadow-xs transition-all duration-150 cursor-pointer active:scale-95 shrink-0"
         aria-label="اردو تفصیل"
         title="اردو میں تفصیل دیکھنے کے لیے کلک کریں"
       >
@@ -121,9 +121,9 @@ export function CardInfoTooltip({ title, urduDetail, className = '' }: CardInfoT
                 : { top: `${coords.top}px` }),
               width: `${coords.width}px`,
             }}
-            className="pointer-events-auto p-4 rounded-2xl bg-card/98 backdrop-blur-md border border-border shadow-2xl text-left animate-in fade-in-0 zoom-in-95 duration-150 ring-1 ring-primary/30"
+            className="pointer-events-auto p-4 rounded-2xl bg-card border-2 border-primary/50 shadow-2xl text-left animate-in fade-in-0 zoom-in-95 duration-150 ring-2 ring-primary/20"
           >
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/60">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-border">
               <span className="text-[11px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
                 <span>💡</span>
                 <span className="truncate max-w-[220px]">{title || 'رہنمائی'}</span>
