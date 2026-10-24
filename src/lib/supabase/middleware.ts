@@ -57,9 +57,18 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const authPromise = supabase.auth.getUser();
+    const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((_, reject) =>
+      setTimeout(() => reject(new Error('Supabase auth check timed out')), 3500)
+    );
+    const result = await Promise.race([authPromise, timeoutPromise]);
+    user = result?.data?.user ?? null;
+  } catch (error) {
+    console.warn('Middleware auth verification timed out or unreachable:', error);
+    user = null;
+  }
 
   // If user is not logged in and trying to access a protected route
   if (!user && !isPublicRoute) {
