@@ -563,3 +563,26 @@ export async function lazyPurgeExpiredShopsAction() {
     return { purged: 0 };
   }
 }
+
+/**
+ * Super Admin Action: Clear all past audit activity logs
+ */
+export async function clearAuditLogsAction() {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const adminClient = getAdminClient() || supabase;
+
+  const { error } = await adminClient
+    .from('audit_logs')
+    .delete()
+    .neq('id', '00000000-0000-0000-0000-000000000000');
+
+  if (error) {
+    return { error: 'Failed to clear activity logs: ' + error.message };
+  }
+
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/settings');
+
+  return { success: true };
+}

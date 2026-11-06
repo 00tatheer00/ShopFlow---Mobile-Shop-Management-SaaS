@@ -46,11 +46,11 @@ DELETE FROM expense_categories;
 DELETE FROM customers;
 DELETE FROM suppliers;
 
--- Delete shop settings, subscriptions, email logs, and shop-scoped audit logs
+-- Delete shop settings, subscriptions, email logs, and all legacy audit logs
 DELETE FROM shop_settings;
 DELETE FROM shop_subscriptions;
 DELETE FROM email_logs;
-DELETE FROM audit_logs WHERE shop_id IS NOT NULL;
+DELETE FROM audit_logs;
 
 -- 3. Delete non-super-admin shop_users associations
 DELETE FROM shop_users WHERE role != 'super_admin';
