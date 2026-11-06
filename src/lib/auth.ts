@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import type { AuthUser, UserRole } from '@/lib/types';
 
@@ -17,39 +18,68 @@ export const getAuthUser = cache(async (): Promise<AuthUser> => {
     redirect('/login');
   }
 
-  // Fetch shop user & profile concurrently to minimize network latency
-  const [{ data: shopUser }, { data: profile }] = await Promise.all([
-    supabase
-      .from('shop_users')
-      .select(`
-        role,
-        shop_id,
-        shops:shop_id (
-          id,
-          name,
-          slug,
-          city,
-          status,
-          deleted_at
-        )
-      `)
-      .eq('user_id', user.id)
-      .eq('is_active', true)
-      .maybeSingle(),
-    supabase
-      .from('profiles')
-      .select('full_name, email')
-      .eq('id', user.id)
-      .maybeSingle(),
-  ]);
+  // 1. Fetch user role and shop association directly
+  let resolvedRole: UserRole = 'cashier';
+  let resolvedShopId: string | null = null;
+  let resolvedShop: AuthUser['shop'] = undefined;
+
+  // Try standard authenticated client first
+  const { data: suData, error: suError } = await supabase
+    .from('shop_users')
+    .select('role, shop_id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .maybeSingle();
+
+  if (suData?.role) {
+    resolvedRole = suData.role as UserRole;
+    resolvedShopId = suData.shop_id || null;
+  } else {
+    // Resilient Fallback: If RLS or NULL shop_id blocked query, use privileged adminClient
+    const adminClient = getAdminClient();
+    if (adminClient) {
+      const { data: adminSu } = await adminClient
+        .from('shop_users')
+        .select('role, shop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (adminSu?.role) {
+        resolvedRole = adminSu.role as UserRole;
+        resolvedShopId = adminSu.shop_id || null;
+      }
+    }
+  }
+
+  // 2. If attached to a shop, fetch shop details
+  if (resolvedShopId) {
+    const adminClient = getAdminClient() || supabase;
+    const { data: shopRecord } = await adminClient
+      .from('shops')
+      .select('id, name, slug, city, status')
+      .eq('id', resolvedShopId)
+      .maybeSingle();
+
+    if (shopRecord) {
+      resolvedShop = shopRecord as AuthUser['shop'];
+    }
+  }
+
+  // 3. Fetch profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, email')
+    .eq('id', user.id)
+    .maybeSingle();
 
   return {
     id: user.id,
     email: profile?.email || user.email || '',
     full_name: profile?.full_name || user.email || '',
-    role: (shopUser?.role as UserRole) || 'cashier',
-    shop_id: shopUser?.shop_id || null,
-    shop: (Array.isArray(shopUser?.shops) ? shopUser.shops[0] : shopUser?.shops) as AuthUser['shop'],
+    role: resolvedRole,
+    shop_id: resolvedShopId,
+    shop: resolvedShop,
   };
 });
 

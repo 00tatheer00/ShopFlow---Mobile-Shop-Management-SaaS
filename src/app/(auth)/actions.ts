@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import { loginSchema } from '@/lib/validations';
 import { redirect } from 'next/navigation';
 
@@ -34,32 +35,67 @@ export async function loginAction(formData: FormData) {
     return { error: 'Something went wrong. Please try again.' };
   }
 
+  // Fetch role and shop association
+  let userRole: string | null = null;
+  let userShopId: string | null = null;
+  let shopStatus: string | null = null;
+
   const { data: shopUser } = await supabase
     .from('shop_users')
-    .select('role, shop_id, shops:shop_id(status)')
+    .select('role, shop_id')
     .eq('user_id', user.id)
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
-  if (!shopUser) {
+  if (shopUser) {
+    userRole = shopUser.role;
+    userShopId = shopUser.shop_id;
+  } else {
+    // Privileged fallback for super admin accounts
+    const adminClient = getAdminClient();
+    if (adminClient) {
+      const { data: adminSu } = await adminClient
+        .from('shop_users')
+        .select('role, shop_id')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (adminSu) {
+        userRole = adminSu.role;
+        userShopId = adminSu.shop_id;
+      }
+    }
+  }
+
+  if (!userRole) {
     await supabase.auth.signOut();
     return { error: 'Your account has not been assigned to any shop. Please contact support.' };
   }
 
-  // Check if super admin
-  if (shopUser.role === 'super_admin') {
+  // Check if super admin (Never blocked by lack of shop)
+  if (userRole === 'super_admin') {
     redirect('/admin');
   }
 
-  // Check if shop is active
-  const rawShops = shopUser.shops as unknown;
-  const shop = (Array.isArray(rawShops) ? rawShops[0] : rawShops) as { status: string } | null;
-  if (shop?.status === 'suspended') {
+  // Check shop status for tenant users
+  if (userShopId) {
+    const adminClient = getAdminClient() || supabase;
+    const { data: shop } = await adminClient
+      .from('shops')
+      .select('status')
+      .eq('id', userShopId)
+      .maybeSingle();
+
+    shopStatus = shop?.status || null;
+  }
+
+  if (shopStatus === 'suspended') {
     await supabase.auth.signOut();
     return { error: 'Your shop has been suspended. Please contact support.' };
   }
 
-  if (shop?.status === 'deactivated') {
+  if (shopStatus === 'deactivated') {
     await supabase.auth.signOut();
     return { error: 'Your shop account has been deactivated. Please contact support.' };
   }
