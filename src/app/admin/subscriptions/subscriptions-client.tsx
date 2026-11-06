@@ -39,18 +39,31 @@ interface SubscriptionsClientProps {
   initialEmailLogs: EmailLog[];
 }
 
+function formatBillingMonthName(monthStr: string): string {
+  try {
+    const [year, month] = monthStr.split('-').map(Number);
+    if (!year || !month) return monthStr;
+    const date = new Date(year, month - 1, 1);
+    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  } catch {
+    return monthStr;
+  }
+}
+
 export function SubscriptionsClient({
   initialSubscriptions,
   allShops,
   initialEmailLogs,
 }: SubscriptionsClientProps) {
-  const [subscriptions] = useState<ShopSubscription[]>(initialSubscriptions);
+  // Strictly filter out any legacy October 2026 demo subscriptions
+  const [subscriptions] = useState<ShopSubscription[]>(() =>
+    initialSubscriptions.filter((s) => s.billing_month !== '2026-10')
+  );
   const [emailLogs] = useState<EmailLog[]>(initialEmailLogs);
   const [isPending, startTransition] = useTransition();
 
-  // Filters (Dynamic current month)
-  const currentMonthStr = new Date().toISOString().slice(0, 7);
-  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthStr);
+  // Filters: default to 'all' so all shop subscriptions are displayed clearly
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'unpaid' | 'overdue'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -71,10 +84,15 @@ export function SubscriptionsClient({
   // Reminder form state
   const [reminderNote, setReminderNote] = useState('');
 
-  // Generate bills state
-  const [genMonth, setGenMonth] = useState('2026-11');
-  const [genMonthName, setGenMonthName] = useState('November 2026');
-  const [genDueDate, setGenDueDate] = useState('2026-11-10');
+  // Generate bills state (dynamic based on current month)
+  const now = new Date();
+  const currentMonthCode = now.toISOString().slice(0, 7);
+  const currentMonthTitle = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const defaultDueDate = new Date(now.getFullYear(), now.getMonth(), 10).toISOString().split('T')[0];
+
+  const [genMonth, setGenMonth] = useState(currentMonthCode);
+  const [genMonthName, setGenMonthName] = useState(currentMonthTitle);
+  const [genDueDate, setGenDueDate] = useState(defaultDueDate);
 
   // Filtered subscriptions
   const filteredSubscriptions = subscriptions.filter((sub) => {
@@ -110,11 +128,14 @@ export function SubscriptionsClient({
   const totalCollectedPaisas = paidSubs.reduce((acc, curr) => acc + curr.amount, 0);
   const totalPendingPaisas = unpaidSubs.reduce((acc, curr) => acc + curr.amount, 0);
 
-  // Distinct months list from data
+  // Distinct months list strictly from active subscriptions data (ignoring legacy October 2026)
   const availableMonths = Array.from(
-    new Set(subscriptions.map((s) => s.billing_month))
+    new Set(
+      subscriptions
+        .map((s) => s.billing_month)
+        .filter((m) => m && m !== '2026-10')
+    )
   ).sort().reverse();
-  if (!availableMonths.includes('2026-10')) availableMonths.push('2026-10');
 
   // Handlers
   function handleOpenApprove(sub: ShopSubscription) {
@@ -246,7 +267,7 @@ export function SubscriptionsClient({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <Download className="h-4 w-4 text-emerald-500" />
             <span>Export CSV</span>
@@ -254,7 +275,7 @@ export function SubscriptionsClient({
 
           <button
             onClick={() => setEmailLogsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-accent hover:text-accent-foreground transition"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-accent hover:text-accent-foreground transition cursor-pointer"
           >
             <Mail className="h-4 w-4 text-primary" />
             <span>Email History</span>
@@ -265,7 +286,7 @@ export function SubscriptionsClient({
 
           <button
             onClick={() => setGenerateBillsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Generate Monthly Bills</span>
@@ -305,7 +326,7 @@ export function SubscriptionsClient({
             </span>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">
-            Approved payments for {selectedMonth === 'all' ? 'All Months' : selectedMonth}
+            Approved payments for {selectedMonth === 'all' ? 'All Months' : formatBillingMonthName(selectedMonth)}
           </p>
         </div>
 
@@ -362,12 +383,12 @@ export function SubscriptionsClient({
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
             >
               <option value="all">All Months</option>
               {availableMonths.map((m) => (
                 <option key={m} value={m}>
-                  {m === '2026-10' ? 'October 2026 (Active)' : m}
+                  {formatBillingMonthName(m)}
                 </option>
               ))}
             </select>
@@ -379,7 +400,7 @@ export function SubscriptionsClient({
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`rounded-lg px-3 py-1 text-xs font-semibold capitalize transition ${
+                className={`rounded-lg px-3 py-1 text-xs font-semibold capitalize transition cursor-pointer ${
                   statusFilter === st
                     ? 'bg-card text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -512,7 +533,7 @@ export function SubscriptionsClient({
                               <button
                                 onClick={() => handleOpenApprove(sub)}
                                 disabled={isPending}
-                                className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm transition"
+                                className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Check className="h-3.5 w-3.5" />
                                 <span>Approve (Mark Paid)</span>
@@ -525,7 +546,7 @@ export function SubscriptionsClient({
                                 }}
                                 disabled={isPending}
                                 title="Send reminder email to shopkeeper"
-                                className="inline-flex items-center gap-1 rounded-xl border border-border bg-card hover:bg-accent px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition"
+                                className="inline-flex items-center gap-1 rounded-xl border border-border bg-card hover:bg-accent px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <Send className="h-3.5 w-3.5 text-amber-400" />
                                 <span>Reminder</span>
@@ -535,7 +556,7 @@ export function SubscriptionsClient({
                             <button
                               onClick={() => handleRevoke(sub)}
                               disabled={isPending}
-                              className="inline-flex items-center gap-1 rounded-xl border border-border bg-card hover:bg-destructive/10 hover:text-destructive px-2.5 py-1 text-xs font-medium text-muted-foreground transition"
+                              className="inline-flex items-center gap-1 rounded-xl border border-border bg-card hover:bg-destructive/10 hover:text-destructive px-2.5 py-1 text-xs font-medium text-muted-foreground transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               <RefreshCw className="h-3 w-3" />
                               <span>Mark Unpaid</span>
@@ -650,14 +671,14 @@ export function SubscriptionsClient({
                 <button
                   type="button"
                   onClick={() => setApproveModalSub(null)}
-                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent"
+                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 text-xs font-bold shadow-md shadow-emerald-600/20"
+                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 text-xs font-bold shadow-md shadow-emerald-600/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPending ? 'Approving...' : 'Confirm & Mark Paid'}
                 </button>
@@ -683,7 +704,7 @@ export function SubscriptionsClient({
               </div>
               <button
                 onClick={() => setReminderModalSub(null)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-accent"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-accent cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -712,14 +733,14 @@ export function SubscriptionsClient({
                 <button
                   type="button"
                   onClick={() => setReminderModalSub(null)}
-                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent"
+                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 text-xs font-bold shadow-md shadow-amber-600/20"
+                  className="rounded-xl bg-amber-600 hover:bg-amber-700 text-white px-5 py-2 text-xs font-bold shadow-md shadow-amber-600/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPending ? 'Sending...' : 'Dispatch Reminder Email'}
                 </button>
@@ -745,7 +766,7 @@ export function SubscriptionsClient({
               </div>
               <button
                 onClick={() => setGenerateBillsModalOpen(false)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-accent"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-accent cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -791,14 +812,14 @@ export function SubscriptionsClient({
                 <button
                   type="button"
                   onClick={() => setGenerateBillsModalOpen(false)}
-                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent"
+                  className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:bg-accent cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isPending}
-                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-xs font-bold"
+                  className="rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2 text-xs font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isPending ? 'Generating...' : 'Generate Bills'}
                 </button>
@@ -824,7 +845,7 @@ export function SubscriptionsClient({
               </div>
               <button
                 onClick={() => setEmailLogsModalOpen(false)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-accent"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-accent cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -855,7 +876,7 @@ export function SubscriptionsClient({
                     </div>
                     <button
                       onClick={() => setPreviewEmail(log)}
-                      className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/10 transition shrink-0"
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-2.5 py-1 text-[11px] font-medium text-primary hover:bg-primary/10 transition shrink-0 cursor-pointer"
                     >
                       <Eye className="h-3.5 w-3.5" />
                       <span>Preview</span>
@@ -879,7 +900,7 @@ export function SubscriptionsClient({
               </div>
               <button
                 onClick={() => setPreviewEmail(null)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-accent"
+                className="rounded-lg p-1 text-muted-foreground hover:bg-accent cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>

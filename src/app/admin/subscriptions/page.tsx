@@ -12,7 +12,7 @@ export default async function SubscriptionsPage() {
   await requireSuperAdmin();
   const supabase = await createClient();
 
-  // 1. Fetch all subscriptions with shop details
+  // 1. Fetch all subscriptions with shop details (strictly excluding legacy October 2026)
   const { data: subscriptions } = await supabase
     .from('shop_subscriptions')
     .select(`
@@ -29,6 +29,7 @@ export default async function SubscriptionsPage() {
         subscription_expires_at
       )
     `)
+    .neq('billing_month', '2026-10')
     .order('created_at', { ascending: false });
 
   // 2. Fetch all shops for complete status tracking
