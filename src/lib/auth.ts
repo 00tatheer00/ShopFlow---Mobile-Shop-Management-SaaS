@@ -83,15 +83,25 @@ export async function requireSuperAdmin(): Promise<AuthUser> {
 
 /**
  * Require shop-level access (any shop role).
+ * Automatically redirects super_admin to /admin instead of showing Access Denied.
  */
 export async function requireShopAccess(): Promise<AuthUser> {
+  const user = await getAuthUser();
+  if (user.role === 'super_admin') {
+    redirect('/admin');
+  }
   return requireRole(['shop_owner', 'manager', 'cashier']);
 }
 
 /**
  * Require shop owner access.
+ * Automatically redirects super_admin to /admin instead of showing Access Denied.
  */
 export async function requireShopOwner(): Promise<AuthUser> {
+  const user = await getAuthUser();
+  if (user.role === 'super_admin') {
+    redirect('/admin');
+  }
   return requireRole(['shop_owner']);
 }
 
