@@ -14,7 +14,8 @@ import {
   CreditCard,
 } from 'lucide-react';
 import type { Shop } from '@/lib/types';
-import { toRupees } from '@/lib/types';
+import { toRupees, formatPKR } from '@/lib/types';
+import { SUBSCRIPTION_PRICE_PAISAS } from '@/lib/constants';
 
 export const metadata: Metadata = {
   title: 'Platform Overview',
@@ -24,20 +25,24 @@ export default async function AdminDashboardPage() {
   await requireSuperAdmin();
   const supabase = await createClient();
 
-  // 1. Fetch platform metadata metrics
+  // 1. Fetch platform metadata metrics (excluding trashed shops)
   const [
     { count: totalShops },
     { count: activeShops },
     { count: suspendedShops },
     { count: deactivatedShops },
   ] = await Promise.all([
-    supabase.from('shops').select('id', { count: 'exact', head: true }),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).eq('status', 'active'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).eq('status', 'suspended'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).eq('status', 'deactivated'),
+    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null),
+    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'active'),
+    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'suspended'),
+    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'deactivated'),
   ]);
 
-  // 2. Fetch recent shops (limit 5)
+  // Monthly Recurring Revenue calculated from SUBSCRIPTION_PRICE_PAISAS and only active shops
+  const activeCount = activeShops || 0;
+  const mrrPaisas = activeCount * SUBSCRIPTION_PRICE_PAISAS;
+
+  // 2. Fetch recent shops (limit 5, non-trashed)
   const { data: rawRecentShops } = await supabase
     .from('shops')
     .select(`
@@ -48,6 +53,7 @@ export default async function AdminDashboardPage() {
         profiles(full_name, email)
       )
     `)
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(5);
 
@@ -61,8 +67,11 @@ export default async function AdminDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(6);
 
-  // 4. Fetch current month subscription summary (Rs. 8,000/month per shop)
-  const currentMonth = '2026-10';
+  // 4. Fetch dynamic current month subscription summary
+  const now = new Date();
+  const currentMonth = now.toISOString().slice(0, 7);
+  const currentMonthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
   const { data: monthSubs } = await supabase
     .from('shop_subscriptions')
     .select('amount, status')
@@ -200,20 +209,20 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Monthly Subscription & Billing Status Card (Rs. 8,000/month) */}
+      {/* Monthly Subscription & Billing Status Card */}
       <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-card p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
               <CreditCard className="h-4 w-4" />
             </span>
-            <h2 className="text-base font-bold text-foreground">Monthly Subscriptions (October 2026)</h2>
-            <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold">
-              Rs. 8,000 / month
+            <h2 className="text-base font-bold text-foreground">Monthly Subscriptions ({currentMonthName})</h2>
+            <span className="rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 text-xs font-bold font-mono">
+              {formatPKR(SUBSCRIPTION_PRICE_PAISAS)} / month
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Track monthly fee approvals, pending shop transfers, and automated receipt emails.
+            Projected MRR: <strong className="text-foreground font-mono">{formatPKR(mrrPaisas)}</strong> ({activeCount} active tenant {activeCount === 1 ? 'shop' : 'shops'}).
           </p>
         </div>
 
@@ -221,14 +230,14 @@ export default async function AdminDashboardPage() {
           <div className="text-left md:text-right">
             <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Collected This Month</div>
             <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-              Rs. {toRupees(monthCollected).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">({monthPaidList.length} Paid)</span>
+              {formatPKR(monthCollected)} <span className="text-xs font-normal text-muted-foreground">({monthPaidList.length} Paid)</span>
             </div>
           </div>
 
           <div className="text-left md:text-right">
             <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Pending / Unpaid</div>
             <div className="text-lg font-bold text-amber-600 dark:text-amber-400 font-mono">
-              Rs. {toRupees(monthPending).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">({monthUnpaidList.length} Pending)</span>
+              {formatPKR(monthPending)} <span className="text-xs font-normal text-muted-foreground">({monthUnpaidList.length} Pending)</span>
             </div>
           </div>
 

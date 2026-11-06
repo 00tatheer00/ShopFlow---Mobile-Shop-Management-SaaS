@@ -29,7 +29,8 @@ export const getAuthUser = cache(async (): Promise<AuthUser> => {
           name,
           slug,
           city,
-          status
+          status,
+          deleted_at
         )
       `)
       .eq('user_id', user.id)
@@ -62,9 +63,12 @@ export async function requireRole(allowedRoles: UserRole[]): Promise<AuthUser> {
     redirect('/unauthorized');
   }
 
-  // Check if shop is active (for non-super-admin users)
-  if (user.role !== 'super_admin' && user.shop?.status !== 'active') {
-    redirect('/shop-suspended');
+  // Check if shop is active and not soft-deleted (for non-super-admin users)
+  if (user.role !== 'super_admin') {
+    const shopWithDeleted = user.shop as { status?: string; deleted_at?: string | null } | undefined;
+    if (!shopWithDeleted || shopWithDeleted.deleted_at || shopWithDeleted.status !== 'active') {
+      redirect('/shop-suspended');
+    }
   }
 
   return user;

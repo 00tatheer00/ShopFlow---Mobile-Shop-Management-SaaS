@@ -7,7 +7,11 @@ import {
   createShopSchema,
   updateShopStatusSchema,
   updateShopPlanSchema,
+  softDeleteShopSchema,
+  restoreShopSchema,
+  permanentDeleteShopSchema,
 } from '@/lib/validations';
+import { SUBSCRIPTION_PRICE_PAISAS } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -138,7 +142,13 @@ export async function createShopAction(formData: FormData) {
     };
   }
 
-  // 4. Insert Shop Record
+  // 4. Compute Subscription Expiry and Insert Shop Record
+  const now = new Date();
+  const billingMonth = now.toISOString().slice(0, 7);
+  const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 7);
+  const dueDate = nextMonth.toISOString().split('T')[0];
+
   const { data: shop, error: shopError } = await supabase
     .from('shops')
     .insert({
@@ -151,6 +161,9 @@ export async function createShopAction(formData: FormData) {
       email: result.data.email || null,
       status: result.data.status || 'active',
       plan_id: result.data.plan_id || null,
+      subscription_status: 'active',
+      subscription_started_at: now.toISOString(),
+      subscription_expires_at: nextMonth.toISOString(),
     })
     .select('id, name, display_shop_id')
     .single();
@@ -160,7 +173,17 @@ export async function createShopAction(formData: FormData) {
     return { error: 'Failed to create shop record.' };
   }
 
-  // 5. Create default shop settings
+  // 5. Create initial subscription invoice row (Rs. 8,000 / month)
+  await supabase.from('shop_subscriptions').insert({
+    shop_id: shop.id,
+    billing_month: billingMonth,
+    month_name: monthName,
+    amount: SUBSCRIPTION_PRICE_PAISAS,
+    status: 'unpaid',
+    due_date: dueDate,
+  });
+
+  // 6. Create default shop settings
   await supabase.from('shop_settings').insert({
     shop_id: shop.id,
     receipt_header: shop.name,
@@ -171,7 +194,7 @@ export async function createShopAction(formData: FormData) {
     next_invoice_number: 1,
   });
 
-  // 6. Link Owner in shop_users
+  // 7. Link Owner in shop_users
   const { error: shopUserError } = await supabase.from('shop_users').insert({
     shop_id: shop.id,
     user_id: ownerUserId,
@@ -183,7 +206,7 @@ export async function createShopAction(formData: FormData) {
     console.error('Shop user link error:', shopUserError);
   }
 
-  // 7. Log Super Admin Action in audit_logs
+  // 8. Log Super Admin Action in audit_logs
   await supabase.from('audit_logs').insert({
     shop_id: shop.id,
     user_id: admin.id,
@@ -201,6 +224,7 @@ export async function createShopAction(formData: FormData) {
 
   revalidatePath('/admin/shops');
   revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/subscriptions');
 
   return {
     success: true,
@@ -353,4 +377,189 @@ export async function sendOwnerPasswordResetAction(email: string, shopId: string
   });
 
   return { success: true };
+}
+
+/**
+ * Super Admin Action: Soft-delete a shop (move to Trash with 30-day retention)
+ */
+export async function softDeleteShopAction(payload: { shop_id: string }) {
+  const admin = await requireSuperAdmin();
+  const parsed = softDeleteShopSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const { data: shop } = await supabase
+    .from('shops')
+    .select('id, name')
+    .eq('id', parsed.data.shop_id)
+    .single();
+
+  if (!shop) {
+    return { error: 'Shop not found.' };
+  }
+
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from('shops')
+    .update({
+      deleted_at: now,
+      deleted_by: admin.id,
+    })
+    .eq('id', parsed.data.shop_id);
+
+  if (error) {
+    return { error: 'Failed to move shop to trash.' };
+  }
+
+  await supabase.from('audit_logs').insert({
+    shop_id: shop.id,
+    user_id: admin.id,
+    action: 'shop_deleted',
+    entity_type: 'shop',
+    entity_id: shop.id,
+    metadata: {
+      shop_name: shop.name,
+      deleted_at: now,
+      deleted_by_admin: admin.email,
+    },
+  });
+
+  revalidatePath('/admin/shops');
+  revalidatePath('/admin/dashboard');
+
+  return { success: true };
+}
+
+/**
+ * Super Admin Action: Restore a soft-deleted shop from Trash
+ */
+export async function restoreShopAction(payload: { shop_id: string }) {
+  const admin = await requireSuperAdmin();
+  const parsed = restoreShopSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const { data: shop } = await supabase
+    .from('shops')
+    .select('id, name')
+    .eq('id', parsed.data.shop_id)
+    .single();
+
+  if (!shop) {
+    return { error: 'Shop not found.' };
+  }
+
+  const { error } = await supabase
+    .from('shops')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+    })
+    .eq('id', parsed.data.shop_id);
+
+  if (error) {
+    return { error: 'Failed to restore shop.' };
+  }
+
+  await supabase.from('audit_logs').insert({
+    shop_id: shop.id,
+    user_id: admin.id,
+    action: 'shop_restored',
+    entity_type: 'shop',
+    entity_id: shop.id,
+    metadata: {
+      shop_name: shop.name,
+      restored_by_admin: admin.email,
+    },
+  });
+
+  revalidatePath('/admin/shops');
+  revalidatePath('/admin/dashboard');
+
+  return { success: true };
+}
+
+/**
+ * Super Admin Action: Permanently delete a shop and all associated data
+ */
+export async function permanentDeleteShopAction(payload: {
+  shop_id: string;
+  confirm_name: string;
+}) {
+  const admin = await requireSuperAdmin();
+  const parsed = permanentDeleteShopSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+
+  const supabase = await createClient();
+  const { data: shop } = await supabase
+    .from('shops')
+    .select('id, name')
+    .eq('id', parsed.data.shop_id)
+    .single();
+
+  if (!shop) {
+    return { error: 'Shop not found.' };
+  }
+
+  if (shop.name.trim().toLowerCase() !== parsed.data.confirm_name.trim().toLowerCase()) {
+    return { error: `Confirmation name does not match "${shop.name}".` };
+  }
+
+  const adminClient = getAdminClient() || supabase;
+  const { error: rpcError } = await adminClient.rpc('delete_shop_permanently', {
+    p_shop_id: parsed.data.shop_id,
+  });
+
+  if (rpcError) {
+    console.error('Permanent delete RPC error:', rpcError);
+    return { error: 'Failed to permanently delete shop: ' + rpcError.message };
+  }
+
+  await supabase.from('audit_logs').insert({
+    shop_id: null,
+    user_id: admin.id,
+    action: 'shop_permanently_deleted',
+    entity_type: 'shop',
+    entity_id: parsed.data.shop_id,
+    metadata: {
+      shop_name: shop.name,
+      deleted_by_admin: admin.email,
+    },
+  });
+
+  revalidatePath('/admin/shops');
+  revalidatePath('/admin/dashboard');
+
+  return { success: true };
+}
+
+/**
+ * Super Admin Action: Lazy Purge expired trashed shops (older than 30 days)
+ */
+export async function lazyPurgeExpiredShopsAction() {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const adminClient = getAdminClient() || supabase;
+
+  try {
+    const { data: count, error } = await adminClient.rpc('purge_expired_trashed_shops');
+    if (error) {
+      console.warn('Lazy purge error:', error);
+      return { purged: 0 };
+    }
+    if (count && count > 0) {
+      revalidatePath('/admin/shops');
+      revalidatePath('/admin/dashboard');
+    }
+    return { purged: count || 0 };
+  } catch (err) {
+    console.warn('Lazy purge caught error:', err);
+    return { purged: 0 };
+  }
 }

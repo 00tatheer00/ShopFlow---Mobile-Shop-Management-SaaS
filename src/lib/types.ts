@@ -38,6 +38,9 @@ export type AuditAction =
   | 'shop_suspended'
   | 'shop_activated'
   | 'shop_deactivated'
+  | 'shop_deleted'
+  | 'shop_restored'
+  | 'shop_permanently_deleted'
   | 'stock_adjusted';
 
 // ---- Platform Entities ----
@@ -60,6 +63,8 @@ export interface Shop {
   subscription_expires_at?: string | null;
   created_at: string;
   updated_at: string;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
 }
 
 export interface Plan {

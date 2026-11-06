@@ -22,8 +22,9 @@ import {
   Download,
 } from 'lucide-react';
 import type { ShopSubscription, Shop, EmailLog } from '@/lib/types';
-import { toRupees } from '@/lib/types';
+import { toRupees, formatPKR } from '@/lib/types';
 import { exportToCSV } from '@/lib/export-csv';
+import { SUBSCRIPTION_PRICE_PAISAS, SUBSCRIPTION_PRICE_RUPEES } from '@/lib/constants';
 import {
   approveSubscriptionPayment,
   revokeSubscriptionPayment,
@@ -47,8 +48,9 @@ export function SubscriptionsClient({
   const [emailLogs] = useState<EmailLog[]>(initialEmailLogs);
   const [isPending, startTransition] = useTransition();
 
-  // Filters
-  const [selectedMonth, setSelectedMonth] = useState<string>('2026-10');
+  // Filters (Dynamic current month)
+  const currentMonthStr = new Date().toISOString().slice(0, 7);
+  const [selectedMonth, setSelectedMonth] = useState<string>(currentMonthStr);
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'unpaid' | 'overdue'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -59,9 +61,9 @@ export function SubscriptionsClient({
   const [previewEmail, setPreviewEmail] = useState<EmailLog | null>(null);
   const [generateBillsModalOpen, setGenerateBillsModalOpen] = useState(false);
 
-  // Approve form state
+  // Approve form state (Single source of truth constant)
   const [payMethod, setPayMethod] = useState('easypaisa');
-  const [payAmount, setPayAmount] = useState('8000');
+  const [payAmount, setPayAmount] = useState(String(SUBSCRIPTION_PRICE_RUPEES));
   const [payRefId, setPayRefId] = useState('');
   const [payNotes, setPayNotes] = useState('');
   const [sendConfirmationEmail, setSendConfirmationEmail] = useState(true);
@@ -131,7 +133,7 @@ export function SubscriptionsClient({
     startTransition(async () => {
       const res = await approveSubscriptionPayment({
         subscriptionId: approveModalSub.id,
-        amountRupees: parseInt(payAmount, 10) || 8000,
+        amountRupees: parseInt(payAmount, 10) || SUBSCRIPTION_PRICE_RUPEES,
         paymentMethod: payMethod,
         referenceId: payRefId,
         notes: payNotes,
@@ -234,7 +236,7 @@ export function SubscriptionsClient({
                 Shop Subscriptions & Billing
               </h1>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Monthly SaaS billing &bull; Standard rate: <strong className="text-emerald-400 font-mono">Rs. 8,000 / month</strong> per shop
+                Monthly SaaS billing &bull; Standard rate: <strong className="text-emerald-400 font-mono">{formatPKR(SUBSCRIPTION_PRICE_PAISAS)} / month</strong> per shop
               </p>
             </div>
           </div>
@@ -280,7 +282,7 @@ export function SubscriptionsClient({
             <Building2 className="h-4 w-4 text-primary" />
           </div>
           <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground">Rs. 8,000</span>
+            <span className="text-2xl font-bold tracking-tight text-foreground font-mono">{formatPKR(SUBSCRIPTION_PRICE_PAISAS)}</span>
             <span className="text-xs text-muted-foreground">/ shop / month</span>
           </div>
           <p className="mt-1 text-[11px] text-muted-foreground">

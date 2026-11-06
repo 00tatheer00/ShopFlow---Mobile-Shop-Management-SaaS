@@ -9,6 +9,7 @@ import {
   sendAndLogEmail,
 } from '@/lib/email';
 import { toRupees } from '@/lib/types';
+import { SUBSCRIPTION_PRICE_PAISAS } from '@/lib/constants';
 
 export interface ApprovePaymentPayload {
   subscriptionId: string;
@@ -37,7 +38,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
     return { error: 'Subscription record not found.' };
   }
 
-  const amountPaisas = payload.amountRupees ? payload.amountRupees * 100 : sub.amount || 800000;
+  const amountPaisas = payload.amountRupees ? payload.amountRupees * 100 : sub.amount || SUBSCRIPTION_PRICE_PAISAS;
   const now = new Date().toISOString();
 
   // 2. Mark subscription as PAID

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { createShopAction } from '@/app/admin/actions';
 import type { Plan } from '@/lib/types';
+import { toast } from 'sonner';
 
 interface NewShopFormProps {
   plans: Plan[];
@@ -37,9 +38,12 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
 
     if (result?.error) {
       setError(result.error);
+      toast.error(result.error);
       setLoading(false);
     } else if (result?.shopId) {
-      router.push(`/admin/shops/${result.shopId}`);
+      toast.success(`Shop ${result.displayShopId || ''} created successfully!`);
+      router.push('/admin/shops');
+      router.refresh();
     }
   }
 

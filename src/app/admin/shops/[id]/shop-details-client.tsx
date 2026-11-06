@@ -19,13 +19,18 @@ import {
   Clock,
   Copy,
   Check,
+  Trash2,
+  RotateCcw,
 } from 'lucide-react';
 import {
   updateShopStatusAction,
   updateShopPlanAction,
   sendOwnerPasswordResetAction,
+  softDeleteShopAction,
+  restoreShopAction,
 } from '@/app/admin/actions';
 import type { Shop, Plan } from '@/lib/types';
+import { toast } from 'sonner';
 
 interface OwnerInfo {
   id: string;
@@ -70,6 +75,7 @@ export function ShopDetailsClient({
   });
 
   const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [trashModalOpen, setTrashModalOpen] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState(shop.plan_id || plans[0]?.id || '');
   const [expiryDate, setExpiryDate] = useState(
     shop.subscription_expires_at
@@ -163,6 +169,38 @@ export function ShopDetailsClient({
     }
   }
 
+  // Soft Delete Handler (Move to Trash)
+  async function handleSoftDelete() {
+    setLoading(true);
+    setTrashModalOpen(false);
+    const res = await softDeleteShopAction({ shop_id: shop.id });
+    setLoading(false);
+
+    if (res?.error) {
+      toast.error(res.error);
+      setFeedback({ type: 'error', message: res.error });
+    } else {
+      toast.success('Shop moved to Trash (30-day retention).');
+      router.push('/admin/shops');
+      router.refresh();
+    }
+  }
+
+  // Restore Handler
+  async function handleRestore() {
+    setLoading(true);
+    const res = await restoreShopAction({ shop_id: shop.id });
+    setLoading(false);
+
+    if (res?.error) {
+      toast.error(res.error);
+      setFeedback({ type: 'error', message: res.error });
+    } else {
+      toast.success('Shop restored successfully.');
+      router.refresh();
+    }
+  }
+
   const currentPlan = plans.find((p) => p.id === shop.plan_id);
 
   return (
@@ -202,7 +240,7 @@ export function ShopDetailsClient({
             </button>
           )}
 
-          {shop.status !== 'deactivated' && (
+          {shop.status !== 'deactivated' && !shop.deleted_at && (
             <button
               onClick={() =>
                 setConfirmModal({ isOpen: true, action: 'deactivate', reason: 'Shop deactivation request' })
@@ -213,8 +251,46 @@ export function ShopDetailsClient({
               <span>Deactivate</span>
             </button>
           )}
+
+          {shop.deleted_at ? (
+            <button
+              disabled={loading}
+              onClick={handleRestore}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-colors disabled:opacity-50"
+            >
+              <RotateCcw className="h-4 w-4" />
+              <span>Restore from Trash</span>
+            </button>
+          ) : (
+            <button
+              disabled={loading}
+              onClick={() => setTrashModalOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>Move to Trash</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Trashed Alert Banner */}
+      {shop.deleted_at && (
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-xs text-destructive flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-4 w-4 shrink-0" />
+            <span>
+              This shop was moved to Trash on {new Date(shop.deleted_at).toLocaleDateString()}. Its users are blocked from access. It will be permanently purged after 30 days.
+            </span>
+          </div>
+          <button
+            onClick={handleRestore}
+            className="rounded-lg bg-destructive px-3 py-1 font-semibold text-destructive-foreground hover:bg-destructive/90"
+          >
+            Restore Now
+          </button>
+        </div>
+      )}
 
       {/* Feedback banner */}
       {feedback && (
@@ -633,6 +709,46 @@ export function ShopDetailsClient({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Confirmation Dialog: Move to Trash */}
+      {trashModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">Move Shop to Trash?</h3>
+                <p className="text-xs text-muted-foreground">30-day retention before permanent deletion</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Are you sure you want to move <strong>{shop.name}</strong> to Trash?
+              The shop and all its users will immediately be blocked from logging in. It can be restored anytime within 30 days.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setTrashModalOpen(false)}
+                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleSoftDelete}
+                className="rounded-xl bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+              >
+                {loading ? 'Moving...' : 'Move to Trash'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

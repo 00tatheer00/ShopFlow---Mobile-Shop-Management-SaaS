@@ -22,7 +22,7 @@ export default async function AdminShopDetailPage(props: {
     .select(`
       id, name, slug, display_shop_id, city, address, phone, email, logo_url,
       status, plan_id, subscription_status, subscription_started_at,
-      subscription_expires_at, created_at, updated_at
+      subscription_expires_at, deleted_at, deleted_by, created_at, updated_at
     `)
     .eq('id', id)
     .single();

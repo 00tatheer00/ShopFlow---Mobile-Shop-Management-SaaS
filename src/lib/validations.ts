@@ -61,6 +61,19 @@ export const updateShopPlanSchema = z.object({
   subscription_expires_at: z.string().optional().or(z.literal('')),
 });
 
+export const softDeleteShopSchema = z.object({
+  shop_id: z.string().uuid('Shop ID is required'),
+});
+
+export const restoreShopSchema = z.object({
+  shop_id: z.string().uuid('Shop ID is required'),
+});
+
+export const permanentDeleteShopSchema = z.object({
+  shop_id: z.string().uuid('Shop ID is required'),
+  confirm_name: z.string().min(1, 'Confirmation shop name is required'),
+});
+
 // ---- Product ----
 
 export const productSchema = z.object({
