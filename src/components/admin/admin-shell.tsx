@@ -93,7 +93,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent lg:hidden"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer lg:hidden"
             aria-label="Close sidebar"
           >
             <X className="h-5 w-5" />
@@ -144,7 +144,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
                 title="Log out"
               >
                 <LogOut className="h-4 w-4" />
@@ -170,7 +170,7 @@ export function AdminShell({ user, children }: AdminShellProps) {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-accent lg:hidden"
+              className="rounded-lg p-2 text-muted-foreground hover:bg-accent cursor-pointer lg:hidden"
               aria-label="Open sidebar"
             >
               <Menu className="h-5 w-5" />

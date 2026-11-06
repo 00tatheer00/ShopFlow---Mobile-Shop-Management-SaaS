@@ -221,7 +221,7 @@ export function ShopDetailsClient({
               onClick={() =>
                 setConfirmModal({ isOpen: true, action: 'activate', reason: 'Reactivation by Admin' })
               }
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-colors cursor-pointer"
             >
               <CheckCircle2 className="h-4 w-4" />
               <span>Activate Shop</span>
@@ -233,7 +233,7 @@ export function ShopDetailsClient({
               onClick={() =>
                 setConfirmModal({ isOpen: true, action: 'suspend', reason: 'Payment or policy suspension' })
               }
-              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3.5 py-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer"
             >
               <AlertTriangle className="h-4 w-4" />
               <span>Suspend</span>
@@ -245,7 +245,7 @@ export function ShopDetailsClient({
               onClick={() =>
                 setConfirmModal({ isOpen: true, action: 'deactivate', reason: 'Shop deactivation request' })
               }
-              className="inline-flex items-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-3.5 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/20 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-3.5 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/20 transition-colors cursor-pointer"
             >
               <XCircle className="h-4 w-4" />
               <span>Deactivate</span>
@@ -256,7 +256,7 @@ export function ShopDetailsClient({
             <button
               disabled={loading}
               onClick={handleRestore}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <RotateCcw className="h-4 w-4" />
               <span>Restore from Trash</span>
@@ -265,7 +265,7 @@ export function ShopDetailsClient({
             <button
               disabled={loading}
               onClick={() => setTrashModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <Trash2 className="h-4 w-4" />
               <span>Move to Trash</span>

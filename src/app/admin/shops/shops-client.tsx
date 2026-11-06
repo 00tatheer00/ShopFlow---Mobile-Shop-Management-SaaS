@@ -253,7 +253,7 @@ export function ShopsClient({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <Download className="h-4 w-4 text-emerald-500" />
             <span>Export CSV</span>
@@ -261,7 +261,7 @@ export function ShopsClient({
 
           <Link
             href="/admin/shops/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Create Shop</span>
@@ -285,7 +285,7 @@ export function ShopsClient({
                   key={tab.value}
                   type="button"
                   onClick={() => handleStatusFilter(tab.value)}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all ${
+                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                     currentActive
                       ? tab.isTrash
                         ? 'bg-destructive/15 text-destructive border border-destructive/30 shadow-xs'
@@ -327,7 +327,7 @@ export function ShopsClient({
             </div>
             <button
               type="submit"
-              className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+              className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
             >
               Search
             </button>
@@ -357,7 +357,7 @@ export function ShopsClient({
                 <button
                   type="button"
                   onClick={() => router.push('/admin/shops')}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
                 >
                   Reset Filters
                 </button>
@@ -515,7 +515,7 @@ export function ShopsClient({
                               type="button"
                               disabled={isOperating}
                               onClick={() => handleRestore(shop)}
-                              className="inline-flex items-center gap-1 rounded-xl bg-card border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 rounded-xl bg-card border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                               {isOperating ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -533,7 +533,7 @@ export function ShopsClient({
                                 setPermDeleteModalShop(shop);
                                 setPermConfirmName('');
                               }}
-                              className="inline-flex items-center gap-1 rounded-xl bg-destructive/10 border border-destructive/20 px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors disabled:opacity-50"
+                              className="inline-flex items-center gap-1 rounded-xl bg-destructive/10 border border-destructive/20 px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                             >
                               <Trash2 className="h-3 w-3" />
                               <span>Purge</span>
@@ -544,7 +544,7 @@ export function ShopsClient({
                             {/* Manage Link */}
                             <Link
                               href={`/admin/shops/${shop.id}`}
-                              className="inline-flex items-center gap-1 rounded-xl bg-card border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
+                              className="inline-flex items-center gap-1 rounded-xl bg-card border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
                               title="View and Edit Shop Details"
                             >
                               <span>Manage</span>
@@ -559,7 +559,7 @@ export function ShopsClient({
                                 onClick={() =>
                                   setStatusModal({ shop, targetStatus: 'suspended' })
                                 }
-                                className="inline-flex items-center gap-1 rounded-xl bg-amber-500/10 border border-amber-500/20 px-2 py-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-xl bg-amber-500/10 border border-amber-500/20 px-2 py-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                                 title="Suspend Shop Access"
                               >
                                 <Lock className="h-3 w-3" />
@@ -572,7 +572,7 @@ export function ShopsClient({
                                 onClick={() =>
                                   setStatusModal({ shop, targetStatus: 'active' })
                                 }
-                                className="inline-flex items-center gap-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-2 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-xl bg-emerald-500/10 border border-emerald-500/20 px-2 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                                 title="Reactivate Shop Access"
                               >
                                 <Unlock className="h-3 w-3" />
@@ -587,7 +587,7 @@ export function ShopsClient({
                                 onClick={() =>
                                   setStatusModal({ shop, targetStatus: 'deactivated' })
                                 }
-                                className="inline-flex items-center gap-1 rounded-xl bg-muted border border-border px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                                className="inline-flex items-center gap-1 rounded-xl bg-muted border border-border px-2 py-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                                 title="Deactivate Shop Account"
                               >
                                 <XCircle className="h-3 w-3" />
@@ -600,7 +600,7 @@ export function ShopsClient({
                               type="button"
                               disabled={isOperating}
                               onClick={() => setTrashModalShop(shop)}
-                              className="inline-flex items-center justify-center rounded-xl p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                              className="inline-flex items-center justify-center rounded-xl p-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
                               title="Move Shop to Trash (Soft Delete)"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -627,7 +627,7 @@ export function ShopsClient({
                 type="button"
                 disabled={currentPage <= 1}
                 onClick={() => handlePageChange(currentPage - 1)}
-                className="rounded-lg border border-border px-3 py-1 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
+                className="rounded-lg border border-border px-3 py-1 text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
               >
                 Previous
               </button>
@@ -635,7 +635,7 @@ export function ShopsClient({
                 type="button"
                 disabled={currentPage >= totalPages}
                 onClick={() => handlePageChange(currentPage + 1)}
-                className="rounded-lg border border-border px-3 py-1 text-xs font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
+                className="rounded-lg border border-border px-3 py-1 text-xs font-semibold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
               >
                 Next
               </button>
@@ -667,14 +667,14 @@ export function ShopsClient({
               <button
                 type="button"
                 onClick={() => setTrashModalShop(null)}
-                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmSoftDelete}
-                className="rounded-xl bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90"
+                className="rounded-xl bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
               >
                 Move to Trash
               </button>
@@ -721,7 +721,7 @@ export function ShopsClient({
                   setPermDeleteModalShop(null);
                   setPermConfirmName('');
                 }}
-                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
               >
                 Cancel
               </button>
@@ -729,7 +729,7 @@ export function ShopsClient({
                 type="button"
                 disabled={permConfirmName.trim().toLowerCase() !== permDeleteModalShop.name.trim().toLowerCase()}
                 onClick={handleConfirmPermanentDelete}
-                className="rounded-xl bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="rounded-xl bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Delete Permanently
               </button>
@@ -785,14 +785,14 @@ export function ShopsClient({
               <button
                 type="button"
                 onClick={() => setStatusModal(null)}
-                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted"
+                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleStatusChangeConfirm}
-                className={`rounded-xl px-4 py-2 text-xs font-semibold text-white ${
+                className={`rounded-xl px-4 py-2 text-xs font-semibold text-white cursor-pointer ${
                   statusModal.targetStatus === 'active'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
                     : statusModal.targetStatus === 'suspended'
