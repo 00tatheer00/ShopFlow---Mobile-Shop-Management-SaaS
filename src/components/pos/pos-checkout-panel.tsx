@@ -7,7 +7,6 @@ import {
   Check,
   AlertTriangle,
   Loader2,
-  Percent,
 } from 'lucide-react';
 import { formatPKR } from '@/lib/types';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
@@ -101,15 +100,15 @@ export function PosCheckoutPanel({
   };
 
   return (
-    <div className="flex flex-col h-full rounded-2xl border-2 border-border bg-card shadow-xs overflow-hidden">
+    <div className="flex flex-col h-full rounded-xl border border-border bg-card shadow-xs overflow-hidden">
       {/* Scrollable controls area */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3.5">
+      <div className="flex-1 min-h-0 overflow-y-auto p-2 sm:p-2.5 space-y-2">
         {/* Customer Selection Row */}
-        <div className="space-y-1.5">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5 text-primary" />
-              <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3 text-primary" />
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                 Customer (گاہک)
               </label>
               <CardInfoTooltip
@@ -121,9 +120,9 @@ export function PosCheckoutPanel({
             <button
               type="button"
               onClick={onOpenQuickAddCustomer}
-              className="inline-flex items-center gap-1 text-xs font-black text-primary hover:underline cursor-pointer"
+              className="inline-flex items-center gap-0.5 text-[11px] font-black text-primary hover:underline cursor-pointer"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-3 w-3" />
               <span>New</span>
             </button>
           </div>
@@ -132,26 +131,26 @@ export function PosCheckoutPanel({
             <button
               type="button"
               onClick={() => setIsCustomerDropdownOpen((prev) => !prev)}
-              className="w-full h-11 rounded-xl border-2 border-border bg-background px-3 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-foreground hover:border-primary/50 transition cursor-pointer shadow-2xs"
+              className="w-full h-8.5 rounded-lg border border-border bg-background px-2.5 text-left flex items-center justify-between text-xs font-bold text-foreground hover:border-primary/50 transition cursor-pointer shadow-2xs"
             >
               <span className="truncate">
                 {activeCustomer ? `${activeCustomer.name} (${activeCustomer.phone})` : 'Walk-in Customer'}
               </span>
-              <span className="text-muted-foreground text-xs">▾</span>
+              <span className="text-muted-foreground text-[10px]">▾</span>
             </button>
 
             {isCustomerDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl border-2 border-border bg-card shadow-xl p-2 space-y-1">
+              <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl border border-border bg-card shadow-xl p-1.5 space-y-1">
                 <input
                   type="text"
                   placeholder="Search customer by name or phone..."
                   value={customerSearch}
                   onChange={(e) => setCustomerSearch(e.target.value)}
                   autoFocus
-                  className="h-9 w-full rounded-lg border border-border bg-background px-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  className="h-8 w-full rounded-md border border-border bg-background px-2 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
                 />
 
-                <div className="max-h-48 overflow-y-auto space-y-0.5 pt-1">
+                <div className="max-h-40 overflow-y-auto space-y-0.5 pt-0.5">
                   <button
                     type="button"
                     onClick={() => {
@@ -159,12 +158,12 @@ export function PosCheckoutPanel({
                       setIsCustomerDropdownOpen(false);
                       setCustomerSearch('');
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-xs font-bold text-left transition cursor-pointer ${
                       !selectedCustomerId ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted'
                     }`}
                   >
                     <span>Walk-in Customer</span>
-                    {!selectedCustomerId && <Check className="h-3.5 w-3.5" />}
+                    {!selectedCustomerId && <Check className="h-3 w-3" />}
                   </button>
 
                   {filteredCustomers.map((c) => (
@@ -176,7 +175,7 @@ export function PosCheckoutPanel({
                         setIsCustomerDropdownOpen(false);
                         setCustomerSearch('');
                       }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold text-left transition cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-xs font-bold text-left transition cursor-pointer ${
                         selectedCustomerId === c.id
                           ? 'bg-primary/10 text-primary'
                           : 'text-foreground hover:bg-muted'
@@ -186,7 +185,7 @@ export function PosCheckoutPanel({
                         <div className="truncate">{c.name}</div>
                         <div className="text-[10px] text-muted-foreground font-mono">{c.phone}</div>
                       </div>
-                      {selectedCustomerId === c.id && <Check className="h-3.5 w-3.5 shrink-0" />}
+                      {selectedCustomerId === c.id && <Check className="h-3 w-3 shrink-0" />}
                     </button>
                   ))}
                 </div>
@@ -196,12 +195,12 @@ export function PosCheckoutPanel({
 
           {/* Block Walk-in for Udhaar warning */}
           {paymentOption === 'udhaar' && !selectedCustomerId && (
-            <div className="rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-2.5 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+            <div className="rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-2 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold">Customer Required for Udhaar</p>
-                <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
-                  Udhaar requires selecting a customer so we know who owes money.
+                <p className="font-bold text-[11px]">Customer Required for Udhaar</p>
+                <p className="text-[10px] text-amber-800 dark:text-amber-300">
+                  Select a customer so we know who owes money.
                 </p>
               </div>
             </div>
@@ -209,11 +208,11 @@ export function PosCheckoutPanel({
         </div>
 
         {/* Subtotal & Discount Row */}
-        <div className="pt-2 border-t border-border/70 space-y-2">
+        <div className="pt-1.5 border-t border-border/70 space-y-1.5">
           {/* Subtotal */}
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-muted-foreground">Subtotal</span>
-            <span className="font-black text-sm text-foreground">
+            <span className="font-semibold text-muted-foreground text-[11px]">Subtotal</span>
+            <span className="font-black text-xs sm:text-sm text-foreground">
               {formatPKR(subtotalRupees * 100)}
             </span>
           </div>
@@ -222,7 +221,7 @@ export function PosCheckoutPanel({
           <div className="space-y-1">
             <div className="flex items-center justify-between text-xs">
               <div className="flex items-center gap-1">
-                <span className="font-bold text-muted-foreground">Discount</span>
+                <span className="font-semibold text-muted-foreground text-[11px]">Discount</span>
                 <CardInfoTooltip
                   title="Discount (رعایت)"
                   urduDetail="گاہک کو دی جانے والی رعایت۔ آپ روپے (Rs) یا فیصد (%) میں درج کر سکتے ہیں۔"
@@ -230,11 +229,11 @@ export function PosCheckoutPanel({
               </div>
 
               {/* Rs / % Mode Toggle */}
-              <div className="inline-flex items-center rounded-lg border border-border bg-muted/60 p-0.5">
+              <div className="inline-flex items-center rounded-md border border-border bg-muted/60 p-0.5">
                 <button
                   type="button"
                   onClick={() => onDiscountChange(discountValue, 'pkr')}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold transition cursor-pointer ${
+                  className={`px-1.5 py-0.2 rounded text-[10px] font-extrabold transition cursor-pointer ${
                     discountType === 'pkr'
                       ? 'bg-background text-foreground shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -245,7 +244,7 @@ export function PosCheckoutPanel({
                 <button
                   type="button"
                   onClick={() => onDiscountChange(discountValue, 'percent')}
-                  className={`px-2 py-0.5 rounded-md text-[11px] font-extrabold transition cursor-pointer ${
+                  className={`px-1.5 py-0.2 rounded text-[10px] font-extrabold transition cursor-pointer ${
                     discountType === 'percent'
                       ? 'bg-background text-foreground shadow-2xs'
                       : 'text-muted-foreground hover:text-foreground'
@@ -256,9 +255,9 @@ export function PosCheckoutPanel({
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <div className="relative flex-1">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-muted-foreground">
                   {discountType === 'pkr' ? 'Rs' : '%'}
                 </span>
                 <input
@@ -271,30 +270,30 @@ export function PosCheckoutPanel({
                     const val = parseFloat(e.target.value);
                     onDiscountChange(isNaN(val) ? 0 : val, discountType);
                   }}
-                  className="h-11 w-full rounded-xl border-2 border-border bg-background pl-9 pr-3 text-right text-xs sm:text-sm font-black text-foreground focus:border-primary focus:outline-none"
+                  className="h-8 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-right text-xs font-black text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
 
               {discountType === 'percent' && discountValue > 0 && (
-                <span className="text-xs font-bold text-muted-foreground shrink-0">
+                <span className="text-[11px] font-bold text-muted-foreground shrink-0">
                   ≈ {formatPKR(discountRupees * 100)}
                 </span>
               )}
             </div>
 
             {isHighDiscount && (
-              <p className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                Warning: Discount is greater than 10% of subtotal.
+              <p className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                Warning: Discount &gt; 10% of subtotal.
               </p>
             )}
           </div>
         </div>
 
-        {/* DARK NAVY TOTAL BOX */}
-        <div className="rounded-2xl bg-slate-900 dark:bg-[#0B1528] text-white p-4 border-2 border-slate-800 shadow-md">
-          <div className="flex items-center justify-between mb-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-slate-300">
+        {/* COMPACT DARK NAVY TOTAL BOX */}
+        <div className="rounded-xl bg-slate-900 dark:bg-[#0B1528] text-white p-2.5 border border-slate-800 shadow-sm">
+          <div className="flex items-center justify-between mb-0.5">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300">
                 Net Total
               </span>
               <CardInfoTooltip
@@ -303,10 +302,10 @@ export function PosCheckoutPanel({
                 urduDetail="کل رقم جو گاہک نے ادا کرنی ہے (رعایت کے بعد)"
               />
             </div>
-            <span className="text-[11px] text-slate-400 font-medium">Final Payable</span>
+            <span className="text-[10px] text-slate-400 font-medium">Final Payable</span>
           </div>
 
-          <div className="text-3xl sm:text-4xl font-black text-emerald-400 tracking-tight">
+          <div className="text-xl sm:text-2xl font-black text-emerald-400 tracking-tight leading-tight">
             {formatPKR(totalRupees * 100)}
           </div>
         </div>
@@ -319,23 +318,23 @@ export function PosCheckoutPanel({
 
         {/* Cash Tendered & Change Section */}
         {paymentOption === 'cash' && (
-          <div className="rounded-xl border-2 border-border bg-muted/20 p-3 space-y-2.5">
+          <div className="rounded-lg border border-border bg-muted/20 p-2 space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+              <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                 Received from Customer
               </label>
               <button
                 type="button"
                 onClick={() => handleQuickCash('exact')}
-                className="text-xs font-black text-primary hover:underline cursor-pointer"
+                className="text-[10px] font-black text-primary hover:underline cursor-pointer"
               >
                 Exact (Rs {totalRupees.toLocaleString('en-PK')})
               </button>
             </div>
 
-            {/* Received Input (48px tall) */}
+            {/* Received Input */}
             <div className="relative">
-              <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground">
+              <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
                 Rs
               </span>
               <input
@@ -348,37 +347,37 @@ export function PosCheckoutPanel({
                   const val = e.target.value;
                   onChangeCashReceived(val === '' ? '' : Number(val));
                 }}
-                className="h-12 w-full rounded-xl border-2 border-border bg-background pl-10 pr-3 text-right text-base font-black text-foreground focus:border-primary focus:outline-none"
+                className="h-8.5 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-right text-xs sm:text-sm font-black text-foreground focus:border-primary focus:outline-none"
               />
             </div>
 
             {/* Quick Cash Chips */}
-            <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="flex items-center gap-1 flex-wrap">
               <button
                 type="button"
                 onClick={() => handleQuickCash('exact')}
-                className="px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-bold text-foreground transition cursor-pointer"
+                className="px-2 py-0.5 rounded-md border border-border bg-background hover:bg-muted text-[10px] font-bold text-foreground transition cursor-pointer"
               >
                 Exact
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickCash(500)}
-                className="px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-bold text-foreground transition cursor-pointer"
+                className="px-2 py-0.5 rounded-md border border-border bg-background hover:bg-muted text-[10px] font-bold text-foreground transition cursor-pointer"
               >
                 +500
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickCash(1000)}
-                className="px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-bold text-foreground transition cursor-pointer"
+                className="px-2 py-0.5 rounded-md border border-border bg-background hover:bg-muted text-[10px] font-bold text-foreground transition cursor-pointer"
               >
                 +1,000
               </button>
               <button
                 type="button"
                 onClick={() => handleQuickCash(5000)}
-                className="px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-xs font-bold text-foreground transition cursor-pointer"
+                className="px-2 py-0.5 rounded-md border border-border bg-background hover:bg-muted text-[10px] font-bold text-foreground transition cursor-pointer"
               >
                 +5,000
               </button>
@@ -386,21 +385,21 @@ export function PosCheckoutPanel({
 
             {/* Change to Return Banner */}
             {cashChange > 0 ? (
-              <div className="rounded-xl border-2 border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/50 p-2.5 text-emerald-950 dark:text-emerald-200 flex items-center justify-between">
+              <div className="rounded-lg border border-emerald-400 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-950/50 p-1.5 text-emerald-950 dark:text-emerald-200 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-extrabold uppercase tracking-wider block">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider block leading-tight">
                     Change to Return (واپسی)
                   </span>
-                  <span className="font-urdu text-[11px] text-emerald-800 dark:text-emerald-300" dir="rtl">
-                    گاہک کو بقایا واپس کریں
+                  <span className="font-urdu text-[10px] text-emerald-800 dark:text-emerald-300" dir="rtl">
+                    بقایا واپس کریں
                   </span>
                 </div>
-                <span className="text-lg font-black text-emerald-700 dark:text-emerald-300">
+                <span className="text-sm sm:text-base font-black text-emerald-700 dark:text-emerald-300">
                   {formatPKR(cashChange * 100)}
                 </span>
               </div>
             ) : numericCashReceived > 0 && numericCashReceived < totalRupees ? (
-              <div className="rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-2 text-xs text-amber-900 dark:text-amber-200 flex items-center justify-between">
+              <div className="rounded-md border border-amber-300 bg-amber-50 dark:border-amber-900/60 dark:bg-amber-950/40 p-1.5 text-[11px] text-amber-900 dark:text-amber-200 flex items-center justify-between">
                 <span className="font-bold">Short by:</span>
                 <span className="font-black text-amber-700 dark:text-amber-300">
                   {formatPKR((totalRupees - numericCashReceived) * 100)}
@@ -412,10 +411,10 @@ export function PosCheckoutPanel({
 
         {/* Udhaar Specific Section */}
         {paymentOption === 'udhaar' && (
-          <div className="rounded-xl border-2 border-amber-300 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30 p-3 space-y-2.5">
+          <div className="rounded-lg border border-amber-300 dark:border-amber-900/60 bg-amber-50/50 dark:bg-amber-950/30 p-2 space-y-1.5">
             {activeCustomer && (
-              <div className="flex items-center justify-between text-xs pb-1.5 border-b border-amber-200 dark:border-amber-800/60">
-                <span className="text-muted-foreground font-semibold">Previous Udhaar Balance:</span>
+              <div className="flex items-center justify-between text-[11px] pb-1 border-b border-amber-200 dark:border-amber-800/60">
+                <span className="text-muted-foreground font-semibold">Previous Balance:</span>
                 <span className="font-black text-foreground">
                   {formatPKR(0)}
                 </span>
@@ -423,14 +422,14 @@ export function PosCheckoutPanel({
             )}
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center justify-between mb-0.5">
+                <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
                   Paid Now (نقد وصولی)
                 </label>
-                <span className="text-[10px] text-muted-foreground">Optional down payment</span>
+                <span className="text-[9px] text-muted-foreground">Optional</span>
               </div>
               <div className="relative">
-                <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
+                <span className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">
                   Rs
                 </span>
                 <input
@@ -443,21 +442,21 @@ export function PosCheckoutPanel({
                     const val = e.target.value;
                     onChangeUdhaarPaidNow(val === '' ? '' : Number(val));
                   }}
-                  className="h-10 w-full rounded-xl border-2 border-border bg-background pl-9 pr-3 text-right text-xs sm:text-sm font-black text-foreground focus:border-primary focus:outline-none"
+                  className="h-8 w-full rounded-lg border border-border bg-background pl-8 pr-2.5 text-right text-xs font-black text-foreground focus:border-primary focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="rounded-lg bg-amber-100/80 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 p-2 text-xs flex items-center justify-between">
+            <div className="rounded-md bg-amber-100/80 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 p-1.5 text-xs flex items-center justify-between">
               <div>
-                <span className="font-bold text-amber-950 dark:text-amber-200 block">
+                <span className="font-bold text-[11px] text-amber-950 dark:text-amber-200 block leading-tight">
                   Remaining Udhaar (باقی ادھار)
                 </span>
-                <span className="text-[10px] text-amber-800 dark:text-amber-300">
-                  Will be recorded in customer ledger
+                <span className="text-[9px] text-amber-800 dark:text-amber-300">
+                  Recorded in ledger
                 </span>
               </div>
-              <span className="text-base font-black text-amber-900 dark:text-amber-200">
+              <span className="text-sm sm:text-base font-black text-amber-900 dark:text-amber-200">
                 {formatPKR(remainingUdhaar * 100)}
               </span>
             </div>
@@ -466,25 +465,25 @@ export function PosCheckoutPanel({
       </div>
 
       {/* Pinned Bottom Area: Complete Sale Button (Always Visible) */}
-      <div className="shrink-0 p-3 sm:p-4 bg-muted/40 border-t-2 border-border space-y-1.5">
+      <div className="shrink-0 p-2 sm:p-2.5 bg-muted/40 border-t border-border space-y-1">
         <button
           type="button"
           onClick={onCompleteSale}
           disabled={!canComplete || isPending}
-          className={`w-full h-14 rounded-xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.99] cursor-pointer ${
+          className={`w-full h-10 sm:h-11 rounded-lg font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-[0.99] cursor-pointer ${
             canComplete && !isPending
-              ? 'bg-emerald-600 hover:bg-emerald-500 text-white border-2 border-emerald-700'
-              : 'bg-muted border-2 border-border text-muted-foreground cursor-not-allowed opacity-75'
+              ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-700'
+              : 'bg-muted border border-border text-muted-foreground cursor-not-allowed opacity-75'
           }`}
         >
           {isPending ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Processing Sale...</span>
             </>
           ) : canComplete ? (
             <>
-              <Check className="h-5 w-5 stroke-[3]" />
+              <Check className="h-4 w-4 stroke-[3]" />
               <span>Complete Sale ({formatPKR(totalRupees * 100)})</span>
             </>
           ) : (
@@ -492,7 +491,7 @@ export function PosCheckoutPanel({
           )}
         </button>
 
-        <p className="text-[10px] text-center text-muted-foreground font-medium">
+        <p className="text-[9px] text-center text-muted-foreground font-medium">
           Press <kbd className="px-1 py-0.2 rounded bg-muted border border-border font-mono font-bold text-foreground">Ctrl+Enter</kbd> to complete sale
         </p>
       </div>

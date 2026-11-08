@@ -38,18 +38,18 @@ export function PosImeiPicker({ product, cartImeis, onSelectImei, onClose }: Pos
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="w-full max-w-md rounded-2xl border-2 border-border bg-card p-5 shadow-2xl space-y-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-card p-4 shadow-2xl space-y-3">
         {/* Header */}
-        <div className="flex items-start justify-between pb-3 border-b border-border">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center shrink-0">
-              <Smartphone className="h-5 w-5" />
+        <div className="flex items-start justify-between pb-2.5 border-b border-border">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 flex items-center justify-center shrink-0">
+              <Smartphone className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm sm:text-base text-foreground">
+              <h3 className="font-extrabold text-xs sm:text-sm text-foreground">
                 Select Box / IMEI
               </h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 {product.name} {product.model ? `(${product.model})` : ''} •{' '}
                 <span className="font-bold text-foreground">{formatPKR(product.sale_price)}</span>
               </p>
@@ -58,25 +58,25 @@ export function PosImeiPicker({ product, cartImeis, onSelectImei, onClose }: Pos
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+            className="p-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
             aria-label="Close"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {/* Info hint */}
-        <p className="text-xs text-muted-foreground">
-          Check the IMEI on the mobile box and tap the matching number below:
+        <p className="text-[11px] text-muted-foreground">
+          Check IMEI on box and tap matching number:
         </p>
 
         {/* List of IMEIs */}
-        <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+        <div className="space-y-1.5 max-h-60 overflow-y-auto pr-1">
           {availableImeis.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 text-center text-xs text-muted-foreground space-y-2">
-              <AlertCircle className="h-6 w-6 text-amber-500" />
+            <div className="flex flex-col items-center justify-center py-4 text-center text-xs text-muted-foreground space-y-1.5">
+              <AlertCircle className="h-5 w-5 text-amber-500" />
               <p className="font-bold text-foreground">All in-stock IMEIs are in basket or sold</p>
-              <p className="text-[11px]">No available handsets for this model.</p>
+              <p className="text-[10px]">No available handsets for this model.</p>
             </div>
           ) : (
             availableImeis.map((imei, idx) => {
@@ -89,23 +89,23 @@ export function PosImeiPicker({ product, cartImeis, onSelectImei, onClose }: Pos
                   key={imei.id}
                   type="button"
                   onClick={() => onSelectImei(product, imei)}
-                  className="w-full flex items-center justify-between min-h-[48px] rounded-xl border-2 border-border bg-background p-3 text-left hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group shadow-2xs"
+                  className="w-full flex items-center justify-between min-h-[38px] rounded-lg border border-border bg-background p-2 text-left hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group shadow-2xs"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="h-6 w-6 rounded-md bg-muted text-muted-foreground text-xs font-bold flex items-center justify-center">
+                  <div className="flex items-center gap-2">
+                    <span className="h-5 w-5 rounded bg-muted text-muted-foreground text-[10px] font-bold flex items-center justify-center">
                       {idx + 1}
                     </span>
-                    <div className="font-mono text-xs sm:text-sm">
-                      <span className="text-muted-foreground">{prefix}</span>
-                      <span className="font-black text-primary text-sm sm:text-base tracking-wide bg-primary/10 px-1 py-0.5 rounded ml-0.5">
+                    <div className="font-mono text-xs">
+                      <span className="text-muted-foreground text-[11px]">{prefix}</span>
+                      <span className="font-black text-primary tracking-wide bg-primary/10 px-1 py-0.2 rounded ml-0.5">
                         {lastSix}
                       </span>
                     </div>
                   </div>
 
-                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform">
                     <span>Select</span>
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="h-3 w-3" />
                   </span>
                 </button>
               );
@@ -118,7 +118,7 @@ export function PosImeiPicker({ product, cartImeis, onSelectImei, onClose }: Pos
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+            className="px-3 py-1.5 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
           >
             Cancel
           </button>
@@ -127,3 +127,4 @@ export function PosImeiPicker({ product, cartImeis, onSelectImei, onClose }: Pos
     </div>
   );
 }
+

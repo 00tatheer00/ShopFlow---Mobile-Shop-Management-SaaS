@@ -22,21 +22,21 @@ const TILES: TileOption[] = [
   { id: 'cash', label: 'Cash', sublabel: 'نقد', icon: Banknote },
   { id: 'easypaisa', label: 'EasyPaisa', sublabel: 'ایزی پیسہ', icon: Smartphone },
   { id: 'jazzcash', label: 'JazzCash', sublabel: 'جاز کیش', icon: Smartphone },
-  { id: 'bank_transfer', label: 'Bank', sublabel: 'بینک ٹرانسفر', icon: Landmark },
-  { id: 'udhaar', label: 'Udhaar', sublabel: 'ادھار کھاتہ', icon: BookOpen, hasInfo: true },
+  { id: 'bank_transfer', label: 'Bank', sublabel: 'بینک', icon: Landmark },
+  { id: 'udhaar', label: 'Udhaar', sublabel: 'ادھار', icon: BookOpen, hasInfo: true },
 ];
 
 export function PosPaymentTiles({ selected, onSelect }: PosPaymentTilesProps) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label className="text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground">
+        <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
           Payment Method
         </label>
-        <span className="text-[10px] text-muted-foreground">Select one</span>
+        <span className="text-[9px] text-muted-foreground">Select one</span>
       </div>
 
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="grid grid-cols-5 gap-1">
         {TILES.map((tile) => {
           const isSelected = selected === tile.id;
           const Icon = tile.icon;
@@ -46,31 +46,31 @@ export function PosPaymentTiles({ selected, onSelect }: PosPaymentTilesProps) {
               key={tile.id}
               type="button"
               onClick={() => onSelect(tile.id)}
-              className={`relative flex flex-col items-center justify-center p-2 rounded-xl border-2 text-center transition-all cursor-pointer min-h-[58px] ${
+              className={`relative flex flex-col items-center justify-center p-1 rounded-lg border text-center transition-all cursor-pointer min-h-[42px] ${
                 isSelected
                   ? tile.id === 'udhaar'
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 shadow-xs'
-                    : 'border-primary bg-primary/10 text-primary shadow-xs'
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 shadow-2xs font-extrabold'
+                    : 'border-primary bg-primary/10 text-primary shadow-2xs font-extrabold'
                   : 'border-border bg-card text-foreground hover:bg-muted/60'
               }`}
             >
               {isSelected && (
-                <span className="absolute top-1 right-1 h-3.5 w-3.5 rounded-full bg-primary text-white flex items-center justify-center">
-                  <Check className="h-2.5 w-2.5 stroke-[3]" />
+                <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-primary text-white flex items-center justify-center">
+                  <Check className="h-2 w-2 stroke-[3]" />
                 </span>
               )}
 
-              <Icon className="h-4 w-4 mb-0.5" />
-              <span className="text-xs font-black truncate max-w-full leading-tight">
+              <Icon className="h-3.5 w-3.5 mb-0.5 shrink-0" />
+              <span className="text-[11px] font-black truncate max-w-full leading-none">
                 {tile.label}
               </span>
-              <span className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+              <span className="text-[9px] text-muted-foreground truncate leading-none mt-0.5">
                 {tile.sublabel}
               </span>
 
               {tile.hasInfo && (
                 <div
-                  className="absolute top-1 left-1"
+                  className="absolute top-0.5 left-0.5"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <CardInfoTooltip

@@ -195,10 +195,10 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1.5">
         {/* Search Input Box */}
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <input
             ref={inputRef}
             type="text"
@@ -211,8 +211,8 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
               if (query.trim() || browseCategory) setIsOpen(true);
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Search by product name, model, or IMEI (press / or F2 to search)..."
-            className="h-11 w-full rounded-xl border-2 border-border bg-card pl-10 pr-9 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground font-medium shadow-2xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+            placeholder="Search by product name, model, or IMEI (press / or F2)..."
+            className="h-9 w-full rounded-lg border border-border bg-card pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground font-medium shadow-2xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
@@ -226,10 +226,10 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                 setIsOpen(false);
                 inputRef.current?.focus();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer"
               aria-label="Clear search"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
@@ -239,23 +239,23 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
           <button
             type="button"
             onClick={() => setIsBrowseMenuOpen((prev) => !prev)}
-            className={`h-11 px-3.5 rounded-xl border-2 text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
+            className={`h-9 px-2.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
               browseCategory
                 ? 'border-primary bg-primary text-primary-foreground'
                 : 'border-border bg-card text-foreground hover:bg-muted'
             }`}
           >
-            <Layers className="h-4 w-4" />
-            <span>
+            <Layers className="h-3.5 w-3.5" />
+            <span className="text-[11px]">
               {browseCategory
                 ? categories.find((c) => c.id === browseCategory)?.name || 'Category'
                 : 'Browse'}
             </span>
-            <ChevronDown className="h-3.5 w-3.5" />
+            <ChevronDown className="h-3 w-3 opacity-70" />
           </button>
 
           {isBrowseMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-52 rounded-xl border-2 border-border bg-card shadow-xl z-50 p-1.5 space-y-0.5">
+            <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-border bg-card shadow-xl z-50 p-1 space-y-0.5">
               <button
                 type="button"
                 onClick={() => {
@@ -263,20 +263,20 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                   setIsBrowseMenuOpen(false);
                   inputRef.current?.focus();
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                   !browseCategory
                     ? 'bg-primary/10 text-primary'
                     : 'text-foreground hover:bg-muted'
                 }`}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5">
                   <Layers className="h-3.5 w-3.5" />
                   <span>All Products</span>
                 </div>
-                {!browseCategory && <Check className="h-3.5 w-3.5" />}
+                {!browseCategory && <Check className="h-3 w-3" />}
               </button>
 
-              <div className="h-px bg-border my-1" />
+              <div className="h-px bg-border my-0.5" />
 
               {categories.map((c) => {
                 const isSelected = browseCategory === c.id;
@@ -291,21 +291,21 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                       setIsOpen(true);
                       inputRef.current?.focus();
                     }}
-                    className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
                       isSelected
                         ? 'bg-primary/10 text-primary'
                         : 'text-foreground hover:bg-muted'
                     }`}
                   >
-                    <div className="flex items-center gap-2 truncate">
+                    <div className="flex items-center gap-1.5 truncate">
                       {isPhone ? (
-                        <Smartphone className="h-3.5 w-3.5 shrink-0" />
+                        <Smartphone className="h-3 w-3 shrink-0" />
                       ) : (
-                        <Package className="h-3.5 w-3.5 shrink-0" />
+                        <Package className="h-3 w-3 shrink-0" />
                       )}
                       <span className="truncate">{c.name}</span>
                     </div>
-                    {isSelected && <Check className="h-3.5 w-3.5 shrink-0" />}
+                    {isSelected && <Check className="h-3 w-3 shrink-0" />}
                   </button>
                 );
               })}
@@ -334,3 +334,4 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
     </div>
   );
 });
+

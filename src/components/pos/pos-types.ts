@@ -30,3 +30,4 @@ export interface CompletedSaleInfo {
   }[];
   date: string;
 }
+

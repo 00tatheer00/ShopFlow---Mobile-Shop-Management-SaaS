@@ -95,52 +95,52 @@ export function PosSuccessDialog({
         if (e.target === e.currentTarget) onNewSale();
       }}
     >
-      <div className="w-full max-w-md rounded-3xl border-2 border-border bg-card p-6 shadow-2xl space-y-5 text-center">
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-4 shadow-2xl space-y-3.5 text-center">
         {/* Success Icon */}
         <div className="flex flex-col items-center">
-          <div className="h-16 w-16 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center mb-3 border-2 border-emerald-400/40 animate-in zoom-in-75 duration-200">
-            <Check className="h-9 w-9 stroke-[3]" />
+          <div className="h-11 w-11 rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center mb-2 border border-emerald-400/40 animate-in zoom-in-75 duration-200">
+            <Check className="h-6 w-6 stroke-[3]" />
           </div>
-          <h2 className="text-xl font-black text-foreground">
+          <h2 className="text-base font-black text-foreground">
             Sale Completed Successfully!
           </h2>
-          <p className="text-xs text-muted-foreground mt-0.5 font-urdu" dir="rtl">
+          <p className="text-[11px] text-muted-foreground font-urdu" dir="rtl">
             فروخت کامیابی کے ساتھ درج ہو چکی ہے۔
           </p>
         </div>
 
         {/* Invoice Summary Card */}
-        <div className="rounded-2xl border-2 border-border bg-muted/40 p-4 text-left space-y-2 text-xs">
-          <div className="flex items-center justify-between pb-2 border-b border-border/80">
-            <span className="text-muted-foreground font-semibold">Invoice Number</span>
-            <span className="font-mono font-black text-foreground text-sm">
+        <div className="rounded-xl border border-border bg-muted/40 p-3 text-left space-y-1.5 text-xs">
+          <div className="flex items-center justify-between pb-1.5 border-b border-border/80">
+            <span className="text-muted-foreground font-semibold text-[11px]">Invoice Number</span>
+            <span className="font-mono font-black text-foreground text-xs sm:text-sm">
               {sale.invoiceNumber}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-semibold">Customer</span>
-            <span className="font-bold text-foreground">
+            <span className="text-muted-foreground font-semibold text-[11px]">Customer</span>
+            <span className="font-bold text-foreground text-xs">
               {sale.customerName || 'Walk-in Customer'}
             </span>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground font-semibold">Payment Mode</span>
-            <span className="font-extrabold uppercase text-foreground">
+            <span className="text-muted-foreground font-semibold text-[11px]">Payment Mode</span>
+            <span className="font-extrabold uppercase text-foreground text-xs">
               {sale.paymentMethod}
             </span>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-border/80">
+          <div className="flex items-center justify-between pt-1.5 border-t border-border/80">
             <span className="text-xs font-bold text-foreground">Total Amount</span>
-            <span className="font-black text-base text-emerald-600 dark:text-emerald-400">
+            <span className="font-black text-sm sm:text-base text-emerald-600 dark:text-emerald-400">
               {formatPKR(sale.total * 100)}
             </span>
           </div>
 
           {amountDue > 0 && (
-            <div className="flex items-center justify-between text-amber-700 dark:text-amber-300 font-bold">
+            <div className="flex items-center justify-between text-amber-700 dark:text-amber-300 font-bold text-xs">
               <span>Remaining Udhaar:</span>
               <span className="font-black">{formatPKR(amountDue * 100)}</span>
             </div>
@@ -148,17 +148,17 @@ export function PosSuccessDialog({
         </div>
 
         {/* 3 Primary Action Buttons */}
-        <div className="space-y-2 pt-1">
+        <div className="space-y-1.5 pt-0.5">
           {/* 1. Print Thermal Receipt (Primary & Auto-focused) */}
           <button
             ref={printButtonRef}
             type="button"
             onClick={onPrintReceipt}
-            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-extrabold text-sm flex items-center justify-center gap-2 hover:bg-primary/90 transition shadow-md cursor-pointer active:scale-[0.99]"
+            className="w-full h-10 rounded-lg bg-primary text-primary-foreground font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 hover:bg-primary/90 transition shadow-sm cursor-pointer active:scale-[0.99]"
           >
-            <Printer className="h-4 w-4" />
+            <Printer className="h-3.5 w-3.5" />
             <span>Print Thermal Receipt</span>
-            <kbd className="ml-1 px-1.5 py-0.5 rounded bg-primary-foreground/20 text-[10px] font-mono">
+            <kbd className="ml-1 px-1.5 py-0.2 rounded bg-primary-foreground/20 text-[9px] font-mono">
               Enter
             </kbd>
           </button>
@@ -167,9 +167,9 @@ export function PosSuccessDialog({
           <button
             type="button"
             onClick={handleWhatsApp}
-            className="w-full h-11 rounded-xl border-2 border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-emerald-100 dark:hover:bg-emerald-950/70 transition cursor-pointer"
+            className="w-full h-9 rounded-lg border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200 font-extrabold text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-950/70 transition cursor-pointer"
           >
-            <MessageSquare className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <MessageSquare className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>Send Receipt on WhatsApp</span>
           </button>
 
@@ -177,11 +177,11 @@ export function PosSuccessDialog({
           <button
             type="button"
             onClick={onNewSale}
-            className="w-full h-11 rounded-xl border-2 border-border bg-card hover:bg-muted text-foreground font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition cursor-pointer"
+            className="w-full h-9 rounded-lg border border-border bg-card hover:bg-muted text-foreground font-extrabold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
             <span>Start New Sale</span>
-            <kbd className="ml-1 px-1.5 py-0.5 rounded bg-muted border border-border text-[10px] font-mono text-muted-foreground">
+            <kbd className="ml-1 px-1.5 py-0.2 rounded bg-muted border border-border text-[9px] font-mono text-muted-foreground">
               Esc
             </kbd>
           </button>
@@ -190,3 +190,4 @@ export function PosSuccessDialog({
     </div>
   );
 }
+

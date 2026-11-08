@@ -70,55 +70,55 @@ export function PosSearchResults({
             onClick={() => {
               if (!isOutOfStock) onSelect(product);
             }}
-            className={`flex items-center justify-between p-3 transition-colors ${
+            className={`flex items-center justify-between p-2 transition-colors ${
               isOutOfStock
                 ? 'opacity-50 bg-muted/40 cursor-not-allowed'
                 : isHighlighted
-                ? 'bg-primary/10 border-l-4 border-primary cursor-pointer'
+                ? 'bg-primary/10 border-l-3 border-primary cursor-pointer'
                 : 'hover:bg-muted/60 cursor-pointer'
             }`}
           >
             {/* Left: Product Info */}
-            <div className="flex items-center gap-3 min-w-0 flex-1 pr-3">
+            <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
               <div
-                className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
+                className={`h-7 w-7 rounded-md flex items-center justify-center shrink-0 ${
                   product.is_imei_tracked
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
                 }`}
               >
                 {product.is_imei_tracked ? (
-                  <Smartphone className="h-4 w-4" />
+                  <Smartphone className="h-3.5 w-3.5" />
                 ) : (
-                  <Package className="h-4 w-4" />
+                  <Package className="h-3.5 w-3.5" />
                 )}
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-xs sm:text-sm text-foreground truncate">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="font-bold text-xs text-foreground truncate">
                     {product.name}
                   </span>
                   {product.is_imei_tracked ? (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    <span className="px-1 py-0.2 rounded text-[9px] font-extrabold uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                       Mobile
                     </span>
                   ) : (
-                    <span className="px-1.5 py-0.2 rounded text-[10px] font-bold text-muted-foreground bg-muted border border-border">
+                    <span className="px-1 py-0.2 rounded text-[9px] font-bold text-muted-foreground bg-muted border border-border">
                       Accessory
                     </span>
                   )}
                   {brand && (
-                    <span className="text-[11px] font-semibold text-muted-foreground">
+                    <span className="text-[10px] font-semibold text-muted-foreground">
                       • {brand.name}
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground truncate">
+                <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground truncate">
                   {product.model && <span>{product.model}</span>}
                   {product.is_imei_tracked && availableImeis.length > 0 && (
-                    <span className="font-mono text-[11px] text-primary font-bold">
+                    <span className="font-mono text-[10px] text-primary font-bold">
                       {availableImeis.length === 1
                         ? `IMEI ...${availableImeis[0].imei_number.slice(-4)}`
                         : `${availableImeis.length} IMEIs ready`}
@@ -130,21 +130,21 @@ export function PosSearchResults({
             </div>
 
             {/* Right: Price & Stock Status */}
-            <div className="text-right shrink-0 flex flex-col items-end gap-1">
-              <span className="font-black text-xs sm:text-sm text-foreground">
+            <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
+              <span className="font-black text-xs text-foreground">
                 {formatPKR(product.sale_price)}
               </span>
 
               {isOutOfStock ? (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground border border-border">
+                <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-muted text-muted-foreground border border-border">
                   Out of stock
                 </span>
               ) : isLowStock ? (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                   Low stock ({availableStock})
                 </span>
               ) : (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                   In stock ({availableStock})
                 </span>
               )}
@@ -155,3 +155,4 @@ export function PosSearchResults({
     </div>
   );
 }
+

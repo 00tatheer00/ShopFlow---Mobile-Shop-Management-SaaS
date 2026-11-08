@@ -67,32 +67,32 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
         if (e.target === e.currentTarget && !isPending) onClose();
       }}
     >
-      <div className="w-full max-w-sm rounded-2xl border-2 border-border bg-card p-5 shadow-2xl space-y-4">
+      <div className="w-full max-w-xs rounded-xl border border-border bg-card p-4 shadow-2xl space-y-3">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-border">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-              <UserPlus className="h-4 w-4" />
+        <div className="flex items-center justify-between pb-2.5 border-b border-border">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+              <UserPlus className="h-3.5 w-3.5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-sm text-foreground">Add New Customer</h3>
-              <p className="text-[11px] text-muted-foreground">Quick counter registration</p>
+              <h3 className="font-extrabold text-xs sm:text-sm text-foreground">Add New Customer</h3>
+              <p className="text-[10px] text-muted-foreground">Quick counter registration</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
             disabled={isPending}
-            className="p-1 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
+            className="p-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-2.5 text-xs">
           <div>
-            <label className="block font-bold text-foreground mb-1">
+            <label className="block font-bold text-foreground mb-0.5 text-[11px]">
               Customer Name <span className="text-rose-500">*</span>
             </label>
             <input
@@ -102,12 +102,12 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               placeholder="e.g. Asad Khan"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-10 w-full rounded-xl border-2 border-border bg-background px-3 font-medium text-foreground focus:border-primary focus:outline-none"
+              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-foreground mb-1">
+            <label className="block font-bold text-foreground mb-0.5 text-[11px]">
               Phone Number <span className="text-rose-500">*</span>
             </label>
             <input
@@ -116,12 +116,12 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               placeholder="e.g. 03001234567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="h-10 w-full rounded-xl border-2 border-border bg-background px-3 font-medium text-foreground focus:border-primary focus:outline-none font-mono"
+              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none font-mono"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-foreground mb-1">
+            <label className="block font-bold text-foreground mb-0.5 text-[11px]">
               City / Address <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <input
@@ -129,23 +129,23 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               placeholder="e.g. Lahore / Hafeez Centre"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="h-10 w-full rounded-xl border-2 border-border bg-background px-3 font-medium text-foreground focus:border-primary focus:outline-none"
+              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
             />
           </div>
 
-          <div className="pt-2 flex justify-end gap-2 border-t border-border">
+          <div className="pt-1.5 flex justify-end gap-1.5 border-t border-border">
             <button
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-3.5 py-2 rounded-xl border border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
+              className="px-3 py-1.5 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !name.trim() || !phone.trim()}
-              className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-extrabold hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-extrabold hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5"
             >
               {isPending ? (
                 <>
@@ -162,3 +162,4 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
     </div>
   );
 }
+

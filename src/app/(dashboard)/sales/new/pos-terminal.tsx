@@ -467,7 +467,7 @@ export function PosTerminal({
   }, [handleCompleteSale, focusSearch]);
 
   return (
-    <div className="h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] flex flex-col gap-2 p-2 sm:p-3 overflow-hidden select-none bg-background">
+    <div className="h-full max-h-full flex flex-col gap-1.5 overflow-hidden select-none bg-background">
       {/* Top Header */}
       <PosHeader
         shopName={shopName}
@@ -490,7 +490,7 @@ export function PosTerminal({
       </div>
 
       {/* Main Two-Column Viewport (Fixed Height, No Page Scroll) */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2.5 sm:gap-3">
+      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2">
         {/* Left Column: Basket Table (60-65% width on desktop) */}
         <div className="md:col-span-7 xl:col-span-8 flex flex-col min-h-0 h-full">
           <PosBasketTable
