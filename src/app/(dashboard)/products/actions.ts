@@ -630,11 +630,15 @@ export async function createCategory(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from('product_categories').insert({
-    shop_id: user.shop_id,
-    name: result.data.name,
-    description: result.data.description || null,
-  });
+  const { data: category, error } = await supabase
+    .from('product_categories')
+    .insert({
+      shop_id: user.shop_id,
+      name: result.data.name,
+      description: result.data.description || null,
+    })
+    .select('*')
+    .single();
 
   if (error) {
     if (error.code === '23505') {
@@ -646,7 +650,7 @@ export async function createCategory(formData: FormData) {
 
   revalidatePath('/products/categories');
   revalidatePath('/products');
-  return { success: true };
+  return { success: true, category };
 }
 
 export async function updateCategory(id: string, formData: FormData) {
@@ -740,10 +744,14 @@ export async function createBrand(formData: FormData) {
 
   const supabase = await createClient();
 
-  const { error } = await supabase.from('brands').insert({
-    shop_id: user.shop_id,
-    name: result.data.name,
-  });
+  const { data: brand, error } = await supabase
+    .from('brands')
+    .insert({
+      shop_id: user.shop_id,
+      name: result.data.name,
+    })
+    .select('*')
+    .single();
 
   if (error) {
     if (error.code === '23505') {
@@ -754,7 +762,7 @@ export async function createBrand(formData: FormData) {
 
   revalidatePath('/products/brands');
   revalidatePath('/products');
-  return { success: true };
+  return { success: true, brand };
 }
 
 export async function updateBrand(id: string, formData: FormData) {
