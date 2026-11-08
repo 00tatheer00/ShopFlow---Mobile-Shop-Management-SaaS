@@ -30,10 +30,10 @@ export function PosPaymentTiles({ selected, onSelect }: PosPaymentTilesProps) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-extrabold uppercase tracking-wider text-muted-foreground">
+        <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Payment Method
         </label>
-        <span className="text-[9px] text-muted-foreground">Select one</span>
+        <span className="text-[9px] text-muted-foreground font-normal">Select one</span>
       </div>
 
       <div className="grid grid-cols-5 gap-1">
@@ -46,25 +46,25 @@ export function PosPaymentTiles({ selected, onSelect }: PosPaymentTilesProps) {
               key={tile.id}
               type="button"
               onClick={() => onSelect(tile.id)}
-              className={`relative flex flex-col items-center justify-center p-1 rounded-lg border text-center transition-all cursor-pointer min-h-[42px] ${
+              className={`relative flex flex-col items-center justify-center p-1 rounded-lg border text-center transition-all cursor-pointer min-h-[40px] ${
                 isSelected
                   ? tile.id === 'udhaar'
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 shadow-2xs font-extrabold'
-                    : 'border-primary bg-primary/10 text-primary shadow-2xs font-extrabold'
-                  : 'border-border bg-card text-foreground hover:bg-muted/60'
+                    ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 shadow-2xs font-semibold'
+                    : 'border-primary bg-primary/10 text-primary shadow-2xs font-semibold'
+                  : 'border-border bg-card text-foreground hover:bg-muted/60 font-normal'
               }`}
             >
               {isSelected && (
-                <span className="absolute top-0.5 right-0.5 h-3 w-3 rounded-full bg-primary text-white flex items-center justify-center">
-                  <Check className="h-2 w-2 stroke-[3]" />
+                <span className="absolute top-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-primary text-white flex items-center justify-center">
+                  <Check className="h-1.5 w-1.5 stroke-[3]" />
                 </span>
               )}
 
-              <Icon className="h-3.5 w-3.5 mb-0.5 shrink-0" />
-              <span className="text-[11px] font-black truncate max-w-full leading-none">
+              <Icon className="h-3 w-3 mb-0.5 shrink-0" />
+              <span className="text-[10px] truncate max-w-full leading-none">
                 {tile.label}
               </span>
-              <span className="text-[9px] text-muted-foreground truncate leading-none mt-0.5">
+              <span className="text-[9px] text-muted-foreground truncate leading-none mt-0.5 font-normal">
                 {tile.sublabel}
               </span>
 

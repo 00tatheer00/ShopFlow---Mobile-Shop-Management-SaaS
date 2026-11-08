@@ -96,55 +96,55 @@ export function PosSearchResults({
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="font-bold text-xs text-foreground truncate">
+                  <span className="font-medium text-xs text-foreground truncate">
                     {product.name}
                   </span>
                   {product.is_imei_tracked ? (
-                    <span className="px-1 py-0.2 rounded text-[9px] font-extrabold uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                    <span className="px-1 py-0.2 rounded text-[9px] font-medium uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                       Mobile
                     </span>
                   ) : (
-                    <span className="px-1 py-0.2 rounded text-[9px] font-bold text-muted-foreground bg-muted border border-border">
+                    <span className="px-1 py-0.2 rounded text-[9px] font-normal text-muted-foreground bg-muted border border-border">
                       Accessory
                     </span>
                   )}
                   {brand && (
-                    <span className="text-[10px] font-semibold text-muted-foreground">
+                    <span className="text-[10px] font-normal text-muted-foreground">
                       • {brand.name}
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground truncate">
-                  {product.model && <span>{product.model}</span>}
+                  {product.model && <span className="font-normal">{product.model}</span>}
                   {product.is_imei_tracked && availableImeis.length > 0 && (
-                    <span className="font-mono text-[10px] text-primary font-bold">
+                    <span className="font-mono text-[10px] text-primary font-medium">
                       {availableImeis.length === 1
                         ? `IMEI ...${availableImeis[0].imei_number.slice(-4)}`
                         : `${availableImeis.length} IMEIs ready`}
                     </span>
                   )}
-                  {category && !product.model && <span>{category.name}</span>}
+                  {category && !product.model && <span className="font-normal">{category.name}</span>}
                 </div>
               </div>
             </div>
 
             {/* Right: Price & Stock Status */}
             <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
-              <span className="font-black text-xs text-foreground">
+              <span className="font-semibold text-xs text-foreground">
                 {formatPKR(product.sale_price)}
               </span>
 
               {isOutOfStock ? (
-                <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-muted text-muted-foreground border border-border">
+                <span className="px-1 py-0.2 rounded text-[9px] font-normal bg-muted text-muted-foreground border border-border">
                   Out of stock
                 </span>
               ) : isLowStock ? (
-                <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
+                <span className="px-1 py-0.2 rounded text-[9px] font-medium bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-700">
                   Low stock ({availableStock})
                 </span>
               ) : (
-                <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
+                <span className="px-1 py-0.2 rounded text-[9px] font-medium bg-emerald-100 text-emerald-900 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700">
                   In stock ({availableStock})
                 </span>
               )}

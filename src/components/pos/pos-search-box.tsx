@@ -212,7 +212,7 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
             }}
             onKeyDown={handleKeyDown}
             placeholder="Search by product name, model, or IMEI (press / or F2)..."
-            className="h-9 w-full rounded-lg border border-border bg-card pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground font-medium shadow-2xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
+            className="h-9 w-full rounded-lg border border-border bg-card pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground font-normal shadow-2xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
             autoComplete="off"
             autoCorrect="off"
             spellCheck="false"
@@ -239,9 +239,9 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
           <button
             type="button"
             onClick={() => setIsBrowseMenuOpen((prev) => !prev)}
-            className={`h-9 px-2.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
+            className={`h-9 px-2.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
               browseCategory
-                ? 'border-primary bg-primary text-primary-foreground'
+                ? 'border-primary bg-primary text-primary-foreground font-semibold'
                 : 'border-border bg-card text-foreground hover:bg-muted'
             }`}
           >
@@ -263,9 +263,9 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                   setIsBrowseMenuOpen(false);
                   inputRef.current?.focus();
                 }}
-                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                   !browseCategory
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-primary/10 text-primary font-semibold'
                     : 'text-foreground hover:bg-muted'
                 }`}
               >
@@ -291,9 +291,9 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                       setIsOpen(true);
                       inputRef.current?.focus();
                     }}
-                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                       isSelected
-                        ? 'bg-primary/10 text-primary'
+                        ? 'bg-primary/10 text-primary font-semibold'
                         : 'text-foreground hover:bg-muted'
                     }`}
                   >

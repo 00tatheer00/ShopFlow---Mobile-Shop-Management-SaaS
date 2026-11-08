@@ -75,8 +75,8 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               <UserPlus className="h-3.5 w-3.5" />
             </div>
             <div>
-              <h3 className="font-extrabold text-xs sm:text-sm text-foreground">Add New Customer</h3>
-              <p className="text-[10px] text-muted-foreground">Quick counter registration</p>
+              <h3 className="font-semibold text-xs text-foreground">Add New Customer</h3>
+              <p className="text-[10px] text-muted-foreground font-normal">Quick counter registration</p>
             </div>
           </div>
           <button
@@ -92,7 +92,7 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-2.5 text-xs">
           <div>
-            <label className="block font-bold text-foreground mb-0.5 text-[11px]">
+            <label className="block font-medium text-foreground mb-0.5 text-[10px]">
               Customer Name <span className="text-rose-500">*</span>
             </label>
             <input
@@ -102,12 +102,12 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               placeholder="e.g. Asad Khan"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
+              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-normal text-foreground focus:border-primary focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-foreground mb-0.5 text-[11px]">
+            <label className="block font-medium text-foreground mb-0.5 text-[10px]">
               Phone Number <span className="text-rose-500">*</span>
             </label>
             <input
@@ -116,12 +116,12 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               placeholder="e.g. 03001234567"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none font-mono"
+              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-normal text-foreground focus:border-primary focus:outline-none font-mono"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-foreground mb-0.5 text-[11px]">
+            <label className="block font-medium text-foreground mb-0.5 text-[10px]">
               City / Address <span className="text-muted-foreground font-normal">(optional)</span>
             </label>
             <input
@@ -129,7 +129,7 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               placeholder="e.g. Lahore / Hafeez Centre"
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
+              className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-normal text-foreground focus:border-primary focus:outline-none"
             />
           </div>
 
@@ -138,14 +138,14 @@ export function PosQuickAddCustomer({ open, onClose, onCustomerCreated }: PosQui
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="px-3 py-1.5 rounded-lg border border-border text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
+              className="px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isPending || !name.trim() || !phone.trim()}
-              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-extrabold hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5"
             >
               {isPending ? (
                 <>
