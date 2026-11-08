@@ -41,6 +41,86 @@ async function getNextDisplayShopId(db: any): Promise<string> {
 }
 
 /**
+ * Super Admin Action: Check if an owner email or shop email is already taken
+ */
+export async function checkShopEmailAvailabilityAction(ownerEmail: string, shopOfficialEmail?: string) {
+  await requireSuperAdmin();
+  const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
+
+  const normalizedOwner = ownerEmail.trim().toLowerCase();
+
+  // 1. Check profiles for existing user account
+  const { data: profile } = await db
+    .from('profiles')
+    .select('id, full_name, email')
+    .eq('email', normalizedOwner)
+    .maybeSingle();
+
+  if (profile) {
+    // Check which shop they are attached to
+    const { data: su } = await db
+      .from('shop_users')
+      .select('shop_id, shops(name, display_shop_id, deleted_at)')
+      .eq('user_id', profile.id)
+      .maybeSingle();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const shopName = (su?.shops as any)?.name || 'an existing shop';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const displayId = (su?.shops as any)?.display_shop_id || '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isTrashed = !!(su?.shops as any)?.deleted_at;
+
+    return {
+      available: false,
+      field: 'owner_email',
+      error: `An owner account with "${normalizedOwner}" already exists for ${shopName} ${displayId ? `(${displayId})` : ''}${isTrashed ? ' [in Trash]' : ''}. It is not possible to create a shop with existing email credentials. Please change it so it won't conflict, or permanently delete the old shop.`,
+    };
+  }
+
+  // 2. Check auth.users directly via admin client
+  if (adminClient && 'auth' in adminClient && adminClient.auth?.admin) {
+    try {
+      const { data: userList } = await adminClient.auth.admin.listUsers();
+      const existingAuth = userList?.users?.find(
+        (u) => u.email?.toLowerCase() === normalizedOwner
+      );
+      if (existingAuth) {
+        return {
+          available: false,
+          field: 'owner_email',
+          error: `The email "${normalizedOwner}" is already registered in the database credentials. It is not possible to reuse this email. Please change it so it won't conflict.`,
+        };
+      }
+    } catch (e) {
+      console.warn('Error checking auth user list:', e);
+    }
+  }
+
+  // 3. If shopOfficialEmail is provided, check existing shops
+  if (shopOfficialEmail && shopOfficialEmail.trim()) {
+    const normalizedShopEmail = shopOfficialEmail.trim().toLowerCase();
+    const { data: existingShop } = await db
+      .from('shops')
+      .select('id, name, display_shop_id')
+      .eq('email', normalizedShopEmail)
+      .maybeSingle();
+
+    if (existingShop) {
+      return {
+        available: false,
+        field: 'email',
+        error: `A shop with official email "${normalizedShopEmail}" already exists (${existingShop.name} [${existingShop.display_shop_id}]). Please use a different official email.`,
+      };
+    }
+  }
+
+  return { available: true };
+}
+
+/**
  * Super Admin Action: Provision a new Shop, Settings, and Owner Account
  */
 export async function createShopAction(formData: FormData) {
@@ -69,6 +149,12 @@ export async function createShopAction(formData: FormData) {
   const supabase = await createClient();
   const adminClient = getAdminClient();
   const db = adminClient || supabase;
+
+  // STRICT VALIDATION: Check if a shop or user with this email already exists
+  const emailCheck = await checkShopEmailAvailabilityAction(result.data.owner_email, result.data.email);
+  if (!emailCheck.available && emailCheck.error) {
+    return { error: emailCheck.error };
+  }
 
   // 1. Determine Display Shop ID
   let displayId = result.data.display_shop_id;
@@ -100,17 +186,7 @@ export async function createShopAction(formData: FormData) {
   // 3. Provision Owner Account
   let ownerUserId: string | null = null;
 
-  // Check if owner already exists in profiles
-  const { data: existingProfile } = await db
-    .from('profiles')
-    .select('id')
-    .eq('email', result.data.owner_email.toLowerCase())
-    .maybeSingle();
-
-  if (existingProfile) {
-    ownerUserId = existingProfile.id;
-  } else if (adminClient) {
-    // Create new Supabase Auth user with admin client
+  if (adminClient) {
     const { data: newAuthUser, error: authError } = await adminClient.auth.admin.createUser({
       email: result.data.owner_email.toLowerCase(),
       password: result.data.owner_password,
@@ -123,44 +199,20 @@ export async function createShopAction(formData: FormData) {
 
     if (authError || !newAuthUser?.user) {
       console.error('Admin create auth user error:', authError);
-      // Resilient check: If user already exists in auth.users
-      if (
-        authError?.message?.toLowerCase().includes('already') ||
-        authError?.status === 422
-      ) {
-        const { data: userList } = await adminClient.auth.admin.listUsers();
-        const found = userList?.users?.find(
-          (u) => u.email?.toLowerCase() === result.data.owner_email.toLowerCase()
-        );
-        if (found) {
-          ownerUserId = found.id;
-          await db.from('profiles').upsert({
-            id: ownerUserId,
-            email: result.data.owner_email.toLowerCase(),
-            full_name: result.data.owner_name,
-            phone: result.data.owner_phone || null,
-          });
-        } else {
-          return {
-            error: authError?.message || 'Failed to create owner authentication account.',
-          };
-        }
-      } else {
-        return {
-          error: authError?.message || 'Failed to create owner authentication account.',
-        };
-      }
-    } else {
-      ownerUserId = newAuthUser.user.id;
-
-      // Ensure profile row exists (if trigger didn't fire)
-      await db.from('profiles').upsert({
-        id: ownerUserId,
-        email: result.data.owner_email.toLowerCase(),
-        full_name: result.data.owner_name,
-        phone: result.data.owner_phone || null,
-      });
+      return {
+        error: authError?.message || 'Failed to create owner authentication account.',
+      };
     }
+
+    ownerUserId = newAuthUser.user.id;
+
+    // Ensure profile row exists
+    await db.from('profiles').upsert({
+      id: ownerUserId,
+      email: result.data.owner_email.toLowerCase(),
+      full_name: result.data.owner_name,
+      phone: result.data.owner_phone || null,
+    });
   } else {
     return {
       error:
@@ -514,59 +566,215 @@ export async function restoreShopAction(payload: { shop_id: string }) {
 }
 
 /**
+ * Internal Helper: Deeply and permanently remove a shop, all child records,
+ * and associated auth credentials from auth.users and profiles
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function executePermanentShopDeletion(db: any, shopId: string) {
+  const adminClient = getAdminClient();
+  const client = adminClient || db;
+
+  // 1. Collect all users belonging to this shop
+  const { data: shopUsers } = await client
+    .from('shop_users')
+    .select('user_id, role')
+    .eq('shop_id', shopId);
+
+  // 2. Cascade delete all relational data in strict foreign-key order
+  const { data: sales } = await client.from('sales').select('id').eq('shop_id', shopId);
+  if (sales && sales.length > 0) {
+    const saleIds = sales.map((s: { id: string }) => s.id);
+    await client.from('sale_items').delete().in('sale_id', saleIds);
+  }
+  await client.from('sales').delete().eq('shop_id', shopId);
+
+  const { data: purchases } = await client.from('purchases').select('id').eq('shop_id', shopId);
+  if (purchases && purchases.length > 0) {
+    const purchaseIds = purchases.map((p: { id: string }) => p.id);
+    await client.from('purchase_items').delete().in('purchase_id', purchaseIds);
+  }
+  await client.from('purchases').delete().eq('shop_id', shopId);
+
+  await client.from('udhaar_ledger').delete().eq('shop_id', shopId);
+  await client.from('payments').delete().eq('shop_id', shopId);
+  await client.from('stock_adjustments').delete().eq('shop_id', shopId);
+  await client.from('imei_records').delete().eq('shop_id', shopId);
+  await client.from('products').delete().eq('shop_id', shopId);
+  await client.from('brands').delete().eq('shop_id', shopId);
+  await client.from('product_categories').delete().eq('shop_id', shopId);
+  await client.from('expenses').delete().eq('shop_id', shopId);
+  await client.from('expense_categories').delete().eq('shop_id', shopId);
+  await client.from('customers').delete().eq('shop_id', shopId);
+  await client.from('suppliers').delete().eq('shop_id', shopId);
+  await client.from('shop_settings').delete().eq('shop_id', shopId);
+  await client.from('shop_subscriptions').delete().eq('shop_id', shopId);
+  await client.from('email_logs').delete().eq('shop_id', shopId);
+  await client.from('audit_logs').delete().eq('shop_id', shopId);
+  await client.from('shop_users').delete().eq('shop_id', shopId);
+
+  // 3. Delete the shop row itself
+  await client.from('shops').delete().eq('id', shopId);
+
+  // 4. Run stored procedure as supplemental cleanup if present
+  try {
+    await client.rpc('delete_shop_permanently', { p_shop_id: shopId });
+  } catch {
+    // Ignore RPC failure if direct delete succeeded
+  }
+
+  // 5. Hard delete auth accounts and profiles for non-super-admin users belonging only to this shop
+  if (adminClient && 'auth' in adminClient && adminClient.auth?.admin && shopUsers && shopUsers.length > 0) {
+    for (const su of shopUsers) {
+      if (su.role === 'super_admin') continue;
+
+      // Check if user is associated with any other shop
+      const { data: otherShops } = await client
+        .from('shop_users')
+        .select('id')
+        .eq('user_id', su.user_id)
+        .neq('shop_id', shopId);
+
+      if (!otherShops || otherShops.length === 0) {
+        try {
+          await adminClient.auth.admin.deleteUser(su.user_id);
+        } catch (e) {
+          console.warn('Failed to delete auth account:', su.user_id, e);
+        }
+        try {
+          await client.from('profiles').delete().eq('id', su.user_id);
+        } catch (e) {
+          console.warn('Failed to delete profile:', su.user_id, e);
+        }
+      }
+    }
+  }
+}
+
+/**
  * Super Admin Action: Permanently delete a shop and all associated data
  */
 export async function permanentDeleteShopAction(payload: {
   shop_id: string;
-  confirm_name: string;
+  confirm_name?: string;
 }) {
   const admin = await requireSuperAdmin();
-  const parsed = permanentDeleteShopSchema.safeParse(payload);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0].message };
-  }
-
   const supabase = await createClient();
-  const { data: shop } = await supabase
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
+
+  const { data: shop } = await db
     .from('shops')
     .select('id, name')
-    .eq('id', parsed.data.shop_id)
+    .eq('id', payload.shop_id)
     .single();
 
   if (!shop) {
     return { error: 'Shop not found.' };
   }
 
-  if (shop.name.trim().toLowerCase() !== parsed.data.confirm_name.trim().toLowerCase()) {
+  if (payload.confirm_name && shop.name.trim().toLowerCase() !== payload.confirm_name.trim().toLowerCase()) {
     return { error: `Confirmation name does not match "${shop.name}".` };
   }
 
-  const adminClient = getAdminClient() || supabase;
-  const { error: rpcError } = await adminClient.rpc('delete_shop_permanently', {
-    p_shop_id: parsed.data.shop_id,
-  });
+  try {
+    await executePermanentShopDeletion(db, payload.shop_id);
 
-  if (rpcError) {
-    console.error('Permanent delete RPC error:', rpcError);
-    return { error: 'Failed to permanently delete shop: ' + rpcError.message };
+    await db.from('audit_logs').insert({
+      shop_id: null,
+      user_id: admin.id,
+      action: 'shop_permanently_deleted',
+      entity_type: 'shop',
+      entity_id: payload.shop_id,
+      metadata: {
+        shop_name: shop.name,
+        deleted_by_admin: admin.email,
+      },
+    });
+
+    revalidatePath('/admin/shops');
+    revalidatePath('/admin/dashboard');
+
+    return { success: true };
+  } catch (err: unknown) {
+    console.error('Permanent delete error:', err);
+    const msg = err instanceof Error ? err.message : 'Failed to permanently delete shop.';
+    return { error: msg };
+  }
+}
+
+/**
+ * Super Admin Action: Purge All Trashed Shops AND Orphaned Auth Credentials
+ * Completely clears out deleted shops and unused auth accounts from the database
+ */
+export async function purgeAllTrashAndOrphansAction() {
+  const admin = await requireSuperAdmin();
+  const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
+
+  let purgedShopsCount = 0;
+  let purgedUsersCount = 0;
+
+  // 1. Find all soft-deleted shops and permanently delete them
+  const { data: trashedShops } = await db
+    .from('shops')
+    .select('id, name')
+    .not('deleted_at', 'is', null);
+
+  if (trashedShops && trashedShops.length > 0) {
+    for (const shop of trashedShops) {
+      try {
+        await executePermanentShopDeletion(db, shop.id);
+        purgedShopsCount++;
+      } catch (err) {
+        console.warn('Error purging shop:', shop.id, err);
+      }
+    }
   }
 
-  await supabase.from('audit_logs').insert({
-    shop_id: null,
-    user_id: admin.id,
-    action: 'shop_permanently_deleted',
-    entity_type: 'shop',
-    entity_id: parsed.data.shop_id,
-    metadata: {
-      shop_name: shop.name,
-      deleted_by_admin: admin.email,
-    },
-  });
+  // 2. Scan auth.users for orphaned non-super-admin accounts not linked to any active shop
+  if (adminClient && 'auth' in adminClient && adminClient.auth?.admin) {
+    try {
+      const { data: userList } = await adminClient.auth.admin.listUsers();
+      if (userList?.users) {
+        for (const u of userList.users) {
+          // Never touch super admin
+          if (u.email?.toLowerCase() === admin.email?.toLowerCase()) continue;
+
+          // Check if user has any active shop_user association
+          const { data: su } = await db
+            .from('shop_users')
+            .select('id, role')
+            .eq('user_id', u.id)
+            .maybeSingle();
+
+          if (su?.role === 'super_admin') continue;
+
+          if (!su) {
+            // Orphaned auth user! Delete from auth.users and profiles
+            try {
+              await adminClient.auth.admin.deleteUser(u.id);
+              await db.from('profiles').delete().eq('id', u.id);
+              purgedUsersCount++;
+            } catch (err) {
+              console.warn('Failed to delete orphaned user:', u.id, err);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Error listing auth users for cleanup:', err);
+    }
+  }
 
   revalidatePath('/admin/shops');
   revalidatePath('/admin/dashboard');
 
-  return { success: true };
+  return {
+    success: true,
+    purgedShopsCount,
+    purgedUsersCount,
+  };
 }
 
 /**

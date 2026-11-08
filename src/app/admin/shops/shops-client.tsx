@@ -30,6 +30,7 @@ import {
   softDeleteShopAction,
   restoreShopAction,
   permanentDeleteShopAction,
+  purgeAllTrashAndOrphansAction,
 } from '@/app/admin/actions';
 import { toast } from 'sonner';
 
@@ -207,8 +208,26 @@ export function ShopsClient({
     if (res?.error) {
       toast.error(res.error);
     } else {
-      toast.success(`Shop "${shop.name}" permanently deleted.`);
+      toast.success(`Shop "${shop.name}" and owner credentials permanently deleted.`);
       router.refresh();
+    }
+  }
+
+  // Purge All Trashed Shops & Orphaned Credentials Action
+  async function handlePurgeAllTrashAndOrphans() {
+    if (!confirm('Are you sure you want to permanently purge all shops in Trash and delete all orphaned credentials from the database? This cannot be undone.')) {
+      return;
+    }
+
+    setLoadingActionId('purge-all');
+    const res = await purgeAllTrashAndOrphansAction();
+    setLoadingActionId(null);
+
+    if (res?.success) {
+      toast.success(`Purged ${res.purgedShopsCount} trashed shops and removed ${res.purgedUsersCount} orphaned credentials.`);
+      router.refresh();
+    } else {
+      toast.error('Failed to purge trashed shops and orphaned credentials.');
     }
   }
 
@@ -259,6 +278,22 @@ export function ShopsClient({
           </p>
         </div>
         <div className="flex items-center gap-2.5">
+          {isTrashView && (
+            <button
+              type="button"
+              disabled={loadingActionId === 'purge-all'}
+              onClick={handlePurgeAllTrashAndOrphans}
+              className="inline-flex items-center gap-2 rounded-xl bg-destructive/15 border border-destructive/30 px-3.5 py-2.5 text-xs font-semibold text-destructive hover:bg-destructive hover:text-destructive-foreground transition-all cursor-pointer disabled:opacity-50"
+            >
+              {loadingActionId === 'purge-all' ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              <span>Purge All & Free Credentials</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleExportCSV}
@@ -676,24 +711,36 @@ export function ShopsClient({
             </div>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Are you sure you want to move <strong>{trashModalShop.name}</strong> ({trashModalShop.display_shop_id}) to Trash?
-              The shop and all its users will immediately be blocked from logging in. It can be restored anytime within 30 days.
+              Are you sure you want to delete <strong>{trashModalShop.name}</strong> ({trashModalShop.display_shop_id})?
+              You can move it to Trash (can be restored within 30 days) or permanently wipe it and its owner credentials completely from the database now.
             </p>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 pt-3 border-t border-border">
               <button
                 type="button"
                 onClick={() => setTrashModalShop(null)}
-                className="rounded-xl border border-border px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
+                className="rounded-xl border border-border px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer order-last sm:order-first"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={handleConfirmSoftDelete}
-                className="rounded-xl bg-destructive px-4 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                onClick={() => {
+                  const s = trashModalShop;
+                  setTrashModalShop(null);
+                  setPermDeleteModalShop(s);
+                  setPermConfirmName('');
+                }}
+                className="rounded-xl border border-destructive/30 bg-destructive/10 px-3.5 py-2 text-xs font-semibold text-destructive hover:bg-destructive hover:text-destructive-foreground cursor-pointer transition-colors"
               >
-                Move to Trash
+                Permanently Delete Now
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmSoftDelete}
+                className="rounded-xl bg-destructive px-3.5 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+              >
+                Move to Trash (30d)
               </button>
             </div>
           </div>

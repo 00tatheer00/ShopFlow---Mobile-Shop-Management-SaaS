@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -10,10 +10,12 @@ import {
   Loader2,
   ArrowLeft,
   AlertCircle,
+  AlertTriangle,
   Eye,
   EyeOff,
+  CheckCircle2,
 } from 'lucide-react';
-import { createShopAction } from '@/app/admin/actions';
+import { createShopAction, checkShopEmailAvailabilityAction } from '@/app/admin/actions';
 import type { Plan } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -28,8 +30,70 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Email conflict states
+  const [ownerEmail, setOwnerEmail] = useState('');
+  const [ownerEmailConflict, setOwnerEmailConflict] = useState<string | null>(null);
+  const [checkingOwnerEmail, setCheckingOwnerEmail] = useState(false);
+
+  const [shopEmail, setShopEmail] = useState('');
+  const [shopEmailConflict, setShopEmailConflict] = useState<string | null>(null);
+
+  // Live validator for Owner Email
+  const validateOwnerEmail = useCallback(async (emailVal: string) => {
+    const trimmed = emailVal.trim();
+    if (!trimmed || !trimmed.includes('@') || !trimmed.includes('.')) {
+      setOwnerEmailConflict(null);
+      return;
+    }
+
+    setCheckingOwnerEmail(true);
+    try {
+      const res = await checkShopEmailAvailabilityAction(trimmed);
+      if (!res.available && res.error) {
+        setOwnerEmailConflict(res.error);
+      } else {
+        setOwnerEmailConflict(null);
+      }
+    } catch {
+      // Ignore network error on live check
+    } finally {
+      setCheckingOwnerEmail(false);
+    }
+  }, []);
+
+  // Live validator for Shop Official Email
+  const validateShopEmail = useCallback(async (shopEmailVal: string) => {
+    const trimmed = shopEmailVal.trim();
+    if (!trimmed || !trimmed.includes('@') || !trimmed.includes('.')) {
+      setShopEmailConflict(null);
+      return;
+    }
+
+    try {
+      const res = await checkShopEmailAvailabilityAction('dummy-check@example.com', trimmed);
+      if (!res.available && res.field === 'email' && res.error) {
+        setShopEmailConflict(res.error);
+      } else {
+        setShopEmailConflict(null);
+      }
+    } catch {
+      // Ignore
+    }
+  }, []);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (ownerEmailConflict) {
+      toast.error('Please change the owner email to avoid credentials conflict.');
+      return;
+    }
+
+    if (shopEmailConflict) {
+      toast.error('Please change the official shop email to avoid credentials conflict.');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -40,6 +104,9 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
       if (result?.error) {
         setError(result.error);
         toast.error(result.error);
+        if (result.error.toLowerCase().includes('email')) {
+          setOwnerEmailConflict(result.error);
+        }
         setLoading(false);
       } else if (result?.shopId) {
         toast.success(`Shop "${result.displayShopId || ''}" provisioned successfully!`);
@@ -159,9 +226,25 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
             <input
               type="email"
               name="email"
+              value={shopEmail}
+              onChange={(e) => {
+                setShopEmail(e.target.value);
+                validateShopEmail(e.target.value);
+              }}
+              onBlur={() => validateShopEmail(shopEmail)}
               placeholder="e.g. contact@newyorkmobiles.com"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className={`w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 ${
+                shopEmailConflict
+                  ? 'border-destructive focus:ring-destructive/20 text-destructive'
+                  : 'border-border focus:ring-primary/20'
+              }`}
             />
+            {shopEmailConflict && (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-start gap-2 animate-in fade-in-0 duration-150">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <p>{shopEmailConflict}</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -195,19 +278,50 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-foreground">
-              Owner Email Address <span className="text-destructive">*</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-foreground">
+                Owner Email Address <span className="text-destructive">*</span>
+              </label>
+              {checkingOwnerEmail && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  Checking credentials...
+                </span>
+              )}
+            </div>
             <input
               type="email"
               name="owner_email"
               required
+              value={ownerEmail}
+              onChange={(e) => {
+                setOwnerEmail(e.target.value);
+                validateOwnerEmail(e.target.value);
+              }}
+              onBlur={() => validateOwnerEmail(ownerEmail)}
               placeholder="e.g. usman@example.com"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className={`w-full rounded-xl border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 ${
+                ownerEmailConflict
+                  ? 'border-destructive bg-destructive/5 focus:ring-destructive/20 text-destructive'
+                  : 'border-border focus:ring-primary/20'
+              }`}
             />
-            <p className="text-[11px] text-muted-foreground">
-              This email will be used for authentication and password recovery.
-            </p>
+            {ownerEmailConflict ? (
+              <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive flex items-start gap-2.5 animate-in fade-in-0 duration-150">
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-destructive" />
+                <div className="space-y-1">
+                  <p className="font-bold">Credentials Conflict Detected</p>
+                  <p className="text-[11px] leading-relaxed">{ownerEmailConflict}</p>
+                  <p className="text-[11px] font-semibold text-destructive/90">
+                    👉 It is not possible to create a shop with an existing email. Please change this email address so it won&apos;t conflict later.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                This email will be used for authentication and password recovery. Must be unique across all shops.
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -299,8 +413,8 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
         </Link>
         <button
           type="submit"
-          disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          disabled={loading || !!ownerEmailConflict || !!shopEmailConflict || checkingOwnerEmail}
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           <span>{loading ? 'Provisioning Shop...' : 'Create & Provision Shop'}</span>
