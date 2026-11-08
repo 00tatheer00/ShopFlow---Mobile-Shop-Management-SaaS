@@ -1,9 +1,9 @@
 'use client';
 
-import { Check, Banknote, Smartphone, Landmark, BookOpen } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 
-export type PosPaymentOption = 'cash' | 'easypaisa' | 'jazzcash' | 'bank_transfer' | 'udhaar';
+export type PosPaymentOption = 'cash' | 'easypaisa' | 'jazzcash' | 'udhaar';
 
 interface PosPaymentTilesProps {
   selected: PosPaymentOption;
@@ -12,65 +12,68 @@ interface PosPaymentTilesProps {
 
 interface TileOption {
   id: PosPaymentOption;
-  label: string;
-  sublabel: string;
-  icon: typeof Banknote;
+  title: string;
+  subtitle: string;
   hasInfo?: boolean;
 }
 
 const TILES: TileOption[] = [
-  { id: 'cash', label: 'Cash', sublabel: 'نقد', icon: Banknote },
-  { id: 'easypaisa', label: 'EasyPaisa', sublabel: 'ایزی پیسہ', icon: Smartphone },
-  { id: 'jazzcash', label: 'JazzCash', sublabel: 'جاز کیش', icon: Smartphone },
-  { id: 'bank_transfer', label: 'Bank', sublabel: 'بینک', icon: Landmark },
-  { id: 'udhaar', label: 'Udhaar', sublabel: 'ادھار', icon: BookOpen, hasInfo: true },
+  { id: 'cash', title: 'Cash', subtitle: 'Exact or change' },
+  { id: 'easypaisa', title: 'EasyPaisa', subtitle: 'Online' },
+  { id: 'jazzcash', title: 'JazzCash', subtitle: 'Online' },
+  { id: 'udhaar', title: 'Udhaar', subtitle: 'Credit', hasInfo: true },
 ];
 
 export function PosPaymentTiles({ selected, onSelect }: PosPaymentTilesProps) {
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <label className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          Payment Method
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1">
+        <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+          Pay with
         </label>
-        <span className="text-[9px] text-muted-foreground font-normal">Select one</span>
+        <CardInfoTooltip
+          title="Payment Method (طریقہ ادائیگی)"
+          urduDetail="رقم وصول کرنے کا طریقہ منتخب کریں۔ ادھار کی صورت میں گاہک کا نام لازمی ہے۔"
+        />
       </div>
 
-      <div className="grid grid-cols-5 gap-1">
+      {/* 2x2 Grid exactly like the mockup */}
+      <div className="grid grid-cols-2 gap-2">
         {TILES.map((tile) => {
           const isSelected = selected === tile.id;
-          const Icon = tile.icon;
 
           return (
             <button
               key={tile.id}
               type="button"
               onClick={() => onSelect(tile.id)}
-              className={`relative flex flex-col items-center justify-center p-1 rounded-lg border text-center transition-all cursor-pointer min-h-[40px] ${
+              className={`relative flex flex-col items-start p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                 isSelected
-                  ? tile.id === 'udhaar'
-                    ? 'border-amber-500 bg-amber-500/10 text-amber-950 dark:text-amber-200 shadow-2xs font-semibold'
-                    : 'border-primary bg-primary/10 text-primary shadow-2xs font-semibold'
-                  : 'border-border bg-card text-foreground hover:bg-muted/60 font-normal'
+                  ? 'border-2 border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 shadow-xs'
+                  : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50'
               }`}
             >
+              {/* Checkmark icon for selected tile */}
               {isSelected && (
-                <span className="absolute top-0.5 right-0.5 h-2.5 w-2.5 rounded-full bg-primary text-white flex items-center justify-center">
-                  <Check className="h-1.5 w-1.5 stroke-[3]" />
+                <span className="absolute top-2.5 right-2.5 h-3.5 w-3.5 rounded border border-indigo-500 bg-indigo-600 text-white flex items-center justify-center">
+                  <Check className="h-2.5 w-2.5 stroke-[3]" />
                 </span>
               )}
 
-              <Icon className="h-3 w-3 mb-0.5 shrink-0" />
-              <span className="text-[10px] truncate max-w-full leading-none">
-                {tile.label}
+              <span
+                className={`text-xs font-semibold leading-tight ${
+                  isSelected ? 'text-indigo-900 dark:text-indigo-200' : 'text-slate-800 dark:text-slate-200'
+                }`}
+              >
+                {tile.title}
               </span>
-              <span className="text-[9px] text-muted-foreground truncate leading-none mt-0.5 font-normal">
-                {tile.sublabel}
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                {tile.subtitle}
               </span>
 
               {tile.hasInfo && (
                 <div
-                  className="absolute top-0.5 left-0.5"
+                  className="absolute bottom-2 right-2"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <CardInfoTooltip

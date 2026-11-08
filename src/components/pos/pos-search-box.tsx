@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
-import { Search, X, ChevronDown, Layers, Smartphone, Package, Check } from 'lucide-react';
+import { Search, X, ChevronDown, Check } from 'lucide-react';
 import { PosSearchResults } from './pos-search-results';
 import type { ProductWithStock } from './pos-types';
 import type { ProductCategory, Brand } from '@/lib/types';
@@ -100,29 +100,25 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
         return false;
       }
 
-      if (!q) return true; // Showing browse category items
+      if (!q) return true;
 
-      // Check product name & model
       if (p.name.toLowerCase().includes(q)) return true;
       if (p.model && p.model.toLowerCase().includes(q)) return true;
 
-      // Check brand name
       const brand = brands.find((b) => b.id === p.brand_id);
       if (brand && brand.name.toLowerCase().includes(q)) return true;
 
-      // Check category name
       const category = categories.find((c) => c.id === p.category_id);
       if (category && category.name.toLowerCase().includes(q)) return true;
 
-      // Check IMEI (full or partial 4+ digits)
       if (p.is_imei_tracked && p.imei_records) {
         return p.imei_records.some((imei) =>
-          imei.status === 'in_stock' && imei.imei_number.toLowerCase().includes(q)
+          imei.imei_number.toLowerCase().includes(q)
         );
       }
 
       return false;
-    }).slice(0, 20); // Top 20 results for performance
+    }).slice(0, 15);
   }, [debouncedQuery, browseCategory, products, brands, categories]);
 
   // Reset highlight index when results change
@@ -137,7 +133,6 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
   const handleDirectScanOrEnter = () => {
     const trimmed = query.trim();
 
-    // 1. Check for 15-digit IMEI or exact barcode match
     if (/^\d{14,16}$/.test(trimmed)) {
       for (const prod of products) {
         if (prod.is_imei_tracked && prod.imei_records) {
@@ -146,7 +141,7 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
           );
           if (matchImei) {
             if (cartImeis.has(matchImei.id)) {
-              toast.error(`IMEI ...${trimmed.slice(-4)} is already in the basket.`);
+              toast.error(`IMEI ...${trimmed.slice(-4)} is already in basket.`);
               return;
             }
             onAddDirectImei(prod, matchImei);
@@ -159,7 +154,6 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
       }
     }
 
-    // 2. If dropdown has a highlighted result, select it
     if (searchResults.length > 0 && searchResults[highlightedIndex]) {
       const selected = searchResults[highlightedIndex];
       onSelectProduct(selected);
@@ -194,68 +188,62 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
   };
 
   return (
-    <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-1.5">
-        {/* Search Input Box */}
-        <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            ref={inputRef}
-            type="text"
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (!isOpen && e.target.value) setIsOpen(true);
-            }}
-            onFocus={() => {
-              if (query.trim() || browseCategory) setIsOpen(true);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="Search by product name, model, or IMEI (press / or F2)..."
-            className="h-9 w-full rounded-lg border border-border bg-card pl-8 pr-7 text-xs text-foreground placeholder:text-muted-foreground font-normal shadow-2xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck="false"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery('');
-                setDebouncedQuery('');
-                setIsOpen(false);
-                inputRef.current?.focus();
-              }}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 rounded cursor-pointer"
-              aria-label="Clear search"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+    <div ref={containerRef} className="relative w-full space-y-1.5">
+      {/* Search Input Box with integrated Browse button */}
+      <div className="relative flex items-center h-10 w-full rounded-xl border border-indigo-400 focus-within:border-indigo-600 focus-within:ring-2 focus-within:ring-indigo-100 bg-white dark:bg-slate-900 transition-all shadow-2xs">
+        <Search className="pointer-events-none absolute left-3.5 h-4 w-4 text-slate-400" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            if (!isOpen && e.target.value) setIsOpen(true);
+          }}
+          onFocus={() => {
+            if (query.trim() || browseCategory) setIsOpen(true);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="Search by name, model, or IMEI..."
+          className="h-full w-full bg-transparent pl-10 pr-24 text-xs font-normal text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck="false"
+        />
 
-        {/* [Browse ▾] Category Quick-Pick Dropdown */}
-        <div className="relative shrink-0" ref={browseMenuRef}>
+        {query && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuery('');
+              setDebouncedQuery('');
+              setIsOpen(false);
+              inputRef.current?.focus();
+            }}
+            className="absolute right-20 text-slate-400 hover:text-slate-600 p-0.5 rounded cursor-pointer"
+            aria-label="Clear search"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+
+        {/* [Browse ▾] Dropdown inside the search bar on right */}
+        <div className="absolute right-1.5" ref={browseMenuRef}>
           <button
             type="button"
             onClick={() => setIsBrowseMenuOpen((prev) => !prev)}
-            className={`h-9 px-2.5 rounded-lg border text-xs font-medium flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer ${
-              browseCategory
-                ? 'border-primary bg-primary text-primary-foreground font-semibold'
-                : 'border-border bg-card text-foreground hover:bg-muted'
-            }`}
+            className="h-7 px-2 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1 transition cursor-pointer"
           >
-            <Layers className="h-3.5 w-3.5" />
-            <span className="text-[11px]">
+            <span>
               {browseCategory
                 ? categories.find((c) => c.id === browseCategory)?.name || 'Category'
                 : 'Browse'}
             </span>
-            <ChevronDown className="h-3 w-3 opacity-70" />
+            <ChevronDown className="h-3 w-3 text-slate-400" />
           </button>
 
           {isBrowseMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-48 rounded-xl border border-border bg-card shadow-xl z-50 p-1 space-y-0.5">
+            <div className="absolute right-0 top-full mt-1.5 w-44 rounded-xl border border-slate-200 bg-white dark:bg-slate-900 shadow-xl z-50 p-1 space-y-0.5">
               <button
                 type="button"
                 onClick={() => {
@@ -265,22 +253,18 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                 }}
                 className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                   !browseCategory
-                    ? 'bg-primary/10 text-primary font-semibold'
-                    : 'text-foreground hover:bg-muted'
+                    ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300'
+                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
-                <div className="flex items-center gap-1.5">
-                  <Layers className="h-3.5 w-3.5" />
-                  <span>All Products</span>
-                </div>
+                <span>All Products</span>
                 {!browseCategory && <Check className="h-3 w-3" />}
               </button>
 
-              <div className="h-px bg-border my-0.5" />
+              <div className="h-px bg-slate-100 dark:bg-slate-800 my-0.5" />
 
               {categories.map((c) => {
                 const isSelected = browseCategory === c.id;
-                const isPhone = c.name.toLowerCase().includes('phone') || c.name.toLowerCase().includes('mobile');
                 return (
                   <button
                     key={c.id}
@@ -293,18 +277,11 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
                     }}
                     className={`w-full flex items-center justify-between px-2 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer ${
                       isSelected
-                        ? 'bg-primary/10 text-primary font-semibold'
-                        : 'text-foreground hover:bg-muted'
+                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300'
+                        : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5 truncate">
-                      {isPhone ? (
-                        <Smartphone className="h-3 w-3 shrink-0" />
-                      ) : (
-                        <Package className="h-3 w-3 shrink-0" />
-                      )}
-                      <span className="truncate">{c.name}</span>
-                    </div>
+                    <span className="truncate">{c.name}</span>
                     {isSelected && <Check className="h-3 w-3 shrink-0" />}
                   </button>
                 );
@@ -314,7 +291,7 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
         </div>
       </div>
 
-      {/* Floating Live Results Dropdown */}
+      {/* Live Results Box directly below search box */}
       {isOpen && (debouncedQuery.trim() || browseCategory) && (
         <PosSearchResults
           results={searchResults}
@@ -334,4 +311,3 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
     </div>
   );
 });
-

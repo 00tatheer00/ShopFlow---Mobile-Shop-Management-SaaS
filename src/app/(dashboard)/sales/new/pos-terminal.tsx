@@ -16,7 +16,6 @@ import { PosCheckoutPanel } from '@/components/pos/pos-checkout-panel';
 import { PosImeiPicker } from '@/components/pos/pos-imei-picker';
 import { PosQuickAddCustomer } from '@/components/pos/pos-quick-add-customer';
 import { PosSuccessDialog } from '@/components/pos/pos-success-dialog';
-import { PosShortcutsBar } from '@/components/pos/pos-shortcuts-bar';
 import type { PosPaymentOption } from '@/components/pos/pos-payment-tiles';
 
 interface PosTerminalProps {
@@ -300,7 +299,6 @@ export function PosTerminal({
     let backendPaymentMethod: PaymentMethod = 'cash';
     if (paymentOption === 'easypaisa') backendPaymentMethod = 'easypaisa';
     else if (paymentOption === 'jazzcash') backendPaymentMethod = 'jazzcash';
-    else if (paymentOption === 'bank_transfer') backendPaymentMethod = 'bank_transfer';
     else backendPaymentMethod = 'cash';
 
     const customer = customers.find((c) => c.id === selectedCustomerId);
@@ -467,83 +465,85 @@ export function PosTerminal({
   }, [handleCompleteSale, focusSearch]);
 
   return (
-    <div className="h-full max-h-full flex flex-col gap-1.5 overflow-hidden select-none bg-background">
-      {/* Top Header */}
-      <PosHeader
-        shopName={shopName}
-        hasItems={cart.length > 0}
-        onStartOver={handleStartOverClick}
-      />
+    <div className="h-full max-h-full flex flex-col overflow-hidden select-none bg-slate-100/60 dark:bg-slate-950 p-2 sm:p-3">
+      {/* Outer Card Container matching Reference Mockup */}
+      <div className="flex-1 min-h-0 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col">
+        <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6">
+          {/* Left Column (Header + Search Box + Basket Table) */}
+          <div className="md:col-span-7 xl:col-span-7 flex flex-col min-h-0 h-full space-y-3">
+            {/* Top Header */}
+            <PosHeader
+              shopName={shopName}
+              hasItems={cart.length > 0}
+              onStartOver={handleStartOverClick}
+            />
 
-      {/* Persistent Search Bar Row */}
-      <div className="shrink-0">
-        <PosSearchBox
-          ref={searchBoxRef}
-          products={localProducts}
-          categories={categories}
-          brands={brands}
-          cartQuantities={cartQuantities}
-          cartImeis={cartImeis}
-          onSelectProduct={handleSelectProduct}
-          onAddDirectImei={handleAddDirectImei}
-        />
-      </div>
+            {/* Persistent Search Bar Row */}
+            <div className="shrink-0">
+              <PosSearchBox
+                ref={searchBoxRef}
+                products={localProducts}
+                categories={categories}
+                brands={brands}
+                cartQuantities={cartQuantities}
+                cartImeis={cartImeis}
+                onSelectProduct={handleSelectProduct}
+                onAddDirectImei={handleAddDirectImei}
+              />
+            </div>
 
-      {/* Main Two-Column Viewport (Fixed Height, No Page Scroll) */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-12 gap-2">
-        {/* Left Column: Basket Table (60-65% width on desktop) */}
-        <div className="md:col-span-7 xl:col-span-8 flex flex-col min-h-0 h-full">
-          <PosBasketTable
-            cart={cart}
-            brands={brands}
-            onUpdateQuantity={handleUpdateQuantity}
-            onUpdatePrice={handleUpdatePrice}
-            onRemoveItem={handleRemoveItem}
-            onClearCart={handleClearCart}
-            onFocusSearch={focusSearch}
-          />
+            {/* Basket Table */}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <PosBasketTable
+                cart={cart}
+                brands={brands}
+                onUpdateQuantity={handleUpdateQuantity}
+                onUpdatePrice={handleUpdatePrice}
+                onRemoveItem={handleRemoveItem}
+                onClearCart={handleClearCart}
+                onFocusSearch={focusSearch}
+              />
+            </div>
+          </div>
+
+          {/* Right Column (Checkout Panel) */}
+          <div className="md:col-span-5 xl:col-span-5 flex flex-col min-h-0 h-full">
+            <PosCheckoutPanel
+              customers={customers}
+              selectedCustomerId={selectedCustomerId}
+              onSelectCustomer={(id) => {
+                setSelectedCustomerId(id);
+                focusSearch();
+              }}
+              onOpenQuickAddCustomer={() => setIsQuickAddCustomerOpen(true)}
+              subtotalRupees={subtotalRupees}
+              discountRupees={discountRupees}
+              discountType={discountType}
+              discountValue={discountValue}
+              onDiscountChange={(val, type) => {
+                setDiscountValue(val);
+                setDiscountType(type);
+              }}
+              totalRupees={totalRupees}
+              paymentOption={paymentOption}
+              onSelectPaymentOption={(opt) => {
+                setPaymentOption(opt);
+                if (opt === 'cash') {
+                  setCashReceived(totalRupees);
+                }
+              }}
+              cashReceived={cashReceived}
+              onChangeCashReceived={setCashReceived}
+              udhaarPaidNow={udhaarPaidNow}
+              onChangeUdhaarPaidNow={setUdhaarPaidNow}
+              isPending={isPending}
+              canComplete={validation.canComplete}
+              disabledReason={validation.reason}
+              onCompleteSale={handleCompleteSale}
+            />
+          </div>
         </div>
-
-        {/* Right Column: Persistent Checkout Panel (35-40% width) */}
-        <div className="md:col-span-5 xl:col-span-4 flex flex-col min-h-0 h-full">
-          <PosCheckoutPanel
-            customers={customers}
-            selectedCustomerId={selectedCustomerId}
-            onSelectCustomer={(id) => {
-              setSelectedCustomerId(id);
-              focusSearch();
-            }}
-            onOpenQuickAddCustomer={() => setIsQuickAddCustomerOpen(true)}
-            subtotalRupees={subtotalRupees}
-            discountRupees={discountRupees}
-            discountType={discountType}
-            discountValue={discountValue}
-            onDiscountChange={(val, type) => {
-              setDiscountValue(val);
-              setDiscountType(type);
-            }}
-            totalRupees={totalRupees}
-            paymentOption={paymentOption}
-            onSelectPaymentOption={(opt) => {
-              setPaymentOption(opt);
-              if (opt === 'cash') {
-                setCashReceived(totalRupees);
-              }
-            }}
-            cashReceived={cashReceived}
-            onChangeCashReceived={setCashReceived}
-            udhaarPaidNow={udhaarPaidNow}
-            onChangeUdhaarPaidNow={setUdhaarPaidNow}
-            isPending={isPending}
-            canComplete={validation.canComplete}
-            disabledReason={validation.reason}
-            onCompleteSale={handleCompleteSale}
-          />
-        </div>
       </div>
-
-      {/* Bottom Shortcuts Strip */}
-      <PosShortcutsBar onSearchFocus={focusSearch} />
 
       {/* Modals & Dialogs */}
 

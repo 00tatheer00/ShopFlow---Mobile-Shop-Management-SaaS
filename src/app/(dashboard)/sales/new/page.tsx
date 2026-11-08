@@ -51,9 +51,7 @@ export default async function NewSalePage() {
 
   const activeProducts = (products || []).map((p) => ({
     ...p,
-    imei_records: ((p.imei_records as Array<{ id: string; imei_number: string; status: string }>) || []).filter(
-      (i) => i.status === 'in_stock'
-    ),
+    imei_records: (p.imei_records as Array<{ id: string; imei_number: string; status: string }>) || [],
   }));
 
   return (
