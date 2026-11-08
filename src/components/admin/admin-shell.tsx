@@ -57,7 +57,10 @@ export function AdminShell({ user, children }: AdminShellProps) {
     if (href === '/admin/dashboard') {
       return pathname === '/admin' || pathname === '/admin/dashboard';
     }
-    return pathname.startsWith(href);
+    if (href === '/admin/shops') {
+      return (pathname === '/admin/shops' || pathname.startsWith('/admin/shops/')) && !pathname.startsWith('/admin/shops/new');
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -178,9 +181,19 @@ export function AdminShell({ user, children }: AdminShellProps) {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Super Admin Portal</span>
               <span>/</span>
-              <span className="font-medium text-foreground capitalize">
-                {pathname.split('/')[2] || 'Dashboard'}
-              </span>
+              {pathname.startsWith('/admin/shops/new') ? (
+                <>
+                  <Link href="/admin/shops" className="hover:text-foreground transition-colors">
+                    Shops
+                  </Link>
+                  <span>/</span>
+                  <span className="font-medium text-foreground">Create Shop</span>
+                </>
+              ) : (
+                <span className="font-medium text-foreground capitalize">
+                  {pathname.split('/')[2] || 'Dashboard'}
+                </span>
+              )}
             </div>
           </div>
 

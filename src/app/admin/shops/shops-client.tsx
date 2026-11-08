@@ -21,6 +21,7 @@ import {
   Phone,
   Lock,
   Unlock,
+  X,
 } from 'lucide-react';
 import type { Shop } from '@/lib/types';
 import { exportToCSV } from '@/lib/export-csv';
@@ -93,6 +94,14 @@ export function ShopsClient({
     } else {
       params.delete('search');
     }
+    params.set('page', '1');
+    router.push(`/admin/shops?${params.toString()}`);
+  };
+
+  const handleClearSearch = () => {
+    setSearch('');
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('search');
     params.set('page', '1');
     router.push(`/admin/shops?${params.toString()}`);
   };
@@ -270,68 +279,76 @@ export function ShopsClient({
       </div>
 
       {/* Search and Filters Bar */}
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
-          {/* Status Tabs with count badges */}
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto p-1 bg-muted/40 rounded-xl">
-            {statusTabs.map((tab) => {
-              const currentActive =
-                (!currentStatus && tab.value === 'all') ||
-                currentStatus === tab.value ||
-                (currentStatus === '' && tab.value === 'all');
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-xs space-y-3.5">
+        {/* Search Box (Above) */}
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, city, phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-9 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer p-0.5 rounded transition-colors"
+                title="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer shrink-0 shadow-xs"
+          >
+            Search
+          </button>
+        </form>
 
-              return (
-                <button
-                  key={tab.value}
-                  type="button"
-                  onClick={() => handleStatusFilter(tab.value)}
-                  className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+        {/* Status Tabs with count badges (Below) */}
+        <div className="flex items-center gap-1.5 flex-wrap w-full p-1 bg-muted/40 rounded-xl">
+          {statusTabs.map((tab) => {
+            const currentActive =
+              (!currentStatus && tab.value === 'all') ||
+              currentStatus === tab.value ||
+              (currentStatus === '' && tab.value === 'all');
+
+            return (
+              <button
+                key={tab.value}
+                type="button"
+                onClick={() => handleStatusFilter(tab.value)}
+                className={`inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  currentActive
+                    ? tab.isTrash
+                      ? 'bg-destructive/15 text-destructive border border-destructive/30 shadow-xs'
+                      : 'bg-card text-foreground border border-border shadow-xs'
+                    : tab.isTrash
+                    ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
+                }`}
+              >
+                {tab.isTrash && <Trash2 className="h-3.5 w-3.5" />}
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
                     currentActive
                       ? tab.isTrash
-                        ? 'bg-destructive/15 text-destructive border border-destructive/30 shadow-xs'
-                        : 'bg-card text-foreground border border-border shadow-xs'
-                      : tab.isTrash
-                      ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
+                        ? 'bg-destructive text-destructive-foreground'
+                        : 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {tab.isTrash && <Trash2 className="h-3.5 w-3.5" />}
-                  <span>{tab.label}</span>
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[11px] font-mono font-bold ${
-                      currentActive
-                        ? tab.isTrash
-                          ? 'bg-destructive text-destructive-foreground'
-                          : 'bg-primary text-primary-foreground'
-                        : 'bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Search Box */}
-          <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-80">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search by ID, name, city, phone..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-            </div>
-            <button
-              type="submit"
-              className="rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-            >
-              Search
-            </button>
-          </form>
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
