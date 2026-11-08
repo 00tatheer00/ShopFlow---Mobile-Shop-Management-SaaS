@@ -21,6 +21,7 @@ import { recordUdhaarPayment, addManualUdhaarCredit } from './actions';
 import { hasPermission } from '@/lib/permissions';
 import { exportToCSV } from '@/lib/export-csv';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface CustomerUdhaarRow extends Customer {
   udhaar_balance: number;
@@ -131,12 +132,12 @@ export function UdhaarClient({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Udhaar Ledger (Credit)</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Udhaar Ledger (Credit)</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Manage customer credit, record recoveries (Vasooli), and send WhatsApp balance reminders.
           </p>
         </div>
@@ -145,9 +146,9 @@ export function UdhaarClient({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
           >
-            <Download className="h-4 w-4 text-emerald-500" />
+            <Download className="h-3.5 w-3.5 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
@@ -158,9 +159,9 @@ export function UdhaarClient({
                   setFormError(null);
                   setIsCreditModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted transition"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-3.5 w-3.5" />
                 Add Udhaar
               </button>
               <button
@@ -168,9 +169,9 @@ export function UdhaarClient({
                   setFormError(null);
                   setPaymentModalCustomer(customersWithBalance[0] || null);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
               >
-                <ArrowDownLeft className="h-4 w-4" />
+                <ArrowDownLeft className="h-3.5 w-3.5" />
                 Receive Payment (Vasooli)
               </button>
             </>
@@ -179,68 +180,33 @@ export function UdhaarClient({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {/* Total Outstanding Udhaar */}
-        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
-                Total Udhaar to Collect
-              </span>
-              <CardInfoTooltip
-                title="Total Udhaar to Collect"
-                urduDetail="مارکیٹ اور گاہکوں سے دکان کا کل کتنا ادھار وصول ہونا باقی ہے۔"
-              />
-            </div>
-            <div className="rounded-xl p-2.5 border shrink-0 bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30">
-              <Wallet className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
-            {formatPKR(totalUdhaar)}
-          </div>
-          <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Market credit pending collection</p>
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatCard
+          title="Total Udhaar to Collect"
+          value={formatPKR(totalUdhaar)}
+          subtitle="Market credit pending collection"
+          icon={Wallet}
+          color="rose"
+          urduDetail="مارکیٹ اور گاہکوں سے دکان کا کل کتنا ادھار وصول ہونا باقی ہے۔"
+        />
 
-        {/* Customers with Udhaar */}
-        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
-                Customers with Balance
-              </span>
-              <CardInfoTooltip
-                title="Customers with Balance"
-                urduDetail="اس وقت کتنے گاہکوں کے کھاتے میں ادھار کی رقم واجب الادا ہے۔"
-              />
-            </div>
-            <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
-              <Building className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{debtorsCount}</div>
-          <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Customers who owe balance</p>
-        </div>
+        <StatCard
+          title="Customers with Balance"
+          value={debtorsCount}
+          subtitle="Customers who owe balance"
+          icon={Building}
+          color="blue"
+          urduDetail="اس وقت کتنے گاہکوں کے کھاتے میں ادھار کی رقم واجب الادا ہے۔"
+        />
 
-        {/* Ledger Transactions */}
-        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
-                Total Khata Entries
-              </span>
-              <CardInfoTooltip
-                title="Total Khata Entries"
-                urduDetail="ادھار دینے اور وصولی کرنے کی اب تک کل کتنی انٹریز درج ہو چکی ہیں۔"
-              />
-            </div>
-            <div className="rounded-xl p-2.5 border shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30">
-              <History className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{recentLedger.length}</div>
-          <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Recent credits & wasooli entries</p>
-        </div>
+        <StatCard
+          title="Total Khata Entries"
+          value={recentLedger.length}
+          subtitle="Recent credits & wasooli entries"
+          icon={History}
+          color="emerald"
+          urduDetail="ادھار دینے اور وصولی کرنے کی اب تک کل کتنی انٹریز درج ہو چکی ہیں۔"
+        />
       </div>
 
       {/* Tabs */}

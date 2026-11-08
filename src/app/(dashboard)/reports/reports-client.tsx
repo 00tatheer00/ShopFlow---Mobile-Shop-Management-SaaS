@@ -21,6 +21,7 @@ import type { UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
 import { exportToCSV } from '@/lib/export-csv';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface ProductInventoryItem {
   id: string;
@@ -287,160 +288,61 @@ export function ReportsClient({
       {/* ============================================================ */}
       {activeTab === 'pnl' && isPrivileged && (
         <div className="space-y-6 animate-in fade-in-50">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Gross Revenue */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
-                    Total Sale Income
-                  </span>
-                  <CardInfoTooltip
-                    title="Total Sale Income"
-                    urduDetail="منتخب مدت میں دکان کی کل کتنی فروخت (سیلز) ہوئی ہے (نقد اور ادھار دونوں ملا کر)۔"
-                  />
-                </div>
-                <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
-                  <DollarSign className="h-4.5 w-4.5" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(totalRevenue)}</div>
-              <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">{salesCount} completed customer sales</p>
-            </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <StatCard
+              title="Total Sale Income"
+              value={formatPKR(totalRevenue)}
+              subtitle={`${salesCount} completed customer sales`}
+              icon={DollarSign}
+              color="blue"
+              urduDetail="منتخب مدت میں دکان کی کل کتنی فروخت (سیلز) ہوئی ہے (نقد اور ادھار دونوں ملا کر)۔"
+            />
 
-            {/* Cost of Goods Sold */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-violet-100/90 via-violet-50/70 to-card dark:from-violet-950/70 dark:via-violet-900/40 dark:to-card border-violet-300 dark:border-violet-700 hover:border-violet-600 dark:hover:border-violet-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-violet-900 dark:text-violet-200 truncate">
-                    Item Purchase Cost (COGS)
-                  </span>
-                  <CardInfoTooltip
-                    title="Item Purchase Cost (COGS)"
-                    urduDetail="فروخت شدہ سامان کی اصل ہول سیل قیمتِ خرید جو دکان نے ڈیلر کو ادا کی تھی۔"
-                  />
-                </div>
-                <div className="rounded-xl p-2.5 border shrink-0 bg-violet-600 text-white border-violet-500 shadow-xs shadow-violet-500/30">
-                  <ShoppingBag className="h-4.5 w-4.5" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(cogs)}</div>
-              <p className="mt-1 text-xs font-semibold text-violet-900/80 dark:text-violet-200/90">Wholesale cost of goods sold</p>
-            </div>
+            <StatCard
+              title="Item Purchase Cost (COGS)"
+              value={formatPKR(cogs)}
+              subtitle="Wholesale cost of goods sold"
+              icon={ShoppingBag}
+              color="violet"
+              urduDetail="فروخت شدہ سامان کی اصل ہول سیل قیمتِ خرید جو دکان نے ڈیلر کو ادا کی تھی۔"
+            />
 
-            {/* Gross Profit */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
-                    Sales Profit (Munafa)
-                  </span>
-                  <CardInfoTooltip
-                    title="Sales Profit (Munafa)"
-                    urduDetail="سیلز میں سے سامان کی ہول سیل قیمتِ خرید نکال کر حاصل ہونے والا منافع۔"
-                  />
-                </div>
-                <div className="rounded-xl p-2.5 border shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30">
-                  <TrendingUp className="h-4.5 w-4.5" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-700 dark:text-emerald-300">
-                {formatPKR(grossProfit)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Gross Margin: {grossMarginPct}%</p>
-            </div>
+            <StatCard
+              title="Sales Profit (Munafa)"
+              value={formatPKR(grossProfit)}
+              subtitle={`Gross Margin: ${grossMarginPct}%`}
+              icon={TrendingUp}
+              color="emerald"
+              urduDetail="سیلز میں سے سامان کی ہول سیل قیمتِ خرید نکال کر حاصل ہونے والا منافع۔"
+            />
 
-            {/* Operating Expenses */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
-                    Shop Operating Expenses
-                  </span>
-                  <CardInfoTooltip
-                    title="Shop Operating Expenses"
-                    urduDetail="دکان کے بجلی، کرایہ، چائے، کھانا اور روزمرہ کے کل اخراجات۔"
-                  />
-                </div>
-                <div className="rounded-xl p-2.5 border shrink-0 bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30">
-                  <TrendingDown className="h-4.5 w-4.5" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
-                {formatPKR(totalExpenses)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Shop rent, utilities & overheads</p>
-            </div>
+            <StatCard
+              title="Shop Operating Expenses"
+              value={formatPKR(totalExpenses)}
+              subtitle="Shop rent, utilities & overheads"
+              icon={TrendingDown}
+              color="rose"
+              urduDetail="دکان کے بجلی، کرایہ، چائے، کھانا اور روزمرہ کے کل اخراجات۔"
+            />
 
-            {/* Net Profit */}
-            <div
-              className={`rounded-2xl p-5 border-2 transition-all duration-200 ease-out relative shadow-xs ${
-                isNetPositive
-                  ? 'bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600'
-                  : 'bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600'
-              }`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className={`text-xs font-black uppercase tracking-wider truncate ${
-                      isNetPositive ? 'text-emerald-900 dark:text-emerald-200' : 'text-rose-950 dark:text-rose-200'
-                    }`}
-                  >
-                    Net Profit (Asal Bachat)
-                  </span>
-                  <CardInfoTooltip
-                    title="Net Profit (Asal Bachat)"
-                    urduDetail="دکان کے تمام اخراجات اور سامان کی اصل لاگت نکال کر آخری خالص بچت۔"
-                  />
-                </div>
-                <div
-                  className={`rounded-xl p-2.5 border shrink-0 ${
-                    isNetPositive
-                      ? 'bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30'
-                      : 'bg-rose-600 text-white border-rose-500 shadow-xs shadow-rose-500/30'
-                  }`}
-                >
-                  <TrendingUp className="h-4.5 w-4.5" />
-                </div>
-              </div>
-              <div
-                className={`mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono ${
-                  isNetPositive ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-700 dark:text-rose-300'
-                }`}
-              >
-                {formatPKR(netProfit)}
-              </div>
-              <p
-                className={`mt-1 text-xs font-semibold ${
-                  isNetPositive ? 'text-emerald-900/80 dark:text-emerald-200/90' : 'text-rose-900/80 dark:text-rose-200/90'
-                }`}
-              >
-                Net Margin: {netMarginPct}%
-              </p>
-            </div>
+            <StatCard
+              title="Net Profit (Asal Bachat)"
+              value={formatPKR(netProfit)}
+              subtitle={`Net Margin: ${netMarginPct}%`}
+              icon={TrendingUp}
+              color={isNetPositive ? 'emerald' : 'rose'}
+              urduDetail="دکان کے تمام اخراجات اور سامان کی اصل لاگت نکال کر آخری خالص بچت۔"
+              badge={isNetPositive ? 'Profitable' : 'Loss'}
+            />
 
-            {/* Total Udhaar Outflow */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
-                    New Udhaar Given
-                  </span>
-                  <CardInfoTooltip
-                    title="New Udhaar Given"
-                    urduDetail="اس مدت میں گاہکوں کو کتنا نیا ادھار سامان دیا گیا۔"
-                  />
-                </div>
-                <div className="rounded-xl p-2.5 border shrink-0 bg-amber-600 text-white border-amber-500 shadow-xs shadow-amber-500/30">
-                  <Wallet className="h-4.5 w-4.5" />
-                </div>
-              </div>
-              <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">
-                {formatPKR(totalUdhaar)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Amount added to customer Udhaar</p>
-            </div>
+            <StatCard
+              title="New Udhaar Given"
+              value={formatPKR(totalUdhaar)}
+              subtitle="Amount added to customer Udhaar"
+              icon={Wallet}
+              color="amber"
+              urduDetail="اس مدت میں گاہکوں کو کتنا نیا ادھار سامان دیا گیا۔"
+            />
           </div>
 
           {/* Top Selling Products & Payment Distribution */}
@@ -525,72 +427,42 @@ export function ReportsClient({
       {/* ============================================================ */}
       {activeTab === 'sales' && (
         <div className="space-y-6 animate-in fade-in-50">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Total Sales */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
-                  Total Sale Income
-                </span>
-                <CardInfoTooltip
-                  title="Total Sale Income"
-                  urduDetail="منتخب مدت میں دکان کی کل فروخت سے حاصل ہونے والی آمدن۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(totalRevenue)}</div>
-              <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">{salesCount} completed sales</p>
-            </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              title="Total Sale Income"
+              value={formatPKR(totalRevenue)}
+              subtitle={`${salesCount} completed sales`}
+              icon={DollarSign}
+              color="blue"
+              urduDetail="منتخب مدت میں دکان کی کل فروخت سے حاصل ہونے والی آمدن۔"
+            />
 
-            {/* Discounts Given */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
-                  Total Discount Given
-                </span>
-                <CardInfoTooltip
-                  title="Total Discount Given"
-                  urduDetail="گاہکوں کو دی گئی کل رعایت (ڈسکاؤنٹ)۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">
-                {formatPKR(totalDiscounts)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Total discount concessions</p>
-            </div>
+            <StatCard
+              title="Total Discount Given"
+              value={formatPKR(totalDiscounts)}
+              subtitle="Total discount concessions"
+              icon={Tag}
+              color="amber"
+              urduDetail="گاہکوں کو دی گئی کل رعایت (ڈسکاؤنٹ)۔"
+            />
 
-            {/* Collected (Paid) */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
-                  Cash / Digital Received
-                </span>
-                <CardInfoTooltip
-                  title="Cash / Digital Received"
-                  urduDetail="گاہکوں سے کاؤنٹر پر وصول کی گئی نقد اور آن لائن رقم۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-700 dark:text-emerald-300">
-                {formatPKR(totalCollected)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Cash & digital collections</p>
-            </div>
+            <StatCard
+              title="Cash / Digital Received"
+              value={formatPKR(totalCollected)}
+              subtitle="Cash & digital collections"
+              icon={Wallet}
+              color="emerald"
+              urduDetail="گاہکوں سے کاؤنٹر پر وصول کی گئی نقد اور آن لائن رقم۔"
+            />
 
-            {/* Credit (Udhaar) */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-rose-100/90 via-rose-50/70 to-card dark:from-rose-950/70 dark:via-rose-900/40 dark:to-card border-rose-300 dark:border-rose-700 hover:border-rose-600 dark:hover:border-rose-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-rose-950 dark:text-rose-200 truncate">
-                  Customer Udhaar (Khata)
-                </span>
-                <CardInfoTooltip
-                  title="Customer Udhaar (Khata)"
-                  urduDetail="سیلز میں سے کتنی رقم گاہکوں کے کھاتے میں ادھار رکھی گئی۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-rose-700 dark:text-rose-300">
-                {formatPKR(totalUdhaar)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-rose-900/80 dark:text-rose-200/90">Unpaid balance on credit</p>
-            </div>
+            <StatCard
+              title="Customer Udhaar (Khata)"
+              value={formatPKR(totalUdhaar)}
+              subtitle="Unpaid balance on credit"
+              icon={Receipt}
+              color="rose"
+              urduDetail="سیلز میں سے کتنی رقم گاہکوں کے کھاتے میں ادھار رکھی گئی۔"
+            />
           </div>
 
           {/* Cancelled Sales Report (Separately Isolated) */}
@@ -751,74 +623,43 @@ export function ReportsClient({
       {/* ============================================================ */}
       {activeTab === 'inventory' && (
         <div className="space-y-6 animate-in fade-in-50">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Valuation at Cost */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200 truncate">
-                  Shop Stock Value (Cost)
-                </span>
-                <CardInfoTooltip
-                  title="Shop Stock Value (Cost)"
-                  urduDetail="دکان میں موجود تمام سامان کی ہول سیل قیمتِ خرید کی کل مالیت۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">
-                {formatPKR(totalInventoryCostValuation)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Total investment at purchase cost</p>
-            </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              title="Shop Stock Value (Cost)"
+              value={formatPKR(totalInventoryCostValuation)}
+              subtitle="Total investment at purchase cost"
+              icon={Package}
+              color="blue"
+              urduDetail="دکان میں موجود تمام سامان کی ہول سیل قیمتِ خرید کی کل مالیت۔"
+            />
 
-            {/* Potential Retail Value */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200 truncate">
-                  Expected Sale Value (Retail)
-                </span>
-                <CardInfoTooltip
-                  title="Expected Sale Value (Retail)"
-                  urduDetail="اگر دکان کا سارا مال فروخت ہو جائے تو متوقع کل ریٹیل فروخت کی مالیت۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-emerald-700 dark:text-emerald-300">
-                {formatPKR(totalPotentialRetailValuation)}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Expected revenue at selling price</p>
-            </div>
+            <StatCard
+              title="Expected Sale Value (Retail)"
+              value={formatPKR(totalPotentialRetailValuation)}
+              subtitle="Expected revenue at selling price"
+              icon={DollarSign}
+              color="emerald"
+              urduDetail="اگر دکان کا سارا مال فروخت ہو جائے تو متوقع کل ریٹیل فروخت کی مالیت۔"
+            />
 
-            {/* Total Units in Stock */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-cyan-100/90 via-cyan-50/70 to-card dark:from-cyan-950/70 dark:via-cyan-900/40 dark:to-card border-cyan-300 dark:border-cyan-700 hover:border-cyan-600 dark:hover:border-cyan-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-cyan-900 dark:text-cyan-200 truncate">
-                  Total Items in Stock
-                </span>
-                <CardInfoTooltip
-                  title="Total Items in Stock"
-                  urduDetail="دکان میں اس وقت تمام اشیاء اور موبائل فونز کے کل کتنے پیسز موجود ہیں۔"
-                />
-              </div>
-              <div className="mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{totalStockQuantity}</div>
-              <p className="mt-1 text-xs font-semibold text-cyan-900/80 dark:text-cyan-200/90">
-                Including {inStockImeiCount} IMEI devices
-              </p>
-            </div>
+            <StatCard
+              title="Total Items in Stock"
+              value={totalStockQuantity}
+              subtitle={`Including ${inStockImeiCount} IMEI devices`}
+              icon={ShoppingBag}
+              color="teal"
+              urduDetail="دکان میں اس وقت تمام اشیاء اور موبائل فونز کے کل کتنے پیسز موجود ہیں۔"
+            />
 
-            {/* Low Stock Warnings */}
-            <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out relative shadow-xs">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 truncate">
-                  Stock Ending Soon
-                </span>
-                <CardInfoTooltip
-                  title="Stock Ending Soon"
-                  urduDetail="وہ سامان جس کا اسٹاک ختم ہونے والا ہے تاکہ آپ بروقت نیا مال منگوا سکیں۔"
-                />
-              </div>
-              <div className={`mt-2 text-2xl sm:text-3xl font-black tabular-nums font-mono ${lowStockCount > 0 ? 'text-amber-700 dark:text-amber-300' : 'text-slate-950 dark:text-white'}`}>
-                {lowStockCount}
-              </div>
-              <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Products at or below threshold</p>
-            </div>
+            <StatCard
+              title="Stock Ending Soon"
+              value={lowStockCount}
+              subtitle="Products at or below threshold"
+              icon={AlertTriangle}
+              color={lowStockCount > 0 ? 'amber' : 'slate'}
+              urduDetail="وہ سامان جس کا اسٹاک ختم ہونے والا ہے تاکہ آپ بروقت نیا مال منگوا سکیں۔"
+              badge={lowStockCount > 0 ? 'Action Needed' : 'Good'}
+            />
           </div>
 
           {/* Products Inventory Status Table */}

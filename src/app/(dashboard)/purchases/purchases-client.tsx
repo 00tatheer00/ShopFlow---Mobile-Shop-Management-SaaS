@@ -21,6 +21,7 @@ import { formatPKR } from '@/lib/types';
 import { deletePurchase } from './actions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { exportToCSV } from '@/lib/export-csv';
+import { StatCard } from '@/components/ui/stat-card';
 
 interface PurchaseWithRelations extends Omit<Purchase, 'items'> {
   supplier?: Supplier;
@@ -129,32 +130,32 @@ export function PurchasesClient({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Purchase History</h1>
-          <p className="text-sm text-muted-foreground">
-            Track inventory shipments, wholesale procurement, and vendor cost history.
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Purchase History</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Track inventory shipments, wholesale procurement, and vendor cost history — {totalCount} total record{totalCount !== 1 ? 's' : ''}.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
           >
-            <Download className="h-4 w-4 text-emerald-500" />
+            <Download className="h-3.5 w-3.5 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
           {canCreate && (
             <Link
               href="/purchases/new"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition-colors"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>New Purchase (Add Stock)</span>
             </Link>
           )}
@@ -162,42 +163,33 @@ export function PurchasesClient({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {/* Total Inventory Spend */}
-        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-blue-100/90 via-blue-50/70 to-card dark:from-blue-950/70 dark:via-blue-900/40 dark:to-card border-blue-300 dark:border-blue-700 hover:border-blue-600 dark:hover:border-blue-400 transition-all duration-200 ease-out shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-blue-900 dark:text-blue-200">Total Inventory Spend</span>
-            <div className="rounded-xl p-2.5 border shrink-0 bg-blue-600 text-white border-blue-500 shadow-xs shadow-blue-500/30">
-              <TrendingDown className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{formatPKR(totalSpend)}</div>
-          <p className="mt-1 text-xs font-semibold text-blue-900/80 dark:text-blue-200/90">Total purchase procurement costs</p>
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <StatCard
+          title="Total Inventory Spend"
+          value={formatPKR(totalSpend)}
+          subtitle="Total purchase procurement costs"
+          icon={TrendingDown}
+          color="blue"
+          urduDetail="اب تک ڈیلرز اور سپلائرز سے خریدے گئے تمام اسٹاک کی کل رقم۔"
+        />
 
-        {/* Purchase Orders */}
-        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-emerald-100/90 via-emerald-50/70 to-card dark:from-emerald-950/70 dark:via-emerald-900/40 dark:to-card border-emerald-300 dark:border-emerald-700 hover:border-emerald-600 dark:hover:border-emerald-400 transition-all duration-200 ease-out shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-200">Purchase Orders</span>
-            <div className="rounded-xl p-2.5 border shrink-0 bg-emerald-600 text-white border-emerald-500 shadow-xs shadow-emerald-500/30">
-              <Package className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-slate-950 dark:text-white">{totalCount}</div>
-          <p className="mt-1 text-xs font-semibold text-emerald-900/80 dark:text-emerald-200/90">Shipments logged from suppliers</p>
-        </div>
+        <StatCard
+          title="Purchase Orders"
+          value={totalCount}
+          subtitle="Shipments logged from suppliers"
+          icon={Package}
+          color="emerald"
+          urduDetail="سپلائرز سے موصول ہونے والے اسٹاک اور پرچیز بلز کی کل تعداد۔"
+        />
 
-        {/* Active Suppliers */}
-        <div className="rounded-2xl p-5 border-2 bg-gradient-to-br from-amber-100/90 via-amber-50/70 to-card dark:from-amber-950/70 dark:via-amber-900/40 dark:to-card border-amber-300 dark:border-amber-700 hover:border-amber-600 dark:hover:border-amber-400 transition-all duration-200 ease-out shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200">Active Suppliers</span>
-            <div className="rounded-xl p-2.5 border shrink-0 bg-amber-600 text-white border-amber-500 shadow-xs shadow-amber-500/30">
-              <Truck className="h-4.5 w-4.5" />
-            </div>
-          </div>
-          <div className="mt-3 text-2xl sm:text-3xl font-black tabular-nums font-mono text-amber-950 dark:text-amber-100">{suppliers.length}</div>
-          <p className="mt-1 text-xs font-semibold text-amber-900/80 dark:text-amber-200/90">Registered vendor distributors</p>
-        </div>
+        <StatCard
+          title="Active Suppliers"
+          value={suppliers.length}
+          subtitle="Registered vendor distributors"
+          icon={Truck}
+          color="amber"
+          urduDetail="وہ تمام ہول سیل ڈیلرز اور وینڈرز جن سے دکان پر سامان خریدا جاتا ہے۔"
+        />
       </div>
 
       {/* Filters */}

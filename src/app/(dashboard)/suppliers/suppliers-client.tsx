@@ -145,23 +145,23 @@ export function SuppliersClient({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Suppliers</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your vendors, wholesale distributors, and supplier contacts. ({totalCount} total)
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Suppliers</h1>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Manage your vendors, wholesale distributors, and supplier contacts ({totalCount} total).
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
           >
-            <Download className="h-4 w-4 text-emerald-500" />
+            <Download className="h-3.5 w-3.5 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
@@ -171,9 +171,9 @@ export function SuppliersClient({
                 setFormError(null);
                 setIsAddModalOpen(true);
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition-colors cursor-pointer"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>Add Supplier</span>
             </button>
           )}

@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { Info, X } from 'lucide-react';
 
 interface CardInfoTooltipProps {
   title?: string;
@@ -18,23 +18,31 @@ interface Coords {
   placeAbove: boolean;
 }
 
-export function CardInfoTooltip({ title, urduDetail, className = '', variant = 'default' }: CardInfoTooltipProps) {
+export function CardInfoTooltip({
+  title,
+  urduDetail,
+  className = '',
+  variant = 'default',
+}: CardInfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState<Coords | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   const updatePosition = useCallback(() => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const tooltipWidth = Math.min(320, window.innerWidth - 24);
+    const tooltipWidth = Math.min(300, window.innerWidth - 24);
 
-    // Horizontal positioning: align to button, clamp strictly within viewport margins
-    let left = rect.left;
+    let left = rect.left - tooltipWidth / 2 + rect.width / 2;
     if (left + tooltipWidth > window.innerWidth - 12) {
       left = window.innerWidth - 12 - tooltipWidth;
     }
@@ -42,10 +50,9 @@ export function CardInfoTooltip({ title, urduDetail, className = '', variant = '
       left = 12;
     }
 
-    // Vertical positioning: check available space below
     const spaceBelow = window.innerHeight - rect.bottom;
     const placeAbove = spaceBelow < 180 && rect.top > 180;
-    const top = placeAbove ? rect.top - 8 : rect.bottom + 8;
+    const top = placeAbove ? rect.top - 6 : rect.bottom + 6;
 
     setCoords({
       top,
@@ -54,6 +61,17 @@ export function CardInfoTooltip({ title, urduDetail, className = '', variant = '
       placeAbove,
     });
   }, []);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 150);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -83,11 +101,15 @@ export function CardInfoTooltip({ title, urduDetail, className = '', variant = '
 
   const buttonStyle =
     variant === 'invert'
-      ? 'bg-white/20 hover:bg-white text-white hover:text-slate-900 border-2 border-white/60'
-      : 'bg-primary/15 hover:bg-primary text-primary hover:text-white border-2 border-primary/40';
+      ? 'bg-white/20 hover:bg-white text-white hover:text-slate-900 border border-white/40'
+      : 'bg-muted/70 hover:bg-primary/15 text-muted-foreground hover:text-primary';
 
   return (
-    <div className={`relative inline-flex items-center ${className}`}>
+    <div
+      className={`relative inline-flex items-center ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         ref={buttonRef}
         type="button"
@@ -96,19 +118,23 @@ export function CardInfoTooltip({ title, urduDetail, className = '', variant = '
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className={`inline-flex items-center justify-center h-5 w-5 rounded-full ${buttonStyle} text-[11px] font-black font-serif italic shadow-xs transition-all duration-150 cursor-pointer active:scale-95 shrink-0`}
+        className={`inline-flex items-center justify-center h-4.5 w-4.5 rounded-full ${buttonStyle} text-[10.5px] font-bold font-serif italic transition-all duration-150 cursor-pointer active:scale-95 shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40`}
         aria-label="اردو تفصیل"
-        title="اردو میں تفصیل دیکھنے کے لیے کلک کریں"
+        title="اردو میں تفصیل دیکھنے کے لیے ماؤس اوپر لائیں"
       >
         i
       </button>
 
-      {/* Floating Urdu Info Popover rendered via Portal to prevent any container clipping */}
+      {/* Floating Urdu Info Popover rendered via Portal */}
       {mounted && isOpen && coords && createPortal(
-        <div className="fixed inset-0 z-[99999] pointer-events-none">
-          {/* Transparent Backdrop to detect click outside */}
+        <div
+          className="fixed inset-0 z-[99999] pointer-events-none"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Transparent Backdrop to detect click outside on touch devices */}
           <div
-            className="fixed inset-0 pointer-events-auto bg-transparent"
+            className="fixed inset-0 pointer-events-auto bg-transparent sm:hidden"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -127,26 +153,26 @@ export function CardInfoTooltip({ title, urduDetail, className = '', variant = '
                 : { top: `${coords.top}px` }),
               width: `${coords.width}px`,
             }}
-            className="pointer-events-auto p-4 rounded-2xl bg-card border-2 border-primary/50 shadow-2xl text-left animate-in fade-in-0 zoom-in-95 duration-150 ring-2 ring-primary/20"
+            className="pointer-events-auto p-3 rounded-xl bg-card border border-border shadow-lg text-left animate-in fade-in-0 zoom-in-95 duration-100 ring-1 ring-black/5 dark:ring-white/10"
           >
-            <div className="flex items-center justify-between pb-2 mb-2 border-b-2 border-border">
-              <span className="text-[11px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5">
-                <span>💡</span>
-                <span className="truncate max-w-[220px]">{title || 'رہنمائی'}</span>
+            <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-border/70">
+              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <Info className="h-3 w-3 text-primary shrink-0" />
+                <span className="truncate max-w-[190px]">{title || 'رہنمائی'}</span>
               </span>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                 aria-label="بند کریں"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
               </button>
             </div>
             <p
               dir="rtl"
               lang="ur"
-              className="font-urdu text-[13.5px] sm:text-[14.5px] text-foreground/95 font-medium leading-[2.3] tracking-normal text-right select-text pt-1"
+              className="font-urdu text-[13px] text-foreground font-normal leading-[2.1] tracking-normal text-right select-text pt-0.5"
             >
               {urduDetail}
             </p>
