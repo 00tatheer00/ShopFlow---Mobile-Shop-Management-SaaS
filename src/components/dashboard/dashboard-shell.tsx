@@ -340,16 +340,16 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
         {/* Page Content */}
         <main
-          className={`flex-1 ${
+          className={`flex-1 overflow-y-auto ${
             pathname === '/sales/new'
-              ? 'overflow-hidden flex flex-col p-1.5 sm:p-2 lg:p-2.5 max-w-[1920px] w-full mx-auto'
-              : 'overflow-y-auto'
+              ? 'flex flex-col p-2 sm:p-3 lg:p-4 max-w-[1920px] w-full mx-auto'
+              : ''
           }`}
         >
           <div
             className={
               pathname === '/sales/new'
-                ? 'h-full w-full flex flex-col min-h-0'
+                ? 'min-h-full w-full flex flex-col'
                 : 'mx-auto max-w-7xl px-4 py-6 lg:px-6 lg:py-8'
             }
           >

@@ -90,7 +90,7 @@ export function PosCheckoutPanel({
   };
 
   return (
-    <div className="flex flex-col h-full space-y-3">
+    <div className="flex flex-col space-y-3 pb-2">
       {/* 1. Customer (Gahak) Row */}
       <div>
         <div className="flex items-center gap-1 mb-1">
