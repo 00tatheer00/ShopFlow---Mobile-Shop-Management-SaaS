@@ -33,17 +33,29 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
     setLoading(true);
     setError(null);
 
-    const formData = new FormData(e.currentTarget);
-    const result = await createShopAction(formData);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await createShopAction(formData);
 
-    if (result?.error) {
-      setError(result.error);
-      toast.error(result.error);
+      if (result?.error) {
+        setError(result.error);
+        toast.error(result.error);
+        setLoading(false);
+      } else if (result?.shopId) {
+        toast.success(`Shop "${result.displayShopId || ''}" provisioned successfully!`);
+        router.push('/admin/shops');
+        router.refresh();
+      } else {
+        const fallbackMsg = 'Unexpected response while provisioning shop. Please check your shop list.';
+        setError(fallbackMsg);
+        toast.error(fallbackMsg);
+        setLoading(false);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'An unexpected error occurred while creating the shop.';
+      setError(msg);
+      toast.error(msg);
       setLoading(false);
-    } else if (result?.shopId) {
-      toast.success(`Shop ${result.displayShopId || ''} created successfully!`);
-      router.push('/admin/shops');
-      router.refresh();
     }
   }
 

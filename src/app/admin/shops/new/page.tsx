@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import { NewShopForm } from './new-shop-form';
 import type { Plan } from '@/lib/types';
 
@@ -11,16 +12,18 @@ export const metadata: Metadata = {
 export default async function NewShopPage() {
   await requireSuperAdmin();
   const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
 
   // 1. Fetch available plans
-  const { data: plans } = await supabase
+  const { data: plans } = await db
     .from('plans')
     .select('id, name, description, max_users, max_products, price, status, created_at')
     .eq('status', 'active')
     .order('price', { ascending: true });
 
   // 2. Fetch max sequence for suggested display_shop_id
-  const { data: shops } = await supabase
+  const { data: shops } = await db
     .from('shops')
     .select('display_shop_id')
     .not('display_shop_id', 'is', null);

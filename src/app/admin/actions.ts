@@ -17,8 +17,9 @@ import { revalidatePath } from 'next/cache';
 /**
  * Helper to generate the next display shop ID (e.g. SHOP-001, SHOP-002)
  */
-async function getNextDisplayShopId(supabase: Awaited<ReturnType<typeof createClient>>): Promise<string> {
-  const { data: shops } = await supabase
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getNextDisplayShopId(db: any): Promise<string> {
+  const { data: shops } = await db
     .from('shops')
     .select('display_shop_id')
     .not('display_shop_id', 'is', null);
@@ -66,12 +67,14 @@ export async function createShopAction(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
 
   // 1. Determine Display Shop ID
   let displayId = result.data.display_shop_id;
   if (displayId) {
     displayId = displayId.trim().toUpperCase();
-    const { data: existingShopId } = await supabase
+    const { data: existingShopId } = await db
       .from('shops')
       .select('id')
       .eq('display_shop_id', displayId)
@@ -81,7 +84,7 @@ export async function createShopAction(formData: FormData) {
       return { error: `Shop ID "${displayId}" is already taken. Please choose another.` };
     }
   } else {
-    displayId = await getNextDisplayShopId(supabase);
+    displayId = await getNextDisplayShopId(db);
   }
 
   // 2. Generate unique slug
@@ -96,10 +99,9 @@ export async function createShopAction(formData: FormData) {
 
   // 3. Provision Owner Account
   let ownerUserId: string | null = null;
-  const adminClient = getAdminClient();
 
   // Check if owner already exists in profiles
-  const { data: existingProfile } = await supabase
+  const { data: existingProfile } = await db
     .from('profiles')
     .select('id')
     .eq('email', result.data.owner_email.toLowerCase())
@@ -119,22 +121,46 @@ export async function createShopAction(formData: FormData) {
       },
     });
 
-    if (authError || !newAuthUser.user) {
+    if (authError || !newAuthUser?.user) {
       console.error('Admin create auth user error:', authError);
-      return {
-        error: authError?.message || 'Failed to create owner authentication account.',
-      };
+      // Resilient check: If user already exists in auth.users
+      if (
+        authError?.message?.toLowerCase().includes('already') ||
+        authError?.status === 422
+      ) {
+        const { data: userList } = await adminClient.auth.admin.listUsers();
+        const found = userList?.users?.find(
+          (u) => u.email?.toLowerCase() === result.data.owner_email.toLowerCase()
+        );
+        if (found) {
+          ownerUserId = found.id;
+          await db.from('profiles').upsert({
+            id: ownerUserId,
+            email: result.data.owner_email.toLowerCase(),
+            full_name: result.data.owner_name,
+            phone: result.data.owner_phone || null,
+          });
+        } else {
+          return {
+            error: authError?.message || 'Failed to create owner authentication account.',
+          };
+        }
+      } else {
+        return {
+          error: authError?.message || 'Failed to create owner authentication account.',
+        };
+      }
+    } else {
+      ownerUserId = newAuthUser.user.id;
+
+      // Ensure profile row exists (if trigger didn't fire)
+      await db.from('profiles').upsert({
+        id: ownerUserId,
+        email: result.data.owner_email.toLowerCase(),
+        full_name: result.data.owner_name,
+        phone: result.data.owner_phone || null,
+      });
     }
-
-    ownerUserId = newAuthUser.user.id;
-
-    // Ensure profile row exists (if trigger didn't fire)
-    await adminClient.from('profiles').upsert({
-      id: ownerUserId,
-      email: result.data.owner_email.toLowerCase(),
-      full_name: result.data.owner_name,
-      phone: result.data.owner_phone || null,
-    });
   } else {
     return {
       error:
@@ -149,7 +175,7 @@ export async function createShopAction(formData: FormData) {
   const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 7);
   const dueDate = nextMonth.toISOString().split('T')[0];
 
-  const { data: shop, error: shopError } = await supabase
+  const { data: shop, error: shopError } = await db
     .from('shops')
     .insert({
       name: result.data.name,
@@ -170,11 +196,11 @@ export async function createShopAction(formData: FormData) {
 
   if (shopError || !shop) {
     console.error('Create shop error:', shopError);
-    return { error: 'Failed to create shop record.' };
+    return { error: shopError?.message || 'Failed to create shop record.' };
   }
 
   // 5. Create initial subscription invoice row (Rs. 8,000 / month)
-  await supabase.from('shop_subscriptions').insert({
+  await db.from('shop_subscriptions').insert({
     shop_id: shop.id,
     billing_month: billingMonth,
     month_name: monthName,
@@ -184,7 +210,7 @@ export async function createShopAction(formData: FormData) {
   });
 
   // 6. Create default shop settings
-  await supabase.from('shop_settings').insert({
+  await db.from('shop_settings').insert({
     shop_id: shop.id,
     receipt_header: shop.name,
     receipt_footer: 'Thank you for your business!',
@@ -195,7 +221,7 @@ export async function createShopAction(formData: FormData) {
   });
 
   // 7. Link Owner in shop_users
-  const { error: shopUserError } = await supabase.from('shop_users').insert({
+  const { error: shopUserError } = await db.from('shop_users').insert({
     shop_id: shop.id,
     user_id: ownerUserId,
     role: 'shop_owner',
@@ -207,7 +233,7 @@ export async function createShopAction(formData: FormData) {
   }
 
   // 8. Log Super Admin Action in audit_logs
-  await supabase.from('audit_logs').insert({
+  await db.from('audit_logs').insert({
     shop_id: shop.id,
     user_id: admin.id,
     action: 'shop_created',
@@ -249,9 +275,10 @@ export async function updateShopStatusAction(payload: {
   }
 
   const supabase = await createClient();
+  const db = getAdminClient() || supabase;
 
   // Fetch shop before update
-  const { data: shop } = await supabase
+  const { data: shop } = await db
     .from('shops')
     .select('id, name, status, display_shop_id')
     .eq('id', result.data.shop_id)
@@ -263,7 +290,7 @@ export async function updateShopStatusAction(payload: {
 
   const previousStatus = shop.status;
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shops')
     .update({ status: result.data.status })
     .eq('id', result.data.shop_id);
@@ -278,7 +305,7 @@ export async function updateShopStatusAction(payload: {
   if (result.data.status === 'suspended') auditAction = 'shop_suspended';
   if (result.data.status === 'deactivated') auditAction = 'shop_deactivated';
 
-  await supabase.from('audit_logs').insert({
+  await db.from('audit_logs').insert({
     shop_id: shop.id,
     user_id: admin.id,
     action: auditAction,
@@ -315,8 +342,9 @@ export async function updateShopPlanAction(payload: {
   }
 
   const supabase = await createClient();
+  const db = getAdminClient() || supabase;
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shops')
     .update({
       plan_id: result.data.plan_id,
@@ -329,7 +357,7 @@ export async function updateShopPlanAction(payload: {
     return { error: 'Failed to update subscription plan.' };
   }
 
-  await supabase.from('audit_logs').insert({
+  await db.from('audit_logs').insert({
     shop_id: result.data.shop_id,
     user_id: admin.id,
     action: 'shop_updated',
@@ -390,7 +418,8 @@ export async function softDeleteShopAction(payload: { shop_id: string }) {
   }
 
   const supabase = await createClient();
-  const { data: shop } = await supabase
+  const db = getAdminClient() || supabase;
+  const { data: shop } = await db
     .from('shops')
     .select('id, name')
     .eq('id', parsed.data.shop_id)
@@ -401,7 +430,7 @@ export async function softDeleteShopAction(payload: { shop_id: string }) {
   }
 
   const now = new Date().toISOString();
-  const { error } = await supabase
+  const { error } = await db
     .from('shops')
     .update({
       deleted_at: now,
@@ -413,7 +442,7 @@ export async function softDeleteShopAction(payload: { shop_id: string }) {
     return { error: 'Failed to move shop to trash.' };
   }
 
-  await supabase.from('audit_logs').insert({
+  await db.from('audit_logs').insert({
     shop_id: shop.id,
     user_id: admin.id,
     action: 'shop_deleted',
@@ -443,7 +472,8 @@ export async function restoreShopAction(payload: { shop_id: string }) {
   }
 
   const supabase = await createClient();
-  const { data: shop } = await supabase
+  const db = getAdminClient() || supabase;
+  const { data: shop } = await db
     .from('shops')
     .select('id, name')
     .eq('id', parsed.data.shop_id)
@@ -453,7 +483,7 @@ export async function restoreShopAction(payload: { shop_id: string }) {
     return { error: 'Shop not found.' };
   }
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shops')
     .update({
       deleted_at: null,
@@ -465,7 +495,7 @@ export async function restoreShopAction(payload: { shop_id: string }) {
     return { error: 'Failed to restore shop.' };
   }
 
-  await supabase.from('audit_logs').insert({
+  await db.from('audit_logs').insert({
     shop_id: shop.id,
     user_id: admin.id,
     action: 'shop_restored',

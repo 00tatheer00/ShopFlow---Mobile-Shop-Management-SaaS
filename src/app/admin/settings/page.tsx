@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import {
   ShieldCheck,
   Calendar,
@@ -17,9 +18,11 @@ export const metadata: Metadata = {
 export default async function AdminSettingsPage() {
   await requireSuperAdmin();
   const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
 
   // Fetch recent platform audit logs
-  const { data: rawLogs } = await supabase
+  const { data: rawLogs } = await db
     .from('audit_logs')
     .select(`
       id, shop_id, user_id, action, entity_type, entity_id, metadata, ip_address, created_at,

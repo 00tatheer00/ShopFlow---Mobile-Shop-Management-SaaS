@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import {
   Store,
   CheckCircle2,
@@ -24,6 +25,8 @@ export const metadata: Metadata = {
 export default async function AdminDashboardPage() {
   await requireSuperAdmin();
   const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
 
   // 1. Fetch platform metadata metrics (excluding trashed shops)
   const [
@@ -32,10 +35,10 @@ export default async function AdminDashboardPage() {
     { count: suspendedShops },
     { count: deactivatedShops },
   ] = await Promise.all([
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'active'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'suspended'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'deactivated'),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'active'),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'suspended'),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'deactivated'),
   ]);
 
   // Monthly Recurring Revenue calculated from SUBSCRIPTION_PRICE_PAISAS and only active shops
@@ -43,7 +46,7 @@ export default async function AdminDashboardPage() {
   const mrrPaisas = activeCount * SUBSCRIPTION_PRICE_PAISAS;
 
   // 2. Fetch recent shops (limit 5, non-trashed)
-  const { data: rawRecentShops } = await supabase
+  const { data: rawRecentShops } = await db
     .from('shops')
     .select(`
       id, name, slug, display_shop_id, city, status, created_at,
@@ -58,7 +61,7 @@ export default async function AdminDashboardPage() {
     .limit(5);
 
   // 3. Fetch recent platform audit logs
-  const { data: recentLogs } = await supabase
+  const { data: recentLogs } = await db
     .from('audit_logs')
     .select(`
       id, action, entity_type, entity_id, metadata, created_at,

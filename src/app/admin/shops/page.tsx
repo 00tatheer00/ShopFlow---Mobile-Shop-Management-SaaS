@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import { ShopsClient, type ShopListItem } from './shops-client';
 import { lazyPurgeExpiredShopsAction } from '@/app/admin/actions';
 
@@ -13,6 +14,8 @@ export default async function AdminShopsPage(props: {
 }) {
   await requireSuperAdmin();
   const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
   const searchParams = await props.searchParams;
 
   const search = searchParams.search || '';
@@ -33,14 +36,14 @@ export default async function AdminShopsPage(props: {
     { count: deactivatedCount },
     { count: trashCount },
   ] = await Promise.all([
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'active'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'suspended'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'deactivated'),
-    supabase.from('shops').select('id', { count: 'exact', head: true }).not('deleted_at', 'is', null),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'active'),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'suspended'),
+    db.from('shops').select('id', { count: 'exact', head: true }).is('deleted_at', null).eq('status', 'deactivated'),
+    db.from('shops').select('id', { count: 'exact', head: true }).not('deleted_at', 'is', null),
   ]);
 
-  let query = supabase
+  let query = db
     .from('shops')
     .select(
       `
@@ -81,7 +84,10 @@ export default async function AdminShopsPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const { data: rawShops, count } = await query;
+  const { data: rawShops, count, error: queryError } = await query;
+  if (queryError) {
+    console.error('Admin shops query error:', queryError);
+  }
 
   type OwnerProfile = { full_name: string; email: string; phone?: string | null } | null;
 

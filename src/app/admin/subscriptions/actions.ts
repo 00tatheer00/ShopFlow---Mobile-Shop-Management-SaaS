@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import { requireSuperAdmin } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 import {
@@ -26,9 +27,10 @@ export interface ApprovePaymentPayload {
 export async function approveSubscriptionPayment(payload: ApprovePaymentPayload) {
   const user = await requireSuperAdmin();
   const supabase = await createClient();
+  const db = getAdminClient() || supabase;
 
   // 1. Fetch Subscription and Shop
-  const { data: sub, error: subError } = await supabase
+  const { data: sub, error: subError } = await db
     .from('shop_subscriptions')
     .select('*, shop:shops(*)')
     .eq('id', payload.subscriptionId)
@@ -42,7 +44,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
   const now = new Date().toISOString();
 
   // 2. Mark subscription as PAID
-  const { error: updateError } = await supabase
+  const { error: updateError } = await db
     .from('shop_subscriptions')
     .update({
       status: 'paid',
@@ -69,7 +71,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
   // Last day of that month + 7 days grace
   const expiryDate = new Date(year, month, 7, 23, 59, 59).toISOString();
 
-  await supabase
+  await db
     .from('shops')
     .update({
       subscription_status: 'active',
@@ -82,7 +84,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
   let ownerEmail = sub.shop?.email;
   let ownerName = sub.shop?.name || 'Shop Owner';
 
-  const { data: shopOwnerUser } = await supabase
+  const { data: shopOwnerUser } = await db
     .from('shop_users')
     .select('user_id, role')
     .eq('shop_id', sub.shop_id)
@@ -91,7 +93,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
     .single();
 
   if (shopOwnerUser) {
-    const { data: ownerProfile } = await supabase
+    const { data: ownerProfile } = await db
       .from('profiles')
       .select('email, full_name')
       .eq('id', shopOwnerUser.user_id)
@@ -167,8 +169,9 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
 export async function revokeSubscriptionPayment(subscriptionId: string) {
   const user = await requireSuperAdmin();
   const supabase = await createClient();
+  const db = getAdminClient() || supabase;
 
-  const { data: sub } = await supabase
+  const { data: sub } = await db
     .from('shop_subscriptions')
     .select('id, shop_id, billing_month')
     .eq('id', subscriptionId)
@@ -176,7 +179,7 @@ export async function revokeSubscriptionPayment(subscriptionId: string) {
 
   if (!sub) return { error: 'Subscription not found.' };
 
-  const { error } = await supabase
+  const { error } = await db
     .from('shop_subscriptions')
     .update({
       status: 'unpaid',
@@ -199,8 +202,9 @@ export async function revokeSubscriptionPayment(subscriptionId: string) {
 export async function sendSubscriptionReminder(subscriptionId: string, customNote?: string) {
   const user = await requireSuperAdmin();
   const supabase = await createClient();
+  const db = getAdminClient() || supabase;
 
-  const { data: sub, error } = await supabase
+  const { data: sub, error } = await db
     .from('shop_subscriptions')
     .select('*, shop:shops(*)')
     .eq('id', subscriptionId)
@@ -212,7 +216,7 @@ export async function sendSubscriptionReminder(subscriptionId: string, customNot
   let ownerEmail = sub.shop?.email;
   let ownerName = sub.shop?.name || 'Shopkeeper';
 
-  const { data: shopOwnerUser } = await supabase
+  const { data: shopOwnerUser } = await db
     .from('shop_users')
     .select('user_id')
     .eq('shop_id', sub.shop_id)
@@ -221,7 +225,7 @@ export async function sendSubscriptionReminder(subscriptionId: string, customNot
     .single();
 
   if (shopOwnerUser) {
-    const { data: ownerProfile } = await supabase
+    const { data: ownerProfile } = await db
       .from('profiles')
       .select('email, full_name')
       .eq('id', shopOwnerUser.user_id)

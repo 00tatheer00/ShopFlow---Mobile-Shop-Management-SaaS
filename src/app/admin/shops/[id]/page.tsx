@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
 import { ShopDetailsClient } from './shop-details-client';
 import type { Shop, Plan } from '@/lib/types';
 
@@ -15,9 +16,11 @@ export default async function AdminShopDetailPage(props: {
   await requireSuperAdmin();
   const { id } = await props.params;
   const supabase = await createClient();
+  const adminClient = getAdminClient();
+  const db = adminClient || supabase;
 
   // 1. Fetch Shop details
-  const { data: shop } = await supabase
+  const { data: shop } = await db
     .from('shops')
     .select(`
       id, name, slug, display_shop_id, city, address, phone, email, logo_url,
@@ -32,7 +35,7 @@ export default async function AdminShopDetailPage(props: {
   }
 
   // 2. Fetch Owner
-  const { data: ownerUser } = await supabase
+  const { data: ownerUser } = await db
     .from('shop_users')
     .select(`
       id, user_id, role, is_active,
@@ -43,14 +46,14 @@ export default async function AdminShopDetailPage(props: {
     .maybeSingle();
 
   // 3. Fetch Plans
-  const { data: plans } = await supabase
+  const { data: plans } = await db
     .from('plans')
     .select('id, name, description, max_users, max_products, price, status, created_at')
     .eq('status', 'active')
     .order('price', { ascending: true });
 
   // 4. Fetch Audit Logs for this shop
-  const { data: auditLogs } = await supabase
+  const { data: auditLogs } = await db
     .from('audit_logs')
     .select('id, action, metadata, created_at')
     .eq('shop_id', id)
