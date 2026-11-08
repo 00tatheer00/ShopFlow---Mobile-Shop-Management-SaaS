@@ -28,17 +28,21 @@ export function InfoTooltip({
   const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState<Coords | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setMounted(true);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   const updatePosition = useCallback(() => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
-    const tooltipWidth = Math.min(320, window.innerWidth - 24);
+    const tooltipWidth = Math.min(300, window.innerWidth - 24);
 
-    let left = rect.left - (tooltipWidth / 2) + (rect.width / 2);
+    let left = rect.left - tooltipWidth / 2 + rect.width / 2;
     if (left + tooltipWidth > window.innerWidth - 12) {
       left = window.innerWidth - 12 - tooltipWidth;
     }
@@ -47,8 +51,8 @@ export function InfoTooltip({
     }
 
     const spaceBelow = window.innerHeight - rect.bottom;
-    const placeAbove = spaceBelow < 200 && rect.top > 200;
-    const top = placeAbove ? rect.top - 8 : rect.bottom + 8;
+    const placeAbove = spaceBelow < 180 && rect.top > 180;
+    const top = placeAbove ? rect.top - 6 : rect.bottom + 6;
 
     setCoords({
       top,
@@ -57,6 +61,17 @@ export function InfoTooltip({
       placeAbove,
     });
   }, []);
+
+  const handleMouseEnter = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    timeoutRef.current = setTimeout(() => {
+      setIsOpen(false);
+    }, 150);
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -85,7 +100,11 @@ export function InfoTooltip({
   }, [isOpen, updatePosition]);
 
   return (
-    <div className={`relative inline-flex items-center ${className}`}>
+    <div
+      className={`relative inline-flex items-center ${className}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button
         ref={buttonRef}
         type="button"
@@ -94,18 +113,22 @@ export function InfoTooltip({
           e.stopPropagation();
           setIsOpen((prev) => !prev);
         }}
-        className="inline-flex items-center justify-center h-6 w-6 rounded-full bg-muted/80 hover:bg-primary/15 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 active:scale-95"
+        className="inline-flex items-center justify-center h-4.5 w-4.5 rounded-full bg-muted/70 hover:bg-primary/15 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 active:scale-95"
         aria-label={ariaLabel}
         aria-expanded={isOpen}
       >
-        <span className="text-[12px] font-bold font-serif italic select-none">i</span>
+        <span className="text-[10.5px] font-bold font-serif italic select-none">i</span>
       </button>
 
       {mounted && isOpen && coords && createPortal(
-        <div className="fixed inset-0 z-[99999] pointer-events-none">
-          {/* Backdrop to capture touch/click outside */}
+        <div
+          className="fixed inset-0 z-[99999] pointer-events-none"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          {/* Transparent Backdrop to close on touch outside for mobile */}
           <div
-            className="fixed inset-0 pointer-events-auto bg-black/20 backdrop-blur-[1px] sm:bg-transparent"
+            className="fixed inset-0 pointer-events-auto bg-transparent sm:hidden"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -113,7 +136,7 @@ export function InfoTooltip({
             }}
           />
 
-          {/* Floating Urdu Card */}
+          {/* Floating Urdu Tooltip Card */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
@@ -124,26 +147,26 @@ export function InfoTooltip({
                 : { top: `${coords.top}px` }),
               width: `${coords.width}px`,
             }}
-            className="pointer-events-auto p-4 rounded-2xl bg-card border border-border shadow-xl ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in-0 zoom-in-95 duration-150"
+            className="pointer-events-auto p-3 rounded-xl bg-card border border-border shadow-lg text-left animate-in fade-in-0 zoom-in-95 duration-100"
           >
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
-              <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                <Info className="h-3.5 w-3.5 text-primary" />
-                <span className="truncate max-w-[200px]">{title || 'رہنمائی'}</span>
+            <div className="flex items-center justify-between pb-1.5 mb-1.5 border-b border-border/70">
+              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <Info className="h-3 w-3 text-primary shrink-0" />
+                <span className="truncate max-w-[190px]">{title || 'رہنمائی'}</span>
               </span>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-md p-1 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+                className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
                 aria-label="بند کریں"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
               </button>
             </div>
             <p
               dir="rtl"
               lang="ur"
-              className="font-urdu text-[14px] text-foreground font-normal leading-[2.3] tracking-normal text-right select-text pt-1"
+              className="font-urdu text-[13px] text-foreground font-normal leading-[2.1] tracking-normal text-right select-text pt-0.5"
             >
               {urduText}
             </p>
@@ -154,4 +177,3 @@ export function InfoTooltip({
     </div>
   );
 }
-

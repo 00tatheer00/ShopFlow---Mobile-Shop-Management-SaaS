@@ -48,7 +48,6 @@ export function MetricCard({
 }: MetricCardProps) {
   const isZero = rawAmount === 0;
 
-  // Semantic styles - calm neutral surfaces with meaningful accent highlights
   const getSemanticAccent = () => {
     switch (variant) {
       case 'profit':
@@ -116,17 +115,17 @@ export function MetricCard({
 
   return (
     <div
-      className={`relative rounded-2xl border border-border bg-card transition-all duration-200 shadow-xs flex flex-col justify-between ${
+      className={`relative rounded-xl border border-border bg-card transition-all duration-200 shadow-xs flex flex-col justify-between ${
         accent.accentBorder
-      } ${isHero ? 'p-5 sm:p-6 min-h-[160px]' : 'p-4 sm:p-5 min-h-[140px]'}`}
+      } ${isHero ? 'p-3.5 sm:p-4' : 'p-3 sm:p-3.5'}`}
     >
       <div>
-        {/* Header row: Title (no truncate) + Info Tooltip + Icon */}
-        <div className="flex items-start justify-between gap-2.5">
-          <div className="flex items-center gap-1.5 flex-1 min-w-0 flex-wrap">
+        {/* Top row: Title + Info Tooltip + Icon */}
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <span
-              className={`font-medium text-muted-foreground leading-snug break-words ${
-                isHero ? 'text-sm sm:text-base text-foreground font-semibold' : 'text-xs sm:text-sm'
+              className={`font-medium text-muted-foreground leading-tight truncate ${
+                isHero ? 'text-xs sm:text-sm text-foreground font-semibold' : 'text-[11.5px] sm:text-xs'
               }`}
             >
               {title}
@@ -135,55 +134,54 @@ export function MetricCard({
           </div>
 
           <div
-            className={`flex shrink-0 items-center justify-center rounded-xl border p-2.5 ${accent.iconBg}`}
+            className={`flex shrink-0 items-center justify-center rounded-lg border ${
+              isHero ? 'p-2' : 'p-1.5'
+            } ${accent.iconBg}`}
           >
-            <Icon className={isHero ? 'h-5 w-5' : 'h-4.5 w-4.5'} />
+            <Icon className={isHero ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
           </div>
         </div>
 
-        {/* Value Display */}
-        <div className="mt-3 sm:mt-4 flex flex-wrap items-baseline gap-2">
+        {/* Value */}
+        <div className="mt-2 sm:mt-2.5 flex flex-wrap items-baseline gap-1.5">
           <div
             className={`font-bold font-mono tracking-tight tabular-nums ${accent.valueColor} ${
-              isHero ? 'text-2xl sm:text-3xl' : 'text-xl sm:text-2xl'
+              isHero ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'
             }`}
           >
             {value}
           </div>
 
-          {/* Colorblind-friendly semantic indicator (Icon + Label) */}
           {trend && (
             <span
-              className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-md border ${accent.indicator}`}
+              className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded border ${accent.indicator}`}
             >
-              {trend.type === 'positive' && <TrendingUp className="h-3 w-3" />}
-              {trend.type === 'negative' && <TrendingDown className="h-3 w-3" />}
-              {trend.type === 'neutral' && <Minus className="h-3 w-3" />}
+              {trend.type === 'positive' && <TrendingUp className="h-2.5 w-2.5" />}
+              {trend.type === 'negative' && <TrendingDown className="h-2.5 w-2.5" />}
+              {trend.type === 'neutral' && <Minus className="h-2.5 w-2.5" />}
               <span>{trend.label}</span>
             </span>
           )}
         </div>
       </div>
 
-      {/* Footer / Subtitle / Empty State Guidance */}
-      <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-xs">
+      {/* Footer / Subtitle */}
+      <div className="mt-2 pt-1.5 border-t border-border/50 text-[11px]">
         {isZero && emptyHint ? (
-          <div className="flex items-center justify-between w-full gap-2">
-            <span className="text-muted-foreground font-normal truncate">
-              {emptyHint.text}
-            </span>
+          <div className="flex items-center justify-between w-full gap-2 text-muted-foreground">
+            <span className="truncate">{emptyHint.text}</span>
             {emptyHint.actionHref && emptyHint.actionLabel && (
               <Link
                 href={emptyHint.actionHref}
-                className="inline-flex items-center gap-1 font-semibold text-primary hover:underline shrink-0"
+                className="inline-flex items-center gap-0.5 font-semibold text-primary hover:underline shrink-0"
               >
                 <span>{emptyHint.actionLabel}</span>
-                <ArrowUpRight className="h-3 w-3" />
+                <ArrowUpRight className="h-2.5 w-2.5" />
               </Link>
             )}
           </div>
         ) : (
-          <span className="text-muted-foreground font-normal leading-normal">
+          <span className="text-muted-foreground leading-tight truncate block">
             {subtitle || ''}
           </span>
         )}
@@ -191,4 +189,3 @@ export function MetricCard({
     </div>
   );
 }
-

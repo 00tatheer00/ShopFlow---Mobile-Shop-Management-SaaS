@@ -29,7 +29,6 @@ export function FinancialOverviewChart({
   netProfit,
   cash,
 }: FinancialOverviewChartProps) {
-  // Prevent SSR hydration mismatch with Recharts ResponsiveContainer
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -38,39 +37,34 @@ export function FinancialOverviewChart({
 
   const data = [
     {
-      name: "Today's Sales",
-      urdu: 'کل سیل',
+      name: 'Sales',
       amountPaisa: sales,
       amountRupees: toRupees(sales),
-      color: '#3b82f6', // blue-500
+      color: '#3b82f6',
     },
     {
       name: 'Item Cost',
-      urdu: 'سامان لاگت',
       amountPaisa: cogs,
       amountRupees: toRupees(cogs),
-      color: '#8b5cf6', // violet-500
+      color: '#8b5cf6',
     },
     {
       name: 'Expenses',
-      urdu: 'دکان خرچہ',
       amountPaisa: expenses,
       amountRupees: toRupees(expenses),
-      color: '#f43f5e', // rose-500
+      color: '#f43f5e',
     },
     {
       name: 'Net Profit',
-      urdu: 'اصل بچت',
       amountPaisa: netProfit,
       amountRupees: Math.max(0, toRupees(netProfit)),
-      color: netProfit >= 0 ? '#10b981' : '#f43f5e', // emerald-500 or rose-500
+      color: netProfit >= 0 ? '#10b981' : '#f43f5e',
     },
     {
       name: 'Cash Wasooli',
-      urdu: 'نقد وصولی',
       amountPaisa: cash,
       amountRupees: toRupees(cash),
-      color: '#0d9488', // teal-600
+      color: '#0d9488',
     },
   ];
 
@@ -78,25 +72,25 @@ export function FinancialOverviewChart({
 
   if (!isMounted) {
     return (
-      <div className="h-[280px] w-full rounded-2xl border border-border bg-card p-5 flex items-center justify-center">
-        <div className="h-40 w-full rounded-xl bg-muted/40 animate-pulse" />
+      <div className="h-[210px] w-full rounded-xl border border-border bg-card p-4 flex items-center justify-center">
+        <div className="h-32 w-full rounded-lg bg-muted/40 animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 sm:p-6 shadow-xs flex flex-col justify-between">
-      <div className="flex items-center justify-between pb-4 border-b border-border/70 gap-2">
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-4.5 shadow-xs flex flex-col justify-between">
+      <div className="flex items-center justify-between pb-3 border-b border-border/60 gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <BarChart3 className="h-4.5 w-4.5" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <BarChart3 className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-foreground">
+            <h3 className="text-sm font-semibold text-foreground">
               Today&apos;s Financial Breakdown
             </h3>
-            <p className="text-xs text-muted-foreground">
-              Visual comparison of revenue, wholesale costs, expenses, and cash
+            <p className="text-[11px] text-muted-foreground">
+              Revenue, wholesale costs, expenses, and net profit
             </p>
           </div>
         </div>
@@ -108,32 +102,32 @@ export function FinancialOverviewChart({
       </div>
 
       {totalActivity === 0 ? (
-        <div className="h-[240px] flex flex-col items-center justify-center text-center p-6">
-          <p className="text-sm font-medium text-muted-foreground">
-            No sales or expenses recorded yet today.
+        <div className="h-[150px] flex flex-col items-center justify-center text-center p-4">
+          <p className="text-xs font-medium text-muted-foreground">
+            No transactions recorded yet today.
           </p>
-          <p className="text-xs text-muted-foreground/80 mt-1 max-w-xs">
-            As you make sales and record daily expenses, this chart will update automatically with your profit margins.
+          <p className="text-[11px] text-muted-foreground/80 mt-0.5 max-w-xs">
+            As you make sales and record expenses, this chart will update automatically.
           </p>
         </div>
       ) : (
-        <div className="h-[260px] w-full pt-4">
+        <div className="h-[160px] w-full pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
-              margin={{ top: 12, right: 12, left: -16, bottom: 20 }}
+              margin={{ top: 8, right: 8, left: -20, bottom: 8 }}
             >
               <XAxis
                 dataKey="name"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'currentColor', fontSize: 12, fontWeight: 500 }}
+                tick={{ fill: 'currentColor', fontSize: 11, fontWeight: 500 }}
                 interval={0}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'currentColor', fontSize: 11 }}
+                tick={{ fill: 'currentColor', fontSize: 10 }}
                 tickFormatter={(val) => `Rs ${val >= 1000 ? `${Math.round(val / 1000)}k` : val}`}
               />
               <Tooltip
@@ -142,18 +136,9 @@ export function FinancialOverviewChart({
                   if (active && payload && payload.length) {
                     const item = payload[0].payload;
                     return (
-                      <div className="rounded-xl border border-border bg-card p-3 shadow-lg text-xs space-y-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-semibold text-foreground">{item.name}</span>
-                          <span
-                            dir="rtl"
-                            lang="ur"
-                            className="font-urdu text-[11px] text-muted-foreground"
-                          >
-                            {item.urdu}
-                          </span>
-                        </div>
-                        <p className="text-sm font-bold font-mono text-primary">
+                      <div className="rounded-lg border border-border bg-card p-2 shadow-md text-xs space-y-0.5">
+                        <span className="font-semibold text-foreground">{item.name}</span>
+                        <p className="text-xs font-bold font-mono text-primary">
                           {formatPKR(item.amountPaisa)}
                         </p>
                       </div>
@@ -162,7 +147,7 @@ export function FinancialOverviewChart({
                   return null;
                 }}
               />
-              <Bar dataKey="amountRupees" radius={[8, 8, 0, 0]} maxBarSize={48}>
+              <Bar dataKey="amountRupees" radius={[6, 6, 0, 0]} maxBarSize={38}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
@@ -174,4 +159,3 @@ export function FinancialOverviewChart({
     </div>
   );
 }
-
