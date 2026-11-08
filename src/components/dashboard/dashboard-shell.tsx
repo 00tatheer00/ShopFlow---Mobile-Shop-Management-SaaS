@@ -270,35 +270,11 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           })}
         </nav>
 
-        {/* Sidebar Footer — User Info */}
-        <div className="border-t-2 border-sidebar-border p-3">
-          <div className="flex items-center gap-3 rounded-lg px-3 py-2 bg-sidebar-accent/30 border border-sidebar-border/60">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white text-xs font-black shadow-2xs">
-              {initials}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-sidebar-foreground truncate">
-                {user.full_name}
-              </p>
-              <p className="text-[11px] font-semibold text-sidebar-foreground/75 capitalize">
-                {user.role.replace('_', ' ')}
-              </p>
-            </div>
-          </div>
-          <form action={logoutAction}>
-            <button
-              type="submit"
-              className="mt-1.5 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-rose-100 hover:text-rose-700 dark:hover:bg-rose-950/50 dark:hover:text-rose-300 transition-colors duration-150 cursor-pointer"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign out</span>
-            </button>
-          </form>
-
-          {/* Version Indicator */}
-          <div className="mt-2 pt-2 border-t border-sidebar-border/60 px-3 flex items-center justify-between text-[11px] font-semibold text-sidebar-foreground/70">
+        {/* Sidebar Footer — Version Indicator */}
+        <div className="border-t border-sidebar-border p-3">
+          <div className="px-2 flex items-center justify-between text-[11px] font-medium text-sidebar-foreground/70">
             <span className="font-mono">ShopFlow v{CURRENT_APP_VERSION.version}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
             </span>
@@ -310,23 +286,54 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Header — Hidden on POS (/sales/new) to allow full-screen cashier workflow */}
         {pathname !== '/sales/new' && (
-          <header className="flex h-16 items-center gap-4 border-b border-border bg-card px-4 lg:px-6">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground lg:hidden transition-colors"
-              aria-label="Open sidebar"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
+          <header className="flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:px-6">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground lg:hidden transition-colors"
+                aria-label="Open sidebar"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
 
-            {/* Header Right — User Quick Info & PWA Install */}
-            <div className="flex items-center gap-2 ml-auto">
-              <PwaInstallButton />
               {user.shop?.name && (
-                <span className="hidden sm:inline-block text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
-                  {user.shop.name}
+                <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-md border border-border/50">
+                  <Store className="h-3.5 w-3.5 text-primary" />
+                  <span className="truncate max-w-[180px]">{user.shop.name}</span>
                 </span>
               )}
+            </div>
+
+            {/* Header Right — PWA Install, User Profile & Sign Out */}
+            <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
+              <PwaInstallButton />
+
+              {/* User Profile Info */}
+              <div className="flex items-center gap-2 pl-1 sm:pl-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-2xs">
+                  {initials}
+                </div>
+                <div className="hidden sm:flex flex-col text-left">
+                  <span className="text-xs font-semibold text-foreground leading-tight truncate max-w-[130px]">
+                    {user.full_name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground capitalize leading-tight">
+                    {user.role.replace('_', ' ')}
+                  </span>
+                </div>
+              </div>
+
+              {/* Sign Out Button */}
+              <form action={logoutAction} className="inline-flex">
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors cursor-pointer border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50"
+                  title="Sign out of ShopFlow"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Sign out</span>
+                </button>
+              </form>
             </div>
           </header>
         )}
