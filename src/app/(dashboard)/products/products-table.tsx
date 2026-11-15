@@ -54,6 +54,7 @@ interface ProductsTableProps {
   currentPage: number;
   totalPages: number;
   searchParams: Record<string, string | undefined>;
+  initialAdjustProduct?: ProductRow | null;
 }
 
 export function ProductsTable({
@@ -62,11 +63,12 @@ export function ProductsTable({
   currentPage,
   totalPages,
   searchParams,
+  initialAdjustProduct,
 }: ProductsTableProps) {
   const router = useRouter();
   const [productToDelete, setProductToDelete] = useState<ProductRow | null>(null);
   const [adjustingProduct, setAdjustingProduct] = useState<ProductRow | null>(null);
-  const [adjustQty, setAdjustQty] = useState<number>(0);
+  const [adjustQty, setAdjustQty] = useState<number | ''>('');
   const [adjustReason, setAdjustReason] = useState<string>('');
   const [isPending, startTransition] = useTransition();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -78,6 +80,22 @@ export function ProductsTable({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Automatically open adjust stock modal if navigated from notification
+  useEffect(() => {
+    if (initialAdjustProduct) {
+      setAdjustingProduct(initialAdjustProduct);
+      setAdjustQty('');
+      setAdjustReason('');
+    } else if (searchParams.adjustStock) {
+      const found = products.find((p) => p.id === searchParams.adjustStock);
+      if (found) {
+        setAdjustingProduct(found);
+        setAdjustQty('');
+        setAdjustReason('');
+      }
+    }
+  }, [initialAdjustProduct, searchParams.adjustStock, products]);
 
   const handleToggleMenu = (e: React.MouseEvent<HTMLButtonElement>, prodId: string) => {
     e.preventDefault();
@@ -172,7 +190,8 @@ export function ProductsTable({
   async function handleAdjustStockSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!adjustingProduct) return;
-    if (adjustQty === 0) {
+    const numericQty = adjustQty === '' ? 0 : Number(adjustQty);
+    if (numericQty === 0) {
       alert('Adjustment cannot be 0.');
       return;
     }
@@ -185,7 +204,7 @@ export function ProductsTable({
     startTransition(async () => {
       const res = await adjustStock({
         product_id: adjustingProduct.id,
-        adjustment: adjustQty,
+        adjustment: numericQty,
         reason: adjustReason.trim(),
       });
 
@@ -194,7 +213,7 @@ export function ProductsTable({
       } else {
         setSuccessMessage(`Stock for "${adjustingProduct.name}" updated to ${res.newStock}.`);
         setAdjustingProduct(null);
-        setAdjustQty(0);
+        setAdjustQty('');
         setAdjustReason('');
         router.refresh();
       }
@@ -495,7 +514,7 @@ export function ProductsTable({
                   setOpenMenuId(null);
                   setMenuCoords(null);
                   setAdjustingProduct(prod);
-                  setAdjustQty(0);
+                  setAdjustQty('');
                   setAdjustReason('');
                 }}
                 className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
@@ -640,13 +659,16 @@ export function ProductsTable({
                   type="number"
                   required
                   value={adjustQty}
-                  onChange={(e) => setAdjustQty(Number(e.target.value))}
-                  placeholder="e.g. +5 or -2"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setAdjustQty(val === '' ? '' : Number(val));
+                  }}
+                  placeholder="0"
                   className="w-full rounded-lg border border-border bg-background p-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">
                   New stock after adjustment will be:{' '}
-                  <strong>{adjustingProduct.stock_quantity + adjustQty}</strong>
+                  <strong>{adjustingProduct.stock_quantity + (adjustQty === '' ? 0 : Number(adjustQty))}</strong>
                 </p>
               </div>
 
@@ -668,14 +690,14 @@ export function ProductsTable({
                 <button
                   type="button"
                   onClick={() => setAdjustingProduct(null)}
-                  className="rounded-lg border border-border px-4 py-2 hover:bg-muted font-medium text-foreground"
+                  className="rounded-lg border border-border px-4 py-2 hover:bg-muted font-medium text-foreground cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={isPending || adjustQty === 0}
-                  className="rounded-lg bg-primary px-5 py-2 font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  disabled={isPending || adjustQty === '' || Number(adjustQty) === 0}
+                  className="rounded-lg bg-primary px-5 py-2 font-bold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {isPending ? 'Saving...' : 'Apply Adjustment'}
                 </button>

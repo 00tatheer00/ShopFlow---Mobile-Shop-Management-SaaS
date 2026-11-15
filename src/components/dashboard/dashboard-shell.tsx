@@ -25,6 +25,7 @@ import { logoutAction } from '@/app/(auth)/actions';
 import { NavigationProgress } from '@/components/ui/navigation-progress';
 import { AppUpdateNotifier } from '@/components/ui/app-update-notifier';
 import { PwaInstallButton } from '@/components/pwa/pwa-install-button';
+import { NotificationBell } from './notification-bell';
 import { CURRENT_APP_VERSION } from '@/lib/app-version';
 
 interface DashboardShellProps {
@@ -66,6 +67,7 @@ const navItems: NavItem[] = [
     icon: Smartphone,
     children: [
       { label: 'All Products', href: '/products' },
+      { label: 'Add Product', href: '/products/new' },
       { label: 'Categories', href: '/products/categories' },
       { label: 'Brands', href: '/products/brands' },
     ],
@@ -304,9 +306,10 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               )}
             </div>
 
-            {/* Header Right — PWA Install, User Profile & Sign Out */}
+            {/* Header Right — PWA Install, Notifications, User Profile & Sign Out */}
             <div className="flex items-center gap-2.5 sm:gap-3 ml-auto">
               <PwaInstallButton />
+              <NotificationBell />
 
               {/* User Profile Info */}
               <div className="flex items-center gap-2 pl-1 sm:pl-2">

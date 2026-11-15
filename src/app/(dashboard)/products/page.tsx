@@ -14,6 +14,7 @@ interface SearchParams {
   brand?: string;
   status?: string;
   page?: string;
+  adjustStock?: string;
 }
 
 export default async function ProductsPage(props: {
@@ -79,6 +80,50 @@ export default async function ProductsPage(props: {
 
   const totalPages = Math.ceil((count || 0) / perPage);
 
+  // If specific product requested for stock adjustment, ensure it is available
+  let targetAdjustProduct = null;
+  if (searchParams.adjustStock) {
+    const existing = (products || []).find((p) => p.id === searchParams.adjustStock);
+    if (existing) {
+      targetAdjustProduct = {
+        ...existing,
+        category_name: (existing.product_categories as unknown as { name: string })?.name || null,
+        brand_name: (existing.brands as unknown as { name: string })?.name || null,
+      };
+    } else {
+      const { data: specific } = await supabase
+        .from('products')
+        .select(`
+          id, name, model, is_imei_tracked, sale_price, purchase_price,
+          stock_quantity, low_stock_threshold, is_active, created_at,
+          product_categories(id, name),
+          brands(id, name)
+        `)
+        .eq('id', searchParams.adjustStock)
+        .eq('shop_id', user.shop_id!)
+        .maybeSingle();
+
+      if (specific) {
+        targetAdjustProduct = {
+          ...specific,
+          category_name: (specific.product_categories as unknown as { name: string })?.name || null,
+          brand_name: (specific.brands as unknown as { name: string })?.name || null,
+        };
+      }
+    }
+  }
+
+  const formattedProducts = (products || []).map((p) => ({
+    ...p,
+    category_name: (p.product_categories as unknown as { name: string })?.name || null,
+    brand_name: (p.brands as unknown as { name: string })?.name || null,
+  }));
+
+  // Prepend target product if not already in list
+  if (targetAdjustProduct && !formattedProducts.some((p) => p.id === targetAdjustProduct.id)) {
+    formattedProducts.unshift(targetAdjustProduct);
+  }
+
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Page Header */}
@@ -113,22 +158,20 @@ export default async function ProductsPage(props: {
       />
 
       {/* Products Table */}
-      {products && products.length > 0 ? (
+      {formattedProducts.length > 0 ? (
         <ProductsTable
-          products={products.map((p) => ({
-            ...p,
-            category_name: (p.product_categories as unknown as { name: string })?.name || null,
-            brand_name: (p.brands as unknown as { name: string })?.name || null,
-          }))}
+          products={formattedProducts}
           userRole={user.role}
           currentPage={page}
           totalPages={totalPages}
+          initialAdjustProduct={targetAdjustProduct}
           searchParams={{
             search: search || undefined,
             category: categoryFilter || undefined,
             brand: brandFilter || undefined,
             status: statusFilter !== 'active' ? statusFilter : undefined,
             page: String(page),
+            adjustStock: searchParams.adjustStock || undefined,
           }}
         />
       ) : (
