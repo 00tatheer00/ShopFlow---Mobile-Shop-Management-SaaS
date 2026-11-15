@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft, RotateCcw } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Plus } from 'lucide-react';
 
 interface PosHeaderProps {
   shopName?: string;
@@ -11,41 +11,67 @@ interface PosHeaderProps {
 
 export function PosHeader({ hasItems, onStartOver }: PosHeaderProps) {
   return (
-    <header className="shrink-0 flex items-center justify-between gap-2 py-1">
-      {/* Left: Back Link & Title */}
+    <header className="shrink-0 flex flex-wrap items-center justify-between gap-2.5 pb-2 border-b border-slate-200/80 dark:border-slate-800">
+      {/* Left: POS Pill Badge, Title, Subtitle & Live Status */}
       <div className="flex items-center gap-2.5 min-w-0">
-        <Link
-          href="/sales"
-          className="inline-flex items-center gap-1 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          <span>Back</span>
-        </Link>
+        <div className="h-8 w-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-xs shrink-0">
+          POS
+        </div>
 
-        <h1 className="text-sm sm:text-base font-semibold tracking-tight text-slate-900 dark:text-white">
-          New Sale
-        </h1>
-
-        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
-          Live
-        </span>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+              Point of Sale
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 hidden sm:block mt-0.5">
+            Walk-in customer checkout & thermal receipts
+          </p>
+        </div>
       </div>
 
-      {/* Right: Start Over Button */}
-      <div className="flex items-center gap-1.5 shrink-0">
+      {/* Right: Keyboard Shortcut Badges, + New Product & Start Over */}
+      <div className="flex items-center gap-2 shrink-0">
+        <div className="hidden xl:flex items-center gap-1.5 text-[11px] text-slate-400 font-mono bg-slate-50 dark:bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-200/80 dark:border-slate-800">
+          <span className="text-slate-500 font-medium">Keys:</span>
+          <span>F2 Search</span>
+          <span>·</span>
+          <span>Ctrl+Enter Complete</span>
+        </div>
+
+        <Link
+          href="/products/new"
+          className="inline-flex items-center gap-1 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/70 dark:bg-indigo-950/40 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 transition cursor-pointer"
+        >
+          <Plus className="h-3 w-3" />
+          <span>New Product</span>
+        </Link>
+
         <button
           type="button"
           onClick={onStartOver}
-          className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-medium transition-all cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
             hasItems
-              ? 'border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100'
-              : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
+              ? 'border-rose-300 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300'
+              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200'
           }`}
           title="Clear basket and start fresh"
         >
           <RotateCcw className="h-3 w-3" />
           <span>Start over</span>
         </button>
+
+        <Link
+          href="/sales"
+          className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 transition-colors pl-1"
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back</span>
+        </Link>
       </div>
     </header>
   );

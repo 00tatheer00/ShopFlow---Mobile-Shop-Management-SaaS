@@ -10,8 +10,7 @@ import { toast } from 'sonner';
 
 import type { ProductWithStock, CartItem, CompletedSaleInfo, DiscountType } from '@/components/pos/pos-types';
 import { PosHeader } from '@/components/pos/pos-header';
-import { PosSearchBox, type PosSearchBoxRef } from '@/components/pos/pos-search-box';
-import { PosBasketTable } from '@/components/pos/pos-basket-table';
+import { PosProductGrid, type PosProductGridRef } from '@/components/pos/pos-product-grid';
 import { PosCheckoutPanel } from '@/components/pos/pos-checkout-panel';
 import { PosImeiPicker } from '@/components/pos/pos-imei-picker';
 import { PosQuickAddCustomer } from '@/components/pos/pos-quick-add-customer';
@@ -41,7 +40,7 @@ export function PosTerminal({
   const [isPending, startTransition] = useTransition();
 
   // Search Box Ref for imperative focus
-  const searchBoxRef = useRef<PosSearchBoxRef>(null);
+  const searchBoxRef = useRef<PosProductGridRef>(null);
 
   // Products and Customers local state
   const [localProducts, setLocalProducts] = useState<ProductWithStock[]>(initialProducts);
@@ -487,9 +486,9 @@ export function PosTerminal({
     <div className="min-h-full flex flex-col select-none bg-slate-100/60 dark:bg-slate-950 p-2 sm:p-3">
       {/* Outer Card Container matching Reference Mockup */}
       <div className="flex-1 min-h-fit bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 lg:gap-6 flex-1 min-h-0">
-          {/* Left Column (Header + Search Box + Basket Table) */}
-          <div className="md:col-span-7 xl:col-span-7 flex flex-col min-h-0 space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 flex-1 min-h-0">
+          {/* Left Column (Header + Category Filters + Search + Product Cards Grid) */}
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 space-y-2.5">
             {/* Top Header */}
             <PosHeader
               shopName={shopName}
@@ -497,36 +496,21 @@ export function PosTerminal({
               onStartOver={handleStartOverClick}
             />
 
-            {/* Persistent Search Bar Row */}
-            <div className="shrink-0">
-              <PosSearchBox
-                ref={searchBoxRef}
-                products={localProducts}
-                categories={categories}
-                brands={brands}
-                cartQuantities={cartQuantities}
-                cartImeis={cartImeis}
-                onSelectProduct={handleSelectProduct}
-                onAddDirectImei={handleAddDirectImei}
-              />
-            </div>
-
-            {/* Basket Table */}
-            <div className="flex-1 min-h-[220px] flex flex-col">
-              <PosBasketTable
-                cart={cart}
-                brands={brands}
-                onUpdateQuantity={handleUpdateQuantity}
-                onUpdatePrice={handleUpdatePrice}
-                onRemoveItem={handleRemoveItem}
-                onClearCart={handleClearCart}
-                onFocusSearch={focusSearch}
-              />
-            </div>
+            {/* The Product Catalog & Cards Grid matching Reference Mockup */}
+            <PosProductGrid
+              ref={searchBoxRef}
+              products={localProducts}
+              categories={categories}
+              brands={brands}
+              cartQuantities={cartQuantities}
+              cartImeis={cartImeis}
+              onSelectProduct={handleSelectProduct}
+              onAddDirectImei={handleAddDirectImei}
+            />
           </div>
 
-          {/* Right Column (Checkout Panel) */}
-          <div className="md:col-span-5 xl:col-span-5 flex flex-col min-h-0">
+          {/* Right Column (Current Sale / Checkout Panel) */}
+          <div className="lg:col-span-5 xl:col-span-4 flex flex-col min-h-0">
             <PosCheckoutPanel
               customers={customers}
               selectedCustomerId={selectedCustomerId}

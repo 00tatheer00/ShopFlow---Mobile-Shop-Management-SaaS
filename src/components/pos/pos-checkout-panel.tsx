@@ -100,7 +100,20 @@ export function PosCheckoutPanel({
   };
 
   return (
-    <div className="flex flex-col space-y-3 pb-2">
+    <div className="flex flex-col space-y-2.5 pb-2">
+      {/* Panel Header matching Mockup */}
+      <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-2">
+          <ShoppingBag className="h-4 w-4 text-indigo-600" />
+          <h2 className="font-bold text-sm text-slate-800 dark:text-slate-100">Current Sale</h2>
+          {cart.length > 0 && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+              {cart.length} {cart.length === 1 ? 'item' : 'items'}
+            </span>
+          )}
+        </div>
+      </div>
+
       {/* 1. Customer (Gahak) Row */}
       <div>
         <div className="flex items-center gap-1 mb-1">
@@ -119,7 +132,7 @@ export function PosCheckoutPanel({
             <button
               type="button"
               onClick={() => setIsCustomerDropdownOpen((prev) => !prev)}
-              className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-left flex items-center justify-between text-xs text-slate-800 dark:text-slate-100 hover:border-slate-400 transition cursor-pointer"
+              className="w-full h-8.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-left flex items-center justify-between text-xs text-slate-800 dark:text-slate-100 hover:border-slate-400 transition cursor-pointer"
             >
               <span className="truncate">
                 {activeCustomer ? `${activeCustomer.name} (${activeCustomer.phone})` : 'Walk-in customer'}
@@ -183,7 +196,7 @@ export function PosCheckoutPanel({
           <button
             type="button"
             onClick={onOpenQuickAddCustomer}
-            className="h-9 px-3 rounded-lg border border-indigo-500 text-indigo-600 dark:text-indigo-400 font-medium text-xs hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition cursor-pointer shrink-0"
+            className="h-8.5 px-3 rounded-xl border border-indigo-500 text-indigo-600 dark:text-indigo-400 font-medium text-xs hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition cursor-pointer shrink-0"
           >
             + New
           </button>
@@ -197,32 +210,22 @@ export function PosCheckoutPanel({
         )}
       </div>
 
-      {/* 2. Subtotal Row */}
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-slate-500 dark:text-slate-400">Subtotal</span>
-        <span className="font-semibold text-slate-800 dark:text-slate-200">
-          Rs {subtotalRupees.toLocaleString('en-PK')}
-        </span>
-      </div>
-
-      {/* Added Products List (Below Subtotal) */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/40 p-2.5 space-y-1.5 shadow-2xs">
-        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-          <span className="flex items-center gap-1.5">
-            <ShoppingBag className="h-3.5 w-3.5 text-indigo-500" />
-            Added Products ({cart.length})
-          </span>
-          {cart.length > 0 && (
-            <span className="text-[10px] text-slate-400">Item & Qty</span>
-          )}
-        </div>
-
+      {/* Cart Items Area / Empty State matching Reference Mockup */}
+      <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 p-2.5 shadow-2xs">
         {cart.length === 0 ? (
-          <div className="py-2.5 text-center text-[11px] text-slate-400 italic">
-            No items in basket yet. Click any product to add.
+          <div className="py-6 flex flex-col items-center justify-center text-center">
+            <div className="h-10 w-10 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-500 flex items-center justify-center mb-2">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Current sale is empty
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Click any product on the left to add
+            </p>
           </div>
         ) : (
-          <div className="max-h-36 overflow-y-auto space-y-1.5 divide-y divide-slate-100 dark:divide-slate-800/80 pr-1">
+          <div className="max-h-48 overflow-y-auto space-y-1.5 divide-y divide-slate-100 dark:divide-slate-800/80 pr-1">
             {cart.map((item, idx) => (
               <div key={idx} className="pt-1.5 first:pt-0 flex items-center justify-between text-xs gap-2">
                 <div className="min-w-0 flex-1 truncate">
@@ -285,6 +288,14 @@ export function PosCheckoutPanel({
             ))}
           </div>
         )}
+      </div>
+
+      {/* 2. Subtotal Row */}
+      <div className="flex items-center justify-between text-xs px-1">
+        <span className="text-slate-500 dark:text-slate-400">Subtotal</span>
+        <span className="font-semibold text-slate-800 dark:text-slate-200">
+          Rs {subtotalRupees.toLocaleString('en-PK')}
+        </span>
       </div>
 
       {/* 3. Discount Row */}
