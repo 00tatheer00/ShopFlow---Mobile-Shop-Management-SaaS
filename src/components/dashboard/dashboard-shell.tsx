@@ -212,7 +212,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                     onClick={() => toggleExpand(item.label)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-150 cursor-pointer ${
                       active
-                        ? 'bg-primary/15 text-primary font-bold border-l-4 border-primary'
+                        ? 'bg-primary/15 text-primary'
                         : 'text-slate-800 dark:text-slate-200 hover:bg-sidebar-accent hover:text-primary'
                     }`}
                   >
@@ -236,7 +236,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                           onClick={() => setSidebarOpen(false)}
                           className={`block rounded-md px-3 py-2 text-[13px] transition-colors duration-150 ${
                             pathname === child.href
-                              ? 'bg-primary/15 text-primary font-bold border-l-2 border-primary'
+                              ? 'bg-primary/15 text-primary font-semibold'
                               : 'text-slate-700 dark:text-slate-300 font-medium hover:text-primary hover:bg-sidebar-accent/50'
                           }`}
                         >
@@ -259,7 +259,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
                   active
-                    ? 'bg-primary/15 text-primary font-bold border-l-4 border-primary'
+                    ? 'bg-primary/15 text-primary'
                     : 'text-slate-800 dark:text-slate-200 hover:bg-sidebar-accent hover:text-primary'
                 }`}
               >
