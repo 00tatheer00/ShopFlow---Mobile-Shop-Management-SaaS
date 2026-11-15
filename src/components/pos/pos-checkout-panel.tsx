@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import {
   Check,
   AlertTriangle,
@@ -58,6 +58,7 @@ export function PosCheckoutPanel({
 }: PosCheckoutPanelProps) {
   const [customerSearch, setCustomerSearch] = useState('');
   const [isCustomerDropdownOpen, setIsCustomerDropdownOpen] = useState(false);
+  const discountInputRef = useRef<HTMLInputElement>(null);
 
   const activeCustomer = useMemo(
     () => customers.find((c) => c.id === selectedCustomerId),
@@ -196,53 +197,133 @@ export function PosCheckoutPanel({
       </div>
 
       {/* 3. Discount Row */}
-      <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-1">
-          <span className="text-slate-500 dark:text-slate-400">Discount</span>
-          <CardInfoTooltip
-            title="Discount (رعایت)"
-            urduDetail="گاہک کو دی جانے والی رعایت۔ آپ روپے (Rs) یا فیصد (%) میں درج کر سکتے ہیں۔"
-          />
-        </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1">
+            <span className="text-slate-500 dark:text-slate-400">Discount</span>
+            <CardInfoTooltip
+              title="Discount (رعایت)"
+              urduDetail="گاہک کو دی جانے والی رعایت۔ آپ روپے (Rs) یا فیصد (%) میں درج کر سکتے ہیں۔"
+            />
+          </div>
 
-        <div className="flex items-center gap-1.5">
-          <input
-            type="number"
-            min="0"
-            placeholder="0"
-            value={discountValue === 0 ? '' : discountValue}
-            onChange={(e) => {
-              const val = parseFloat(e.target.value);
-              onDiscountChange(isNaN(val) ? 0 : val, discountType);
-            }}
-            className="h-8 w-20 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-right text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-indigo-500"
-          />
+          <div className="flex items-center gap-1.5">
+            {/* Input with embedded unit indicator */}
+            <div className="relative flex items-center">
+              {discountType === 'pkr' && (
+                <span className="pointer-events-none absolute left-2 text-[10px] font-semibold text-slate-400">
+                  Rs
+                </span>
+              )}
+              <input
+                ref={discountInputRef}
+                type="number"
+                min="0"
+                max={discountType === 'percent' ? 100 : (subtotalRupees > 0 ? subtotalRupees : undefined)}
+                placeholder={discountType === 'percent' ? '0' : '0'}
+                value={discountValue === 0 ? '' : discountValue}
+                onChange={(e) => {
+                  let val = parseFloat(e.target.value);
+                  if (isNaN(val)) val = 0;
+                  if (discountType === 'percent' && val > 100) val = 100;
+                  if (val < 0) val = 0;
+                  onDiscountChange(val, discountType);
+                }}
+                className={`h-8 w-24 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 ${
+                  discountType === 'pkr' ? 'pl-6 pr-2 text-right' : 'pl-2 pr-6 text-right'
+                }`}
+              />
+              {discountType === 'percent' && (
+                <span className="pointer-events-none absolute right-2 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+                  %
+                </span>
+              )}
+            </div>
 
-          <div className="inline-flex rounded-md overflow-hidden border border-slate-300 dark:border-slate-700 text-xs">
-            <button
-              type="button"
-              onClick={() => onDiscountChange(discountValue, 'pkr')}
-              className={`px-2 py-1 text-xs transition cursor-pointer ${
-                discountType === 'pkr'
-                  ? 'bg-indigo-600 text-white font-medium'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              Rs
-            </button>
-            <button
-              type="button"
-              onClick={() => onDiscountChange(discountValue, 'percent')}
-              className={`px-2 py-1 text-xs border-l border-slate-300 dark:border-slate-700 transition cursor-pointer ${
-                discountType === 'percent'
-                  ? 'bg-indigo-600 text-white font-medium'
-                  : 'bg-white dark:bg-slate-900 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              %
-            </button>
+            {/* Segmented Toggle Bar [ Rs | % ] */}
+            <div className="inline-flex rounded-md overflow-hidden border border-slate-300 dark:border-slate-700 text-xs shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  let convertedVal = discountValue;
+                  if (discountType === 'percent' && discountValue > 0 && subtotalRupees > 0) {
+                    convertedVal = Math.round((subtotalRupees * discountValue) / 100);
+                  }
+                  onDiscountChange(convertedVal, 'pkr');
+                  setTimeout(() => discountInputRef.current?.focus(), 50);
+                }}
+                className={`px-2 py-1 text-xs transition cursor-pointer ${
+                  discountType === 'pkr'
+                    ? 'bg-indigo-600 text-white font-medium'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 hover:bg-slate-50'
+                }`}
+                title="Enter discount in Rupees"
+              >
+                Rs
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  let convertedVal = discountValue;
+                  if (discountType === 'pkr' && discountValue > 0 && subtotalRupees > 0) {
+                    convertedVal = Math.min(100, Math.round((discountValue / subtotalRupees) * 100));
+                  } else if (discountValue > 100) {
+                    convertedVal = 10;
+                  }
+                  onDiscountChange(convertedVal, 'percent');
+                  setTimeout(() => discountInputRef.current?.focus(), 50);
+                }}
+                className={`px-2 py-1 text-xs border-l border-slate-300 dark:border-slate-700 transition cursor-pointer ${
+                  discountType === 'percent'
+                    ? 'bg-indigo-600 text-white font-medium'
+                    : 'bg-white dark:bg-slate-900 text-slate-600 hover:bg-slate-50'
+                }`}
+                title="Enter discount in Percentage"
+              >
+                %
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Interactive Percentage Quick Chips Bar (The Percentage Bar!) */}
+        {discountType === 'percent' && (
+          <div className="flex items-center justify-between gap-1 pt-0.5">
+            <span className="text-[10px] text-slate-500 font-medium">Quick %:</span>
+            <div className="flex items-center gap-1">
+              {[5, 10, 15, 20, 25].map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  onClick={() => {
+                    onDiscountChange(pct, 'percent');
+                    discountInputRef.current?.focus();
+                  }}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-semibold border transition cursor-pointer ${
+                    discountValue === pct
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  {pct}%
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Live Calculation Feedback */}
+        {discountRupees > 0 && (
+          <div className="flex items-center justify-between text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+            <span>Deduction:</span>
+            <span>
+              -Rs {discountRupees.toLocaleString('en-PK')}{' '}
+              <span className="text-[10px] text-slate-400">
+                ({discountType === 'percent' ? `${discountValue}%` : `${subtotalRupees > 0 ? Math.round((discountRupees / subtotalRupees) * 100) : 0}%`})
+              </span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 4. Total to Pay Box (Dark Navy matching Mockup) */}
