@@ -9,7 +9,17 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/forgot-password', '/reset-password', '/privacy', '/terms'];
+  const publicRoutes = [
+    '/login',
+    '/forgot-password',
+    '/reset-password',
+    '/privacy',
+    '/terms',
+    '/manifest.json',
+    '/sw.js',
+    '/robots.txt',
+    '/sitemap.xml',
+  ];
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   const allCookies = request.cookies.getAll();
