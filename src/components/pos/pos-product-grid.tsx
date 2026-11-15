@@ -153,9 +153,9 @@ export const PosProductGrid = forwardRef<PosProductGridRef, PosProductGridProps>
   const remainingCategories = categories.slice(3);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col space-y-2.5">
+    <div className="flex-1 min-h-0 flex flex-col space-y-3 pt-1">
       {/* 1. Filter Row: Category Tabs + Category Dropdown + Search Input */}
-      <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+      <div className="shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
         {/* Category Pills & Dropdown */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none shrink-0">
           {/* [ All ] Tab */}
@@ -294,7 +294,7 @@ export const PosProductGrid = forwardRef<PosProductGridRef, PosProductGridProps>
       </div>
 
       {/* 2. Subheader: Section Title with Live Count & "Click card to add" hint */}
-      <div className="shrink-0 flex items-center justify-between text-xs px-0.5 pt-0.5">
+      <div className="shrink-0 flex items-center justify-between text-xs px-1 py-1">
         <div className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-indigo-600 shrink-0" />
           <span className="font-bold text-[11px] sm:text-xs tracking-wider uppercase text-slate-700 dark:text-slate-300">
@@ -311,8 +311,8 @@ export const PosProductGrid = forwardRef<PosProductGridRef, PosProductGridProps>
         </div>
       </div>
 
-      {/* 3. The Product Cards Grid */}
-      <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+      {/* 3. The Product Cards Grid with top padding to prevent clipping */}
+      <div className="flex-1 min-h-0 overflow-y-auto pt-2 pb-4 px-1 pr-1.5">
         {filteredProducts.length === 0 ? (
           <div className="h-64 flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
             <Package className="h-8 w-8 text-slate-300 dark:text-slate-600 mb-2" />
@@ -340,7 +340,7 @@ export const PosProductGrid = forwardRef<PosProductGridRef, PosProductGridProps>
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2.5 pb-2">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 pb-2">
             {filteredProducts.map((product) => {
               // Calculate effective available stock
               let availableStock = product.stock_quantity;
@@ -370,10 +370,10 @@ export const PosProductGrid = forwardRef<PosProductGridRef, PosProductGridProps>
                     }
                     onSelectProduct(product);
                   }}
-                  className={`group rounded-2xl border p-3 flex flex-col justify-between transition-all duration-150 min-h-[96px] select-none ${
+                  className={`group relative z-0 hover:z-10 rounded-2xl border p-3 flex flex-col justify-between transition-all duration-150 min-h-[96px] select-none ${
                     isOutOfStock
                       ? 'bg-slate-50/70 border-slate-200/60 dark:bg-slate-900/40 dark:border-slate-800/60 opacity-60 cursor-not-allowed'
-                      : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] cursor-pointer'
+                      : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-indigo-500 dark:hover:border-indigo-400 hover:ring-2 hover:ring-indigo-100 dark:hover:ring-indigo-950/60 hover:shadow-md active:scale-[0.99] cursor-pointer'
                   }`}
                 >
                   {/* Card Top: Title & Category/Brand Subtitle */}

@@ -488,7 +488,7 @@ export function PosTerminal({
       <div className="flex-1 min-h-fit bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 flex-1 min-h-0">
           {/* Left Column (Header + Category Filters + Search + Product Cards Grid) */}
-          <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 space-y-2.5">
+          <div className="lg:col-span-7 xl:col-span-8 flex flex-col min-h-0 space-y-3.5">
             {/* Top Header */}
             <PosHeader
               shopName={shopName}
