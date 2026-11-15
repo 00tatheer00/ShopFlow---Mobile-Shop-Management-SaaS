@@ -18,9 +18,15 @@ import {
   History,
   X,
   Download,
+  ArrowDownLeft,
+  CheckCircle2,
+  Wallet,
 } from 'lucide-react';
 import type { Customer, UserRole } from '@/lib/types';
+import { formatPKR } from '@/lib/types';
 import { createCustomer, updateCustomer, deleteCustomer } from './actions';
+import { recordUdhaarPayment } from '@/app/(dashboard)/udhaar/actions';
+import { toast } from 'sonner';
 import { hasPermission } from '@/lib/permissions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { CurrencyDisplay } from '@/components/ui/currency-display';
@@ -57,9 +63,34 @@ export function CustomersClient({
   const [customerToDelete, setCustomerToDelete] = useState<CustomerWithUdhaar | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  // Udhaar Recovery Modal State
+  const [settlingCustomer, setSettlingCustomer] = useState<CustomerWithUdhaar | null>(null);
+  const [settleAmount, setSettleAmount] = useState<string>('');
+  const [settleError, setSettleError] = useState<string | null>(null);
+
   const canCreate = hasPermission(userRole, 'customers:create');
   const canEdit = hasPermission(userRole, 'customers:edit');
   const canDelete = hasPermission(userRole, 'customers:delete');
+
+  async function handleSettleUdhaarSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSettleError(null);
+    const formData = new FormData(e.currentTarget);
+
+    startTransition(async () => {
+      const res = await recordUdhaarPayment(formData);
+      if (res.error) {
+        setSettleError(res.error);
+        toast.error(res.error);
+      } else {
+        const amt = Number(formData.get('amount')) || 0;
+        toast.success(`Received Rs ${amt.toLocaleString('en-PK')} from ${settlingCustomer?.name || 'customer'}!`);
+        setSettlingCustomer(null);
+        setSettleAmount('');
+        router.refresh();
+      }
+    });
+  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -312,7 +343,22 @@ export function CustomersClient({
                         )}
                       </td>
                       <td className="px-4 py-3.5 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {udhaar > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSettleError(null);
+                                setSettlingCustomer(customer);
+                                setSettleAmount(String(Math.round(udhaar / 100)));
+                              }}
+                              className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
+                              title="Receive payment or clear Udhaar"
+                            >
+                              <ArrowDownLeft className="h-3 w-3" />
+                              <span className="hidden sm:inline">Receive</span>
+                            </button>
+                          )}
                           <Link
                             href={`/udhaar?search=${encodeURIComponent(customer.name)}`}
                             className="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -578,6 +624,188 @@ export function CustomersClient({
                   className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                 >
                   {isPending ? 'Updating...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Settle / Receive Udhaar Payment Modal */}
+      {settlingCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in-0 duration-150">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600">
+                  <ArrowDownLeft className="h-4 w-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-foreground">Receive Udhaar Payment (وصولی)</h2>
+                  <p className="text-xs text-muted-foreground">Clear or reduce balance for {settlingCustomer.name}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSettlingCustomer(null);
+                  setSettleError(null);
+                }}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {settleError && (
+              <div className="mt-4 rounded-lg bg-rose-50 p-3 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-400">
+                {settleError}
+              </div>
+            )}
+
+            <form onSubmit={handleSettleUdhaarSubmit} className="mt-4 space-y-4">
+              <input type="hidden" name="customer_id" value={settlingCustomer.id} />
+
+              {/* Customer Balance Banner */}
+              <div className="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 p-3 text-xs flex justify-between items-center">
+                <div>
+                  <span className="text-muted-foreground block text-[11px]">Current Outstanding Due</span>
+                  <span className="font-semibold text-foreground">{settlingCustomer.name} ({settlingCustomer.phone})</span>
+                </div>
+                <span className="font-bold text-rose-600 dark:text-rose-400 text-base">
+                  {formatPKR(settlingCustomer.udhaar_balance || 0)}
+                </span>
+              </div>
+
+              {/* Amount Input */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-foreground">
+                    Amount Received (PKR) <span className="text-rose-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setSettleAmount(String(Math.round((settlingCustomer.udhaar_balance || 0) / 100)))}
+                    className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                  >
+                    Pay Full Amount (Clear Udhaar)
+                  </button>
+                </div>
+                <div className="relative">
+                  <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                    Rs
+                  </span>
+                  <input
+                    type="number"
+                    name="amount"
+                    min="1"
+                    max={Math.round((settlingCustomer.udhaar_balance || 0) / 100)}
+                    step="any"
+                    required
+                    value={settleAmount}
+                    onChange={(e) => setSettleAmount(e.target.value)}
+                    placeholder={`Max ${Math.round((settlingCustomer.udhaar_balance || 0) / 100).toLocaleString()}`}
+                    className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+
+                {/* Quick Chips */}
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  <button
+                    type="button"
+                    onClick={() => setSettleAmount(String(Math.round((settlingCustomer.udhaar_balance || 0) / 100)))}
+                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer"
+                  >
+                    Clear Full (Rs {Math.round((settlingCustomer.udhaar_balance || 0) / 100).toLocaleString()})
+                  </button>
+                  {[500, 1000, 2000, 5000].map((preset) => {
+                    if (preset >= Math.round((settlingCustomer.udhaar_balance || 0) / 100)) return null;
+                    return (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setSettleAmount(String(preset))}
+                        className="px-2 py-0.5 rounded-md text-[11px] font-medium border border-border hover:bg-muted text-muted-foreground transition cursor-pointer"
+                      >
+                        Rs {preset.toLocaleString()}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Live Remaining Balance Preview */}
+                {Number(settleAmount) > 0 && (
+                  <div className="mt-2 flex items-center justify-between text-xs px-2 text-muted-foreground bg-muted/40 p-1.5 rounded-lg">
+                    <span>Remaining Balance:</span>
+                    <span className="font-semibold text-foreground">
+                      Rs {Math.max(0, Math.round((settlingCustomer.udhaar_balance || 0) / 100) - Number(settleAmount)).toLocaleString('en-PK')}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Payment Method */}
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Payment Method <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  name="payment_method"
+                  defaultValue="cash"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                >
+                  <option value="cash">Cash (نقد)</option>
+                  <option value="easypaisa">EasyPaisa (ایزی پیسہ)</option>
+                  <option value="jazzcash">JazzCash (جاز کیش)</option>
+                  <option value="bank_transfer">Bank Transfer (بینک ٹرانسفر)</option>
+                  <option value="other">Other (دیگر)</option>
+                </select>
+              </div>
+
+              {/* Reference */}
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Reference / Transaction ID
+                </label>
+                <input
+                  type="text"
+                  name="reference"
+                  placeholder="e.g. TRX12345678 or Receipt #"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Notes
+                </label>
+                <input
+                  type="text"
+                  name="notes"
+                  placeholder="e.g. Received money later from customer"
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-3 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSettlingCustomer(null);
+                    setSettleError(null);
+                  }}
+                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isPending || !settleAmount || Number(settleAmount) <= 0}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 cursor-pointer shadow-xs"
+                >
+                  {isPending ? 'Recording...' : 'Confirm Receipt (وصولی)'}
                 </button>
               </div>
             </form>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useTransition, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Wallet,
   ArrowDownLeft,
@@ -49,6 +49,7 @@ export function UdhaarClient({
   shopName,
 }: UdhaarClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
   const [activeTab, setActiveTab] = useState<'debtors' | 'history'>('debtors');
@@ -60,6 +61,22 @@ export function UdhaarClient({
   const [amountInput, setAmountInput] = useState<string>('');
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Sync URL search params to auto-open receive modal or filter search
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q) setSearch(q);
+
+    const receiveId = searchParams.get('receive') || searchParams.get('customer');
+    if (receiveId) {
+      setSelectedDebtorId(receiveId);
+      const match = customersWithBalance.find((c) => c.id === receiveId);
+      if (match) {
+        setAmountInput(String(Math.round(match.udhaar_balance / 100)));
+      }
+      setIsReceivePaymentOpen(true);
+    }
+  }, [searchParams, customersWithBalance]);
 
   const canManage = hasPermission(userRole, 'payments:create');
 
@@ -319,19 +336,36 @@ export function UdhaarClient({
                               Reminder
                             </a>
                             {canManage && (
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setFormError(null);
-                                  setSelectedDebtorId(customer.id);
-                                  setAmountInput('');
-                                  setIsReceivePaymentOpen(true);
-                                }}
-                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
-                              >
-                                <ArrowDownLeft className="h-3.5 w-3.5" />
-                                Receive
-                              </button>
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormError(null);
+                                    setSelectedDebtorId(customer.id);
+                                    setAmountInput(String(Math.round(customer.udhaar_balance / 100)));
+                                    setIsReceivePaymentOpen(true);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+                                  title="Clear entire outstanding balance"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  Clear
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setFormError(null);
+                                    setSelectedDebtorId(customer.id);
+                                    setAmountInput('');
+                                    setIsReceivePaymentOpen(true);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-card hover:bg-muted px-2.5 py-1 text-xs font-semibold text-foreground shadow-2xs transition-colors cursor-pointer"
+                                  title="Record partial or custom payment"
+                                >
+                                  <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" />
+                                  Receive
+                                </button>
+                              </>
                             )}
                           </div>
                         </td>

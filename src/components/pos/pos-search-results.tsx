@@ -35,7 +35,7 @@ export function PosSearchResults({
     <div
       role="listbox"
       id="pos-search-results"
-      className="rounded-xl border border-slate-200 bg-[#f8fafc] dark:bg-slate-900/60 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden shadow-sm"
+      className="rounded-xl border border-slate-200 dark:border-slate-800 bg-[#f8fafc] dark:bg-slate-900/60 divide-y divide-slate-100 dark:divide-slate-800 overflow-hidden shadow-2xs max-h-[240px] sm:max-h-[270px] overflow-y-auto"
     >
       {results.map((product, idx) => {
         const isHighlighted = idx === highlightedIndex;
@@ -54,6 +54,8 @@ export function PosSearchResults({
         }
 
         const isOutOfStock = availableStock <= 0;
+        const matchedCategory = categories.find((c) => c.id === product.category_id);
+        const categoryLabel = matchedCategory?.name || (product.is_imei_tracked ? 'Mobile' : 'Accessory');
 
         return (
           <div
@@ -66,16 +68,16 @@ export function PosSearchResults({
             }}
             className={`flex items-center justify-between px-3 py-2 text-xs transition-colors ${
               isOutOfStock
-                ? 'opacity-60 bg-slate-50/50 cursor-not-allowed'
+                ? 'opacity-60 bg-slate-50/50 dark:bg-slate-900/40 cursor-not-allowed'
                 : isHighlighted
                 ? 'bg-indigo-50/70 dark:bg-indigo-950/40 cursor-pointer'
                 : 'hover:bg-slate-100/70 dark:hover:bg-slate-800/40 cursor-pointer'
             }`}
           >
-            {/* Left: Mobile Badge & Name */}
+            {/* Left: Category Badge & Name */}
             <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <span className="shrink-0 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-                {product.is_imei_tracked ? 'Mobile' : 'Accessory'}
+                {categoryLabel}
               </span>
 
               <div className="min-w-0 flex items-center gap-1.5 truncate">
@@ -90,14 +92,16 @@ export function PosSearchResults({
               </div>
             </div>
 
-            {/* Middle: IMEI info if handset */}
+            {/* Middle: IMEI info if handset or Stock */}
             <div className="shrink-0 px-2 text-slate-500 font-mono text-[11px] hidden sm:block">
               {product.is_imei_tracked && allImeis.length > 0 ? (
                 <span>
                   IMEI ...{(availableImeis[0] || allImeis[0]).imei_number.slice(-4)}
                   {availableImeis.length > 1 && ` (+${availableImeis.length - 1})`}
                 </span>
-              ) : null}
+              ) : (
+                <span className="text-slate-400">Stock: {availableStock}</span>
+              )}
             </div>
 
             {/* Right: Price & In stock/Sold badge */}

@@ -16,6 +16,7 @@ import { PosCheckoutPanel } from '@/components/pos/pos-checkout-panel';
 import { PosImeiPicker } from '@/components/pos/pos-imei-picker';
 import { PosQuickAddCustomer } from '@/components/pos/pos-quick-add-customer';
 import { PosSuccessDialog } from '@/components/pos/pos-success-dialog';
+import { PosReceiptConfirmModal } from '@/components/pos/pos-receipt-confirm-modal';
 import type { PosPaymentOption } from '@/components/pos/pos-payment-tiles';
 
 interface PosTerminalProps {
@@ -73,6 +74,7 @@ export function PosTerminal({
   const [completedSale, setCompletedSale] = useState<CompletedSaleInfo | null>(null);
   const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false);
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+  const [isConfirmSaleModalOpen, setIsConfirmSaleModalOpen] = useState(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
 
   // Refocus search helper
@@ -268,6 +270,7 @@ export function PosTerminal({
     setCompletedSale(null);
     setIsSuccessDialogOpen(false);
     setIsReceiptModalOpen(false);
+    setIsConfirmSaleModalOpen(false);
     setReceiptData(null);
     setTxKey(
       typeof crypto !== 'undefined' && crypto.randomUUID
@@ -286,40 +289,19 @@ export function PosTerminal({
     }
   }, [cart.length, resetTerminal]);
 
-  // Complete Sale Submission
-  const handleCompleteSale = useCallback(async () => {
-    if (!validation.canComplete || isPending) {
+  // 1. Open Sale Confirmation & Receipt Preview Popup
+  const handleOpenSaleConfirmation = useCallback(() => {
+    if (!validation.canComplete) {
       if (validation.reason) {
         toast.error(validation.reason);
       }
       return;
     }
 
-    // Map paymentOption to valid DB PaymentMethod
-    let backendPaymentMethod: PaymentMethod = 'cash';
-    if (paymentOption === 'easypaisa') backendPaymentMethod = 'easypaisa';
-    else if (paymentOption === 'jazzcash') backendPaymentMethod = 'jazzcash';
-    else backendPaymentMethod = 'cash';
-
     const customer = customers.find((c) => c.id === selectedCustomerId);
     const todayStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     const tempInvoiceNumber = `INV-${todayStr}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const payload = {
-      customer_id: selectedCustomerId || undefined,
-      items: cart.map((item) => ({
-        product_id: item.product.id,
-        imei_record_id: item.imei_record_id,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-      })),
-      discount: discountRupees,
-      payment_method: backendPaymentMethod,
-      amount_paid: effectivePaidRupees,
-      idempotency_key: txKey,
-    };
-
-    // Calculate receipt data
     const cashChange =
       paymentOption === 'cash' && Number(cashReceived) > totalRupees
         ? Number(cashReceived) - totalRupees
@@ -360,8 +342,52 @@ export function PosTerminal({
       paymentMethod: (paymentOption === 'udhaar' ? 'UDHAAR' : paymentOption).toUpperCase(),
     };
 
+    setReceiptData(formattedReceipt);
+    setIsConfirmSaleModalOpen(true);
+  }, [
+    validation,
+    paymentOption,
+    customers,
+    selectedCustomerId,
+    cart,
+    discountRupees,
+    effectivePaidRupees,
+    cashReceived,
+    totalRupees,
+    shopName,
+    shopPhone,
+    shopAddress,
+    subtotalRupees,
+  ]);
+
+  // 2. Final Sale Submission after confirmation
+  const handleFinalSaleSubmission = useCallback(async () => {
+    if (!validation.canComplete || isPending) return;
+
+    let backendPaymentMethod: PaymentMethod = 'cash';
+    if (paymentOption === 'easypaisa') backendPaymentMethod = 'easypaisa';
+    else if (paymentOption === 'jazzcash') backendPaymentMethod = 'jazzcash';
+    else backendPaymentMethod = 'cash';
+
+    const customer = customers.find((c) => c.id === selectedCustomerId);
+    const invoiceNumber = receiptData?.invoiceNumber || `INV-${Date.now()}`;
+
+    const payload = {
+      customer_id: selectedCustomerId || undefined,
+      items: cart.map((item) => ({
+        product_id: item.product.id,
+        imei_record_id: item.imei_record_id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+      })),
+      discount: discountRupees,
+      payment_method: backendPaymentMethod,
+      amount_paid: effectivePaidRupees,
+      idempotency_key: txKey,
+    };
+
     const completedInfo: CompletedSaleInfo = {
-      invoiceNumber: tempInvoiceNumber,
+      invoiceNumber,
       total: totalRupees,
       amountPaid: effectivePaidRupees,
       paymentMethod: backendPaymentMethod,
@@ -396,22 +422,19 @@ export function PosTerminal({
       })
     );
 
-    // Show completed sale modal immediately
-    setReceiptData(formattedReceipt);
-    setCompletedSale(completedInfo);
-    setIsSuccessDialogOpen(true);
-
     startTransition(async () => {
       const res = await createSale(payload);
       if (res.error) {
-        setIsSuccessDialogOpen(false);
+        setIsConfirmSaleModalOpen(false);
         setCompletedSale(null);
-        setReceiptData(null);
         setLocalProducts(initialProducts); // Rollback
         toast.error(res.error);
       } else if (res.success && res.invoiceNumber) {
-        setCompletedSale((prev) => (prev ? { ...prev, invoiceNumber: res.invoiceNumber! } : null));
+        setIsConfirmSaleModalOpen(false);
+        setCompletedSale({ ...completedInfo, invoiceNumber: res.invoiceNumber! });
         setReceiptData((prev) => (prev ? { ...prev, invoiceNumber: res.invoiceNumber! } : null));
+        setIsSuccessDialogOpen(true);
+        toast.success(`Sale ${res.invoiceNumber} recorded successfully!`);
       }
     });
   }, [
@@ -420,16 +443,12 @@ export function PosTerminal({
     paymentOption,
     customers,
     selectedCustomerId,
+    receiptData,
     cart,
     discountRupees,
     effectivePaidRupees,
     txKey,
-    cashReceived,
     totalRupees,
-    shopName,
-    shopPhone,
-    shopAddress,
-    subtotalRupees,
     initialProducts,
   ]);
 
@@ -439,7 +458,7 @@ export function PosTerminal({
       // 1. Complete Sale shortcut: Ctrl+Enter or Cmd+Enter
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        handleCompleteSale();
+        handleOpenSaleConfirmation();
         return;
       }
 
@@ -462,7 +481,7 @@ export function PosTerminal({
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [handleCompleteSale, focusSearch]);
+  }, [handleOpenSaleConfirmation, focusSearch]);
 
   return (
     <div className="min-h-full flex flex-col select-none bg-slate-100/60 dark:bg-slate-950 p-2 sm:p-3">
@@ -516,6 +535,9 @@ export function PosTerminal({
                 focusSearch();
               }}
               onOpenQuickAddCustomer={() => setIsQuickAddCustomerOpen(true)}
+              cart={cart}
+              onUpdateQuantity={handleUpdateQuantity}
+              onRemoveItem={handleRemoveItem}
               subtotalRupees={subtotalRupees}
               discountRupees={discountRupees}
               discountType={discountType}
@@ -539,7 +561,7 @@ export function PosTerminal({
               isPending={isPending}
               canComplete={validation.canComplete}
               disabledReason={validation.reason}
-              onCompleteSale={handleCompleteSale}
+              onCompleteSale={handleOpenSaleConfirmation}
             />
           </div>
         </div>
@@ -611,6 +633,15 @@ export function PosTerminal({
           setIsReceiptModalOpen(false);
           resetTerminal();
         }}
+        data={receiptData}
+      />
+
+      {/* 6. Sale Confirmation & Receipt Preview Dialog */}
+      <PosReceiptConfirmModal
+        open={isConfirmSaleModalOpen}
+        onClose={() => setIsConfirmSaleModalOpen(false)}
+        onConfirm={handleFinalSaleSubmission}
+        isPending={isPending}
         data={receiptData}
       />
     </div>

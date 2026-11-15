@@ -88,9 +88,6 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
   // Filtered results
   const searchResults = useMemo(() => {
     const q = debouncedQuery.trim().toLowerCase();
-    const isBrowseOnly = !q && browseCategory;
-
-    if (!q && !isBrowseOnly) return [];
 
     return products.filter((p) => {
       if (!p.is_active) return false;
@@ -118,16 +115,13 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
       }
 
       return false;
-    }).slice(0, 15);
+    }).slice(0, 100);
   }, [debouncedQuery, browseCategory, products, brands, categories]);
 
   // Reset highlight index when results change
   useEffect(() => {
     setHighlightedIndex(0);
-    if (searchResults.length > 0 && (debouncedQuery.trim() || browseCategory)) {
-      setIsOpen(true);
-    }
-  }, [searchResults, debouncedQuery, browseCategory]);
+  }, [searchResults]);
 
   // Handle direct barcode scanner or 15-digit IMEI scan/type
   const handleDirectScanOrEnter = () => {
@@ -291,23 +285,23 @@ export const PosSearchBox = forwardRef<PosSearchBoxRef, PosSearchBoxProps>(funct
         </div>
       </div>
 
-      {/* Live Results Box directly below search box */}
-      {isOpen && (debouncedQuery.trim() || browseCategory) && (
-        <PosSearchResults
-          results={searchResults}
-          highlightedIndex={highlightedIndex}
-          categories={categories}
-          brands={brands}
-          cartQuantities={cartQuantities}
-          cartImeis={cartImeis}
-          onSelect={(product) => {
-            onSelectProduct(product);
+      {/* Product Catalog directly below search box — always visible */}
+      <PosSearchResults
+        results={searchResults}
+        highlightedIndex={highlightedIndex}
+        categories={categories}
+        brands={brands}
+        cartQuantities={cartQuantities}
+        cartImeis={cartImeis}
+        onSelect={(product) => {
+          onSelectProduct(product);
+          if (query) {
             setQuery('');
             setDebouncedQuery('');
-            setIsOpen(false);
-          }}
-        />
-      )}
+          }
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 });

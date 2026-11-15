@@ -5,17 +5,23 @@ import {
   Check,
   AlertTriangle,
   Loader2,
+  X,
+  ShoppingBag,
 } from 'lucide-react';
 import { formatPKR } from '@/lib/types';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 import { PosPaymentTiles, type PosPaymentOption } from './pos-payment-tiles';
 import type { Customer } from '@/lib/types';
+import type { CartItem } from './pos-types';
 
 interface PosCheckoutPanelProps {
   customers: Customer[];
   selectedCustomerId: string;
   onSelectCustomer: (id: string) => void;
   onOpenQuickAddCustomer: () => void;
+  cart?: CartItem[];
+  onUpdateQuantity?: (index: number, newQty: number) => void;
+  onRemoveItem?: (index: number) => void;
   subtotalRupees: number;
   discountRupees: number;
   discountType: 'pkr' | 'percent';
@@ -39,6 +45,9 @@ export function PosCheckoutPanel({
   selectedCustomerId,
   onSelectCustomer,
   onOpenQuickAddCustomer,
+  cart = [],
+  onUpdateQuantity,
+  onRemoveItem,
   subtotalRupees,
   discountRupees,
   discountType,
@@ -194,6 +203,88 @@ export function PosCheckoutPanel({
         <span className="font-semibold text-slate-800 dark:text-slate-200">
           Rs {subtotalRupees.toLocaleString('en-PK')}
         </span>
+      </div>
+
+      {/* Added Products List (Below Subtotal) */}
+      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/40 p-2.5 space-y-1.5 shadow-2xs">
+        <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+          <span className="flex items-center gap-1.5">
+            <ShoppingBag className="h-3.5 w-3.5 text-indigo-500" />
+            Added Products ({cart.length})
+          </span>
+          {cart.length > 0 && (
+            <span className="text-[10px] text-slate-400">Item & Qty</span>
+          )}
+        </div>
+
+        {cart.length === 0 ? (
+          <div className="py-2.5 text-center text-[11px] text-slate-400 italic">
+            No items in basket yet. Click any product to add.
+          </div>
+        ) : (
+          <div className="max-h-36 overflow-y-auto space-y-1.5 divide-y divide-slate-100 dark:divide-slate-800/80 pr-1">
+            {cart.map((item, idx) => (
+              <div key={idx} className="pt-1.5 first:pt-0 flex items-center justify-between text-xs gap-2">
+                <div className="min-w-0 flex-1 truncate">
+                  <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block text-xs">
+                    {item.product.name}
+                  </span>
+                  {item.imei_number ? (
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      IMEI ...{item.imei_number.slice(-4)}
+                    </span>
+                  ) : null}
+                </div>
+
+                {/* Qty Stepper & Price & Remove */}
+                <div className="shrink-0 flex items-center gap-2">
+                  {item.imei_record_id ? (
+                    <span className="px-1.5 py-0.5 rounded bg-slate-200/80 dark:bg-slate-800 text-[10px] font-bold text-slate-700 dark:text-slate-300">
+                      Qty: 1
+                    </span>
+                  ) : (
+                    <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden h-6 bg-white dark:bg-slate-900">
+                      <button
+                        type="button"
+                        onClick={() => onUpdateQuantity && onUpdateQuantity(idx, item.quantity - 1)}
+                        className="px-1.5 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 h-full flex items-center justify-center cursor-pointer text-xs font-bold"
+                        title="Decrease quantity"
+                      >
+                        -
+                      </button>
+                      <span className="px-1.5 font-bold text-[11px] text-slate-800 dark:text-slate-200 min-w-[16px] text-center">
+                        {item.quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => onUpdateQuantity && onUpdateQuantity(idx, item.quantity + 1)}
+                        className="px-1.5 text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 h-full flex items-center justify-center cursor-pointer text-xs font-bold"
+                        title="Increase quantity"
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}
+
+                  <span className="font-bold text-xs text-slate-800 dark:text-slate-200 min-w-[65px] text-right">
+                    Rs {(item.unit_price * item.quantity).toLocaleString('en-PK')}
+                  </span>
+
+                  {onRemoveItem && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveItem(idx)}
+                      className="text-slate-400 hover:text-rose-500 p-0.5 transition cursor-pointer"
+                      title="Remove item"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 3. Discount Row */}

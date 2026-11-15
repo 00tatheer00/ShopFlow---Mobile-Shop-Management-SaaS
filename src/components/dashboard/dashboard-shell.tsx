@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -94,6 +94,63 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const [sidebarWidth, setSidebarWidth] = useState(260);
+  const [isResizing, setIsResizing] = useState(false);
+
+  // Restore saved sidebar width on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('shopflow_sidebar_width');
+      if (saved) {
+        const num = parseInt(saved, 10);
+        if (!isNaN(num) && num >= 220 && num <= 400) {
+          setSidebarWidth(num);
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      const delta = moveEvent.clientX - startX;
+      const newWidth = Math.min(400, Math.max(220, startWidth + delta));
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = (upEvent: MouseEvent) => {
+      const delta = upEvent.clientX - startX;
+      const finalWidth = Math.min(400, Math.max(220, startWidth + delta));
+      setSidebarWidth(finalWidth);
+      setIsResizing(false);
+      try {
+        localStorage.setItem('shopflow_sidebar_width', String(finalWidth));
+      } catch {
+        // Ignore
+      }
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [sidebarWidth]);
+
+  const handleDoubleClickReset = useCallback(() => {
+    setSidebarWidth(260);
+    try {
+      localStorage.setItem('shopflow_sidebar_width', '260');
+    } catch {
+      // Ignore
+    }
+  }, []);
 
   // Proactively warm frequent routes in background during browser idle time for 0ms transitions
   useEffect(() => {
@@ -169,9 +226,10 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-300 lg:static lg:translate-x-0 ${
+        style={{ width: `${sidebarWidth}px`, minWidth: '220px', maxWidth: '400px' }}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-sidebar-border bg-sidebar transition-transform duration-300 lg:static lg:translate-x-0 relative group/sidebar shrink-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        } ${isResizing ? 'select-none transition-none' : ''}`}
       >
         {/* Sidebar Header */}
         <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
@@ -281,6 +339,16 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               Live
             </span>
           </div>
+        </div>
+
+        {/* Draggable Resize Handle (Desktop Only) */}
+        <div
+          onMouseDown={handleMouseDown}
+          onDoubleClick={handleDoubleClickReset}
+          className="hidden lg:flex items-center justify-center absolute top-0 -right-1 bottom-0 w-2.5 cursor-col-resize hover:bg-primary/25 active:bg-primary/50 transition-colors z-50 group"
+          title="Drag to resize sidebar width (220px - 400px) • Double-click to reset"
+        >
+          <div className="w-0.5 h-8 rounded-full bg-slate-300 dark:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
       </aside>
 

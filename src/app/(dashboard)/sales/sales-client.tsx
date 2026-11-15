@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -70,6 +70,7 @@ export function SalesClient({
 }: SalesClientProps) {
   const router = useRouter();
   const [search, setSearch] = useState(initialSearch);
+  const [currentStatus, setCurrentStatus] = useState<string>(statusFilter);
   const [isPending, startTransition] = useTransition();
 
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
@@ -77,27 +78,38 @@ export function SalesClient({
 
   const canCancel = userRole === 'shop_owner' || userRole === 'manager';
 
+  const displayedSales = useMemo(() => {
+    if (!currentStatus) return sales;
+    return sales.filter((s) => s.status === currentStatus);
+  }, [sales, currentStatus]);
+
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());
-    if (statusFilter) params.set('status', statusFilter);
+    if (currentStatus) params.set('status', currentStatus);
     params.set('page', '1');
     router.push(`/sales?${params.toString()}`);
   }
 
   function handleFilterStatus(status: string) {
-    const params = new URLSearchParams();
-    if (search.trim()) params.set('search', search.trim());
-    if (status) params.set('status', status);
-    params.set('page', '1');
-    router.push(`/sales?${params.toString()}`);
+    setCurrentStatus(status);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (status) {
+        url.searchParams.set('status', status);
+      } else {
+        url.searchParams.delete('status');
+      }
+      url.searchParams.set('page', '1');
+      window.history.replaceState(null, '', url.toString());
+    }
   }
 
   function handlePageChange(newPage: number) {
     const params = new URLSearchParams();
     if (search.trim()) params.set('search', search.trim());
-    if (statusFilter) params.set('status', statusFilter);
+    if (currentStatus) params.set('status', currentStatus);
     params.set('page', String(newPage));
     router.push(`/sales?${params.toString()}`);
   }
@@ -162,7 +174,7 @@ export function SalesClient({
       'Payment Method',
       'Status',
     ];
-    const rows = sales.map((sale) => [
+    const rows = displayedSales.map((sale) => [
       sale.invoice_number,
       new Date(sale.created_at).toLocaleDateString('en-PK'),
       sale.customer?.name || 'Walk-in',
@@ -258,8 +270,8 @@ export function SalesClient({
             <button
               key={st}
               onClick={() => handleFilterStatus(st)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition ${
-                statusFilter === st
+              className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition cursor-pointer ${
+                currentStatus === st
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border bg-card text-muted-foreground hover:bg-muted'
               }`}
@@ -271,16 +283,16 @@ export function SalesClient({
       </div>
 
       {/* Sales Table */}
-      {sales.length === 0 ? (
+      {displayedSales.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 p-12 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <ShoppingCart className="h-6 w-6 text-muted-foreground" />
           </div>
           <h3 className="mt-4 text-base font-semibold text-foreground">No sales found</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            {search ? 'Try adjusting your search criteria.' : 'Create your first sale in the POS terminal.'}
+            {search || currentStatus ? 'Try adjusting your search criteria or status filter.' : 'Create your first sale in the POS terminal.'}
           </p>
-          {!search && (
+          {!search && !currentStatus && (
             <Link
               href="/sales/new"
               className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
@@ -308,7 +320,7 @@ export function SalesClient({
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {sales.map((sale) => {
+                {displayedSales.map((sale) => {
                   const isCancelled = sale.status === 'cancelled';
                   return (
                     <tr

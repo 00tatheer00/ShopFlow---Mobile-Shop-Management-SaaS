@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   TrendingUp,
@@ -104,22 +105,32 @@ export function ReportsClient({
   recentExpenses,
 }: ReportsClientProps) {
   const router = useRouter();
+  const [currentTab, setCurrentTab] = useState(activeTab);
 
   const isPrivileged = userRole === 'shop_owner' || userRole === 'manager';
   const isNetPositive = netProfit >= 0;
 
-  function updateQuery(range: string, tab: string) {
+  function updateDateRange(range: string) {
     const params = new URLSearchParams();
     if (range) params.set('range', range);
-    if (tab) params.set('tab', tab);
+    if (currentTab) params.set('tab', currentTab);
     router.push(`/reports?${params.toString()}`);
+  }
+
+  function handleSelectTab(tabId: string) {
+    setCurrentTab(tabId);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tabId);
+      window.history.replaceState(null, '', url.toString());
+    }
   }
 
   const grossMarginPct = totalRevenue > 0 ? ((grossProfit / totalRevenue) * 100).toFixed(1) : '0';
   const netMarginPct = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : '0';
 
   const handleExportCSV = () => {
-    if (activeTab === 'pnl') {
+    if (currentTab === 'pnl') {
       const headers = ['Financial Metric', 'Amount (PKR)', 'Description'];
       const rows = [
         ['Gross Sales Revenue', Math.round(totalRevenue / 100), 'Total completed sales volume'],
@@ -133,7 +144,7 @@ export function ReportsClient({
         ['Cash Collected', Math.round(totalCollected / 100), 'Realized cash inflow'],
       ];
       exportToCSV(`pnl_report_${dateRange}`, headers, rows);
-    } else if (activeTab === 'sales') {
+    } else if (currentTab === 'sales') {
       const headers = ['Product / Metric', 'Units / Count', 'Details'];
       const rows = [
         ['Total Completed Sales', salesCount, 'Transactions count'],
@@ -146,14 +157,14 @@ export function ReportsClient({
         ...paymentMethodStats.map((m) => [`Payment: ${m.method.toUpperCase()}`, `${m.count} txns`, `Total: Rs. ${Math.round(m.total / 100)}`]),
       ];
       exportToCSV(`sales_report_${dateRange}`, headers, rows);
-    } else if (activeTab === 'purchases') {
+    } else if (currentTab === 'purchases') {
       const headers = ['Supplier Name', 'Purchases Count', 'Total Spend (PKR)'];
       const rows = [
         ['Total Procurement Spend', purchasesCount, Math.round(totalPurchases / 100)],
         ...supplierStats.map((s) => [s.name, s.count, Math.round(s.total / 100)]),
       ];
       exportToCSV(`purchases_report_${dateRange}`, headers, rows);
-    } else if (activeTab === 'expenses') {
+    } else if (currentTab === 'expenses') {
       const headers = ['Date', 'Category', 'Amount (PKR)', 'Payment Method', 'Description', 'Notes'];
       const rows = recentExpenses.map((e) => [
         e.expense_date,
@@ -164,7 +175,7 @@ export function ReportsClient({
         e.notes || '',
       ]);
       exportToCSV(`expenses_report_${dateRange}`, headers, rows);
-    } else if (activeTab === 'inventory') {
+    } else if (currentTab === 'inventory') {
       const headers = ['Product Name', 'Model', 'Stock Qty', 'Cost Price (PKR)', 'Sale Price (PKR)', 'Total Cost Value (PKR)', 'Potential Retail Value (PKR)', 'IMEI Tracked', 'Status'];
       const rows = products.map((p) => [
         p.name,
@@ -204,8 +215,8 @@ export function ReportsClient({
               ].map((tab) => (
                 <button
                   key={tab.id}
-                  onClick={() => updateQuery(tab.id, activeTab)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition ${
+                  onClick={() => updateDateRange(tab.id)}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
                     dateRange === tab.id
                       ? 'bg-primary text-primary-foreground'
                       : 'text-muted-foreground hover:text-foreground'
@@ -249,9 +260,9 @@ export function ReportsClient({
             .map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => updateQuery(dateRange, tab.id)}
-                className={`px-3 py-2 border-b-2 font-semibold text-xs transition-colors whitespace-nowrap ${
-                  activeTab === tab.id
+                onClick={() => handleSelectTab(tab.id)}
+                className={`px-3 py-2 border-b-2 font-semibold text-xs transition-colors whitespace-nowrap cursor-pointer ${
+                  currentTab === tab.id
                     ? 'border-primary text-primary'
                     : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                 }`}
@@ -274,7 +285,7 @@ export function ReportsClient({
                 ShopFlow Certified Report
               </div>
               <h1 className="text-xl font-black uppercase tracking-tight text-black">Financial & Operations Report</h1>
-              <p className="text-xs text-gray-700 font-medium">Period: {dateRange.toUpperCase()} | Module: {activeTab.toUpperCase()}</p>
+              <p className="text-xs text-gray-700 font-medium">Period: {dateRange.toUpperCase()} | Module: {currentTab.toUpperCase()}</p>
             </div>
             <div className="text-right text-xs text-gray-800 space-y-0.5">
               <p>Generated: {new Date().toLocaleString('en-PK')}</p>
@@ -286,7 +297,7 @@ export function ReportsClient({
       {/* ============================================================ */}
       {/* TAB 1: PROFIT & LOSS STATEMENT */}
       {/* ============================================================ */}
-      {activeTab === 'pnl' && isPrivileged && (
+      {currentTab === 'pnl' && isPrivileged && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
@@ -425,7 +436,7 @@ export function ReportsClient({
       {/* ============================================================ */}
       {/* TAB 2: SALES REPORT */}
       {/* ============================================================ */}
-      {activeTab === 'sales' && (
+      {currentTab === 'sales' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
@@ -489,7 +500,7 @@ export function ReportsClient({
       {/* ============================================================ */}
       {/* TAB 3: PURCHASES REPORT */}
       {/* ============================================================ */}
-      {activeTab === 'purchases' && isPrivileged && (
+      {currentTab === 'purchases' && isPrivileged && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-border bg-card p-5">
@@ -544,7 +555,7 @@ export function ReportsClient({
       {/* ============================================================ */}
       {/* TAB 4: EXPENSES REPORT */}
       {/* ============================================================ */}
-      {activeTab === 'expenses' && (
+      {currentTab === 'expenses' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="rounded-xl border border-border bg-card p-5">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Expenses</span>
@@ -621,7 +632,7 @@ export function ReportsClient({
       {/* ============================================================ */}
       {/* TAB 5: INVENTORY VALUATION REPORT */}
       {/* ============================================================ */}
-      {activeTab === 'inventory' && (
+      {currentTab === 'inventory' && (
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
