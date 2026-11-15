@@ -104,3 +104,11 @@ Apply the SQL files in `supabase/migrations/` to your Supabase project in filena
 ## License
 
 MIT
+
+---
+
+## Repository standards
+
+- [Contribution guidelines](./CONTRIBUTING.md)
+- [Security policy](./SECURITY.md)
+- [Pull request template](./.github/PULL_REQUEST_TEMPLATE.md)
