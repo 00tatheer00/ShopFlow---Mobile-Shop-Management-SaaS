@@ -22,6 +22,7 @@ import { hasPermission } from '@/lib/permissions';
 import { exportToCSV } from '@/lib/export-csv';
 import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 import { StatCard } from '@/components/ui/stat-card';
+import { toast } from 'sonner';
 
 interface CustomerUdhaarRow extends Customer {
   udhaar_balance: number;
@@ -54,11 +55,15 @@ export function UdhaarClient({
   const [search, setSearch] = useState('');
 
   // Modals
-  const [paymentModalCustomer, setPaymentModalCustomer] = useState<CustomerUdhaarRow | null>(null);
+  const [isReceivePaymentOpen, setIsReceivePaymentOpen] = useState(false);
+  const [selectedDebtorId, setSelectedDebtorId] = useState<string>('');
+  const [amountInput, setAmountInput] = useState<string>('');
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const canManage = hasPermission(userRole, 'payments:create');
+
+  const currentSelectedCustomer = customersWithBalance.find((c) => c.id === selectedDebtorId);
 
   // Filter debtors
   const filteredDebtors = customersWithBalance.filter((c) => {
@@ -76,8 +81,13 @@ export function UdhaarClient({
       const res = await recordUdhaarPayment(formData);
       if (res.error) {
         setFormError(res.error);
+        toast.error(res.error);
       } else {
-        setPaymentModalCustomer(null);
+        const amt = Number(formData.get('amount')) || 0;
+        toast.success(`Payment of Rs ${amt.toLocaleString('en-PK')} recorded successfully!`);
+        setIsReceivePaymentOpen(false);
+        setSelectedDebtorId('');
+        setAmountInput('');
         router.refresh();
       }
     });
@@ -92,7 +102,10 @@ export function UdhaarClient({
       const res = await addManualUdhaarCredit(formData);
       if (res.error) {
         setFormError(res.error);
+        toast.error(res.error);
       } else {
+        const amt = Number(formData.get('amount')) || 0;
+        toast.success(`Udhaar credit of Rs ${amt.toLocaleString('en-PK')} added successfully!`);
         setIsCreditModalOpen(false);
         router.refresh();
       }
@@ -165,9 +178,12 @@ export function UdhaarClient({
                 Add Udhaar
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setFormError(null);
-                  setPaymentModalCustomer(customersWithBalance[0] || null);
+                  setSelectedDebtorId(customersWithBalance[0]?.id || '');
+                  setAmountInput('');
+                  setIsReceivePaymentOpen(true);
                 }}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
               >
@@ -304,11 +320,14 @@ export function UdhaarClient({
                             </a>
                             {canManage && (
                               <button
+                                type="button"
                                 onClick={() => {
                                   setFormError(null);
-                                  setPaymentModalCustomer(customer);
+                                  setSelectedDebtorId(customer.id);
+                                  setAmountInput('');
+                                  setIsReceivePaymentOpen(true);
                                 }}
-                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1 text-xs font-black text-white shadow-xs transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3 py-1 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
                               >
                                 <ArrowDownLeft className="h-3.5 w-3.5" />
                                 Receive
@@ -406,111 +425,232 @@ export function UdhaarClient({
       )}
 
       {/* Receive Payment Modal */}
-      {paymentModalCustomer && (
+      {isReceivePaymentOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Receive Udhaar Payment</h2>
-                <p className="text-xs text-muted-foreground">Customer: {paymentModalCustomer.name}</p>
+                <h2 className="text-lg font-bold text-foreground">Receive Udhaar Payment (وصولی)</h2>
+                <p className="text-xs text-muted-foreground">Record recovery against customer credit balance</p>
               </div>
               <button
-                onClick={() => setPaymentModalCustomer(null)}
-                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                type="button"
+                onClick={() => {
+                  setIsReceivePaymentOpen(false);
+                  setFormError(null);
+                }}
+                className="rounded-lg p-1 text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {formError && (
-              <div className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-400">
+              <div className="mt-4 rounded-lg bg-rose-50 p-3 text-xs text-rose-700 dark:bg-rose-950/40 dark:text-rose-400">
                 {formError}
               </div>
             )}
 
-            <div className="mt-4 rounded-lg bg-muted/50 p-3 text-xs flex justify-between items-center">
-              <span className="text-muted-foreground">Current Due Balance:</span>
-              <span className="font-bold text-rose-600 dark:text-rose-400 text-sm">
-                {formatPKR(paymentModalCustomer.udhaar_balance)}
-              </span>
-            </div>
-
-            <form onSubmit={handlePaymentSubmit} className="mt-4 space-y-4">
-              <input type="hidden" name="customer_id" value={paymentModalCustomer.id} />
-
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  Amount Received (PKR) <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="amount"
-                  min="1"
-                  max={Math.max(1, paymentModalCustomer.udhaar_balance / 100)}
-                  step="any"
-                  required
-                  placeholder={`Max ${paymentModalCustomer.udhaar_balance / 100}`}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+            {customersWithBalance.length === 0 ? (
+              <div className="mt-6 text-center space-y-3">
+                <div className="h-10 w-10 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-600 flex items-center justify-center">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground">No Outstanding Udhaar</h3>
+                <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                  All customer accounts are settled and clear! There is currently no pending Udhaar to collect.
+                </p>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsReceivePaymentOpen(false)}
+                    className="px-4 py-2 rounded-lg bg-muted text-xs font-medium text-foreground hover:bg-muted/80 cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handlePaymentSubmit} className="mt-4 space-y-4">
+                {/* 1. Customer Selector */}
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Select Customer <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    name="customer_id"
+                    value={selectedDebtorId}
+                    onChange={(e) => {
+                      setSelectedDebtorId(e.target.value);
+                      setAmountInput('');
+                      setFormError(null);
+                    }}
+                    required
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                  >
+                    <option value="">-- Choose Customer --</option>
+                    {customersWithBalance.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.phone}) — Due: {formatPKR(c.udhaar_balance)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  Payment Method <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  name="payment_method"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="cash">Cash</option>
-                  <option value="easypaisa">EasyPaisa</option>
-                  <option value="jazzcash">JazzCash</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
+                {/* 2. Customer Due Banner */}
+                {currentSelectedCustomer && (
+                  <div className="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 p-3 text-xs flex justify-between items-center">
+                    <div>
+                      <span className="text-muted-foreground block text-[11px]">Outstanding Due</span>
+                      <span className="font-semibold text-foreground">{currentSelectedCustomer.name}</span>
+                    </div>
+                    <span className="font-bold text-rose-600 dark:text-rose-400 text-base">
+                      {formatPKR(currentSelectedCustomer.udhaar_balance)}
+                    </span>
+                  </div>
+                )}
 
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  Reference / Transaction ID
-                </label>
-                <input
-                  type="text"
-                  name="reference"
-                  placeholder="e.g. TRX12345678"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+                {/* 3. Amount Received Input */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-foreground">
+                      Amount Received (PKR) <span className="text-rose-500">*</span>
+                    </label>
+                    {currentSelectedCustomer && (
+                      <button
+                        type="button"
+                        onClick={() => setAmountInput(String(Math.round(currentSelectedCustomer.udhaar_balance / 100)))}
+                        className="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 cursor-pointer"
+                      >
+                        Pay Full Amount
+                      </button>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">
+                      Rs
+                    </span>
+                    <input
+                      type="number"
+                      name="amount"
+                      min="1"
+                      max={currentSelectedCustomer ? Math.round(currentSelectedCustomer.udhaar_balance / 100) : undefined}
+                      step="any"
+                      required
+                      value={amountInput}
+                      onChange={(e) => setAmountInput(e.target.value)}
+                      placeholder={
+                        currentSelectedCustomer
+                          ? `Max ${Math.round(currentSelectedCustomer.udhaar_balance / 100).toLocaleString()}`
+                          : 'Enter amount'
+                      }
+                      className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">
-                  Notes
-                </label>
-                <input
-                  type="text"
-                  name="notes"
-                  placeholder="e.g. Received via brother at shop"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+                  {/* Quick Preset Chips */}
+                  {currentSelectedCustomer && (
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setAmountInput(String(Math.round(currentSelectedCustomer.udhaar_balance / 100)))}
+                        className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer"
+                      >
+                        Full (Rs {Math.round(currentSelectedCustomer.udhaar_balance / 100).toLocaleString()})
+                      </button>
+                      {[500, 1000, 2000, 5000].map((preset) => {
+                        if (preset >= Math.round(currentSelectedCustomer.udhaar_balance / 100)) return null;
+                        return (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setAmountInput(String(preset))}
+                            className="px-2 py-0.5 rounded-md text-[11px] font-medium border border-border hover:bg-muted text-muted-foreground transition cursor-pointer"
+                          >
+                            Rs {preset.toLocaleString()}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => setPaymentModalCustomer(null)}
-                  className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isPending}
-                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
-                >
-                  {isPending ? 'Saving...' : 'Confirm Receipt'}
-                </button>
-              </div>
-            </form>
+                  {/* Remaining Balance Preview */}
+                  {currentSelectedCustomer && Number(amountInput) > 0 && (
+                    <div className="mt-2 flex items-center justify-between text-xs px-1 text-muted-foreground bg-muted/40 p-1.5 rounded-lg">
+                      <span>Remaining Balance:</span>
+                      <span className="font-semibold text-foreground">
+                        Rs {Math.max(0, Math.round(currentSelectedCustomer.udhaar_balance / 100) - Number(amountInput)).toLocaleString('en-PK')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 4. Payment Method */}
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Payment Method <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    name="payment_method"
+                    defaultValue="cash"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                  >
+                    <option value="cash">Cash (نقد)</option>
+                    <option value="easypaisa">EasyPaisa (ایزی پیسہ)</option>
+                    <option value="jazzcash">JazzCash (جاز کیش)</option>
+                    <option value="bank_transfer">Bank Transfer (بینک ٹرانسفر)</option>
+                    <option value="other">Other (دیگر)</option>
+                  </select>
+                </div>
+
+                {/* 5. Reference / Transaction ID */}
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Reference / Transaction ID
+                  </label>
+                  <input
+                    type="text"
+                    name="reference"
+                    placeholder="e.g. TRX12345678 or Receipt #"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+
+                {/* 6. Notes */}
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1">
+                    Notes
+                  </label>
+                  <input
+                    type="text"
+                    name="notes"
+                    placeholder="e.g. Received via brother at shop"
+                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-3 border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsReceivePaymentOpen(false);
+                      setFormError(null);
+                    }}
+                    className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isPending || !selectedDebtorId}
+                    className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50 cursor-pointer shadow-xs"
+                  >
+                    {isPending ? 'Recording...' : 'Confirm Receipt (وصولی)'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

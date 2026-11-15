@@ -410,26 +410,36 @@ export function PosCheckoutPanel({
 
       {/* Udhaar Specific Section */}
       {paymentOption === 'udhaar' && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-2.5 space-y-1.5 text-xs">
-          <div className="flex items-center justify-between text-[11px] text-slate-600">
-            <span>Paid now (optional):</span>
-            <input
-              type="number"
-              min="0"
-              max={totalRupees}
-              placeholder="0"
-              value={udhaarPaidNow}
-              onChange={(e) => {
-                const val = e.target.value;
-                onChangeUdhaarPaidNow(val === '' ? '' : Number(val));
-              }}
-              className="h-7 w-20 rounded border border-slate-300 bg-white px-2 text-right text-xs"
-            />
+        <div className="rounded-xl border border-amber-300 bg-amber-50/70 dark:bg-amber-950/30 p-2.5 space-y-2 text-xs">
+          <div className="flex items-center justify-between text-[11px] font-medium text-amber-900 dark:text-amber-200">
+            <span>Customer:</span>
+            <span className="font-semibold">
+              {activeCustomer ? `${activeCustomer.name} (${activeCustomer.phone})` : '⚠️ Please select customer above'}
+            </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs font-semibold text-amber-900 pt-1 border-t border-amber-200">
-            <span>Remaining Udhaar:</span>
-            <span>Rs {remainingUdhaar.toLocaleString('en-PK')}</span>
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-600 dark:text-slate-300">Paid now (cash upfront):</span>
+            <div className="relative">
+              <span className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">Rs</span>
+              <input
+                type="number"
+                min="0"
+                max={totalRupees}
+                placeholder="0"
+                value={udhaarPaidNow}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onChangeUdhaarPaidNow(val === '' ? '' : Number(val));
+                }}
+                className="h-7 w-24 rounded border border-slate-300 bg-white dark:bg-slate-900 pl-6 pr-2 text-right text-xs font-semibold focus:outline-none focus:border-indigo-500"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-xs font-bold text-amber-900 dark:text-amber-200 pt-1.5 border-t border-amber-200 dark:border-amber-800">
+            <span>Remaining Udhaar (Khata):</span>
+            <span className="text-rose-600 dark:text-rose-400">Rs {remainingUdhaar.toLocaleString('en-PK')}</span>
           </div>
         </div>
       )}
