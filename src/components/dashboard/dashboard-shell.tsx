@@ -94,10 +94,11 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
-  const [sidebarWidth, setSidebarWidth] = useState(260);
+  const DEFAULT_SIDEBAR_WIDTH = 220;
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
   const [isResizing, setIsResizing] = useState(false);
 
-  // Restore saved sidebar width on mount
+  // Restore saved sidebar width on mount (defaults to minimum width 220px)
   useEffect(() => {
     try {
       const saved = localStorage.getItem('shopflow_sidebar_width');
@@ -144,13 +145,13 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
   }, [sidebarWidth]);
 
   const handleDoubleClickReset = useCallback(() => {
-    setSidebarWidth(260);
+    setSidebarWidth(DEFAULT_SIDEBAR_WIDTH);
     try {
-      localStorage.setItem('shopflow_sidebar_width', '260');
+      localStorage.setItem('shopflow_sidebar_width', String(DEFAULT_SIDEBAR_WIDTH));
     } catch {
       // Ignore
     }
-  }, []);
+  }, [DEFAULT_SIDEBAR_WIDTH]);
 
   // Proactively warm frequent routes in background during browser idle time for 0ms transitions
   useEffect(() => {
@@ -232,17 +233,17 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         } ${isResizing ? 'select-none transition-none' : ''}`}
       >
         {/* Sidebar Header */}
-        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-4">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
+        <div className="flex h-16 items-center justify-between border-b border-sidebar-border px-3.5">
+          <Link href="/dashboard" className="flex items-center gap-2 min-w-0">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary">
               <Store className="h-4 w-4 text-sidebar-primary-foreground" />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
               <span className="text-sm font-bold text-sidebar-foreground leading-none">
                 ShopFlow
               </span>
               {user.shop?.name && (
-                <span className="text-[10px] text-sidebar-foreground/60 leading-tight mt-0.5 max-w-[150px] truncate">
+                <span className="text-[10px] text-sidebar-foreground/60 leading-tight mt-0.5 max-w-[125px] truncate">
                   {user.shop.name}
                 </span>
               )}
@@ -258,7 +259,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
+        <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-0.5">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
@@ -270,22 +271,22 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                 <div key={item.label}>
                   <button
                     onClick={() => toggleExpand(item.label)}
-                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-150 cursor-pointer ${
+                    className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-all duration-150 cursor-pointer ${
                       active
                         ? 'bg-primary/15 text-primary'
                         : 'text-slate-800 dark:text-slate-200 hover:bg-sidebar-accent hover:text-primary'
                     }`}
                   >
-                    <Icon className="h-4.5 w-4.5 flex-shrink-0" />
-                    <span className="flex-1 text-left">{item.label}</span>
+                    <Icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="flex-1 text-left truncate">{item.label}</span>
                     <ChevronDown
-                      className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                      className={`h-3 w-3 flex-shrink-0 transition-transform duration-200 ${
                         expanded ? 'rotate-180' : ''
                       }`}
                     />
                   </button>
                   {expanded && (
-                    <div className="mt-0.5 ml-4 space-y-0.5 border-l-2 border-sidebar-border pl-4 animate-in slide-in-from-top-1 duration-150">
+                    <div className="mt-0.5 ml-2.5 space-y-0.5 border-l border-sidebar-border pl-2.5 animate-in slide-in-from-top-1 duration-150">
                       {item.children!.map((child) => (
                         <Link
                           key={child.href}
@@ -294,7 +295,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                           onMouseEnter={() => router.prefetch(child.href)}
                           onTouchStart={() => router.prefetch(child.href)}
                           onClick={() => setSidebarOpen(false)}
-                          className={`block rounded-md px-3 py-2 text-[13px] transition-colors duration-150 ${
+                          className={`block rounded-md px-2 py-1.5 text-xs truncate transition-colors duration-150 ${
                             pathname === child.href
                               ? 'bg-primary/15 text-primary font-semibold'
                               : 'text-slate-700 dark:text-slate-300 font-medium hover:text-primary hover:bg-sidebar-accent/50'
@@ -317,39 +318,37 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                 onMouseEnter={() => router.prefetch(item.href)}
                 onTouchStart={() => router.prefetch(item.href)}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
+                className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-semibold transition-all duration-150 ${
                   active
                     ? 'bg-primary/15 text-primary'
                     : 'text-slate-800 dark:text-slate-200 hover:bg-sidebar-accent hover:text-primary'
                 }`}
               >
-                <Icon className="h-4.5 w-4.5 flex-shrink-0" />
-                <span>{item.label}</span>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
         {/* Sidebar Footer — Version Indicator */}
-        <div className="border-t border-sidebar-border p-3">
-          <div className="px-2 flex items-center justify-between text-[11px] font-medium text-sidebar-foreground/70">
-            <span className="font-mono">ShopFlow v{CURRENT_APP_VERSION.version}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">
+        <div className="border-t border-sidebar-border p-2.5">
+          <div className="px-1 flex items-center justify-between text-[10px] font-medium text-sidebar-foreground/70">
+            <span className="font-mono truncate">ShopFlow v{CURRENT_APP_VERSION.version}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold shrink-0">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live
             </span>
           </div>
         </div>
 
-        {/* Draggable Resize Handle (Desktop Only) */}
+        {/* Draggable Resize Handle (Desktop Only) - Completely transparent hit area, only cursor changes */}
         <div
           onMouseDown={handleMouseDown}
           onDoubleClick={handleDoubleClickReset}
-          className="hidden lg:flex items-center justify-center absolute top-0 -right-1 bottom-0 w-2.5 cursor-col-resize hover:bg-primary/25 active:bg-primary/50 transition-colors z-50 group"
-          title="Drag to resize sidebar width (220px - 400px) • Double-click to reset"
-        >
-          <div className="w-0.5 h-8 rounded-full bg-slate-300 dark:bg-slate-700 opacity-0 group-hover:opacity-100 transition-opacity" />
-        </div>
+          className="hidden lg:block absolute top-0 -right-1 bottom-0 w-2.5 cursor-col-resize z-50 bg-transparent select-none"
+          title="Drag to resize sidebar • Double-click to reset"
+        />
       </aside>
 
       {/* Main Content Area */}
