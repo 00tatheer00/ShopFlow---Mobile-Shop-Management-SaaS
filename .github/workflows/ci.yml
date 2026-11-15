@@ -1,37 +1,31 @@
-name: ShopFlow CI/CD Pipeline
+name: ShopFlow CI
 
 on:
   push:
-    branches:
-      - master
-      - main
+    branches: [master, main]
   pull_request:
-    branches:
-      - master
-      - main
+    branches: [master, main]
+
+permissions:
+  contents: read
 
 jobs:
-  build-and-verify:
-    name: Build & Type-Check Verification
+  quality:
+    name: Lint and production build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 20
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Verify TypeScript & Next.js Production Build
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Production build
         run: npm run build
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key' }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL || 'https://shopflow.pk' }}
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+          NEXT_PUBLIC_APP_URL: https://example.com
