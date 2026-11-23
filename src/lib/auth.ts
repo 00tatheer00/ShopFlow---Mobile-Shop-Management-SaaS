@@ -24,11 +24,13 @@ export const getAuthUser = cache(async (): Promise<AuthUser> => {
   let resolvedShop: AuthUser['shop'] = undefined;
 
   // Try standard authenticated client first
-  const { data: suData, error: suError } = await supabase
+  const { data: suData } = await supabase
     .from('shop_users')
     .select('role, shop_id')
     .eq('user_id', user.id)
     .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(1)
     .maybeSingle();
 
   if (suData?.role) {
@@ -43,6 +45,8 @@ export const getAuthUser = cache(async (): Promise<AuthUser> => {
         .select('role, shop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
+        .order('created_at', { ascending: true })
+        .limit(1)
         .maybeSingle();
 
       if (adminSu?.role) {
@@ -57,12 +61,14 @@ export const getAuthUser = cache(async (): Promise<AuthUser> => {
     const adminClient = getAdminClient() || supabase;
     const { data: shopRecord } = await adminClient
       .from('shops')
-      .select('id, name, slug, city, status')
+      .select('id, name, slug, city, status, deleted_at')
       .eq('id', resolvedShopId)
       .maybeSingle();
 
     if (shopRecord) {
-      resolvedShop = shopRecord as AuthUser['shop'];
+      const { deleted_at, ...shopFields } = shopRecord as typeof shopRecord & { deleted_at?: string | null };
+      // A shop in the Trash behaves like a deactivated shop (no access)
+      resolvedShop = { ...shopFields, status: deleted_at ? 'deactivated' : shopFields.status } as AuthUser['shop'];
     }
   }
 

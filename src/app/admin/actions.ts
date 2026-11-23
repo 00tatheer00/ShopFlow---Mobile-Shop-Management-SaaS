@@ -9,7 +9,6 @@ import {
   updateShopPlanSchema,
   softDeleteShopSchema,
   restoreShopSchema,
-  permanentDeleteShopSchema,
 } from '@/lib/validations';
 import { SUBSCRIPTION_PRICE_PAISAS } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';

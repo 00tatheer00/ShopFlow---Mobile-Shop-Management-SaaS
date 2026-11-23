@@ -38,7 +38,7 @@ export default function LoginPage() {
           ShopFlow
         </h1>
         <p className="mt-1.5 text-base text-muted-foreground">
-          Sign in to your shop <Ur className="block text-lg">اپنی دکان میں داخل ہوں</Ur>
+          Sign in to your shop <Ur className="block text-center text-lg">اپنی دکان میں داخل ہوں</Ur>
         </p>
       </div>
 

@@ -79,21 +79,19 @@ export function ProductsTable({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
 
-  // Automatically open adjust stock modal if navigated from notification
-  useEffect(() => {
-    if (initialAdjustProduct) {
-      setAdjustingProduct(initialAdjustProduct);
+  // Open the adjust-stock modal when arriving from a notification link.
+  // (State is adjusted during render when the URL target changes — no effect needed.)
+  const adjustTargetId = initialAdjustProduct?.id || searchParams.adjustStock || '';
+  const [handledAdjustId, setHandledAdjustId] = useState('');
+  if (adjustTargetId !== handledAdjustId) {
+    setHandledAdjustId(adjustTargetId);
+    const target = initialAdjustProduct || products.find((p) => p.id === adjustTargetId) || null;
+    if (target) {
+      setAdjustingProduct(target);
       setAdjustQty('');
       setAdjustReason('');
-    } else if (searchParams.adjustStock) {
-      const found = products.find((p) => p.id === searchParams.adjustStock);
-      if (found) {
-        setAdjustingProduct(found);
-        setAdjustQty('');
-        setAdjustReason('');
-      }
     }
-  }, [initialAdjustProduct, searchParams.adjustStock, products]);
+  }
 
   const handleToggleMenu = (e: React.MouseEvent<HTMLButtonElement>, prodId: string) => {
     e.preventDefault();

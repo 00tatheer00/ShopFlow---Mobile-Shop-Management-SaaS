@@ -19,8 +19,6 @@ import {
   X,
   Download,
   ArrowDownLeft,
-  CheckCircle2,
-  Wallet,
 } from 'lucide-react';
 import type { Customer, UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';

@@ -15,7 +15,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import type { Shop } from '@/lib/types';
-import { toRupees, formatPKR } from '@/lib/types';
+import { formatPKR } from '@/lib/types';
 import { SUBSCRIPTION_PRICE_PAISAS } from '@/lib/constants';
 
 export const metadata: Metadata = {

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useIsClient } from '@/lib/hooks';
 import {
   ResponsiveContainer,
   BarChart,
@@ -29,24 +30,20 @@ export function FinancialOverviewChart({
   netProfit,
   cash,
 }: FinancialOverviewChartProps) {
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const isMounted = useIsClient();
 
   const data = [
     {
       name: 'Sales',
       amountPaisa: sales,
       amountRupees: toRupees(sales),
-      color: '#3b82f6',
+      color: '#10b981',
     },
     {
       name: 'Item Cost',
       amountPaisa: cogs,
       amountRupees: toRupees(cogs),
-      color: '#8b5cf6',
+      color: '#0ea5e9',
     },
     {
       name: 'Expenses',
@@ -58,13 +55,13 @@ export function FinancialOverviewChart({
       name: 'Net Profit',
       amountPaisa: netProfit,
       amountRupees: Math.max(0, toRupees(netProfit)),
-      color: netProfit >= 0 ? '#10b981' : '#f43f5e',
+      color: netProfit >= 0 ? '#8b5cf6' : '#f43f5e',
     },
     {
-      name: 'Cash Wasooli',
+      name: 'Cash',
       amountPaisa: cash,
       amountRupees: toRupees(cash),
-      color: '#0d9488',
+      color: '#f59e0b',
     },
   ];
 
@@ -72,22 +69,22 @@ export function FinancialOverviewChart({
 
   if (!isMounted) {
     return (
-      <div className="h-[210px] w-full rounded-xl border border-border bg-card p-4 flex items-center justify-center">
+      <div className="flex h-full min-h-[260px] w-full items-center justify-center rounded-3xl border border-border bg-card p-4">
         <div className="h-32 w-full rounded-lg bg-muted/40 animate-pulse" />
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-4.5 shadow-xs flex flex-col justify-between">
+    <div className="flex h-full flex-col justify-between rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div className="flex items-center justify-between pb-3 border-b border-border/60 gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white">
             <BarChart3 className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-foreground">
-              Today&apos;s Financial Breakdown
+            <h3 className="text-base font-extrabold text-foreground">
+              Today at a glance <span lang="ur" dir="rtl" className="font-urdu text-sm font-normal text-muted-foreground">آج کا خلاصہ</span>
             </h3>
             <p className="text-[11px] text-muted-foreground">
               Revenue, wholesale costs, expenses, and net profit
@@ -111,11 +108,11 @@ export function FinancialOverviewChart({
           </p>
         </div>
       ) : (
-        <div className="h-[160px] w-full pt-2">
+        <div className="h-[210px] w-full pt-3 text-muted-foreground">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
-              margin={{ top: 8, right: 8, left: -20, bottom: 8 }}
+              margin={{ top: 8, right: 4, left: 0, bottom: 4 }}
             >
               <XAxis
                 dataKey="name"
@@ -127,8 +124,9 @@ export function FinancialOverviewChart({
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: 'currentColor', fontSize: 10 }}
-                tickFormatter={(val) => `Rs ${val >= 1000 ? `${Math.round(val / 1000)}k` : val}`}
+                width={44}
+                tick={{ fill: 'currentColor', fontSize: 11 }}
+                tickFormatter={(val: number) => (val >= 1000 ? `${Math.round(val / 1000)}k` : String(val))}
               />
               <Tooltip
                 cursor={{ fill: 'rgba(0,0,0,0.04)' }}
@@ -147,7 +145,7 @@ export function FinancialOverviewChart({
                   return null;
                 }}
               />
-              <Bar dataKey="amountRupees" radius={[6, 6, 0, 0]} maxBarSize={38}>
+              <Bar dataKey="amountRupees" radius={[8, 8, 0, 0]} maxBarSize={44} isAnimationActive={false}>
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}

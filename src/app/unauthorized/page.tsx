@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldAlert, ArrowLeft, LogOut, Shield } from 'lucide-react';
+import { ShieldAlert, LogOut, Shield } from 'lucide-react';
 import { logoutAction } from '@/app/(auth)/actions';
 
 export default function UnauthorizedPage() {

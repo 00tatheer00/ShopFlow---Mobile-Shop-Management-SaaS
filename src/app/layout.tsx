@@ -22,7 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: "#0f172a",
+  themeColor: "#1e1b3a",
   viewportFit: "cover",
 };
 
@@ -98,12 +98,14 @@ export default function RootLayout({
         {children}
         <PwaManager />
         <Toaster
-          position="top-right"
+          position="top-center"
           richColors
           closeButton
-          toastOptions={{
-            duration: 4000,
-          }}
+          expand={false}
+          visibleToasts={3}
+          offset={16}
+          mobileOffset={12}
+          toastOptions={{ duration: 3500 }}
         />
       </body>
     </html>

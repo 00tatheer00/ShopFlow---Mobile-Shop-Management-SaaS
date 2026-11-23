@@ -23,7 +23,6 @@ import { createExpense, updateExpense, deleteExpense, createExpenseCategory } fr
 import { hasPermission } from '@/lib/permissions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { exportToCSV } from '@/lib/export-csv';
-import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 import { StatCard } from '@/components/ui/stat-card';
 
 interface ExpensesClientProps {

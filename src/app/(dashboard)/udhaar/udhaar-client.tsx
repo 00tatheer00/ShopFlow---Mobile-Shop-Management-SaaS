@@ -1,7 +1,7 @@
 'use client';
 
 import { Ur } from '@/components/ui/urdu';
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Wallet,
@@ -21,7 +21,6 @@ import { formatPKR } from '@/lib/types';
 import { recordUdhaarPayment, addManualUdhaarCredit } from './actions';
 import { hasPermission } from '@/lib/permissions';
 import { exportToCSV } from '@/lib/export-csv';
-import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 import { StatCard } from '@/components/ui/stat-card';
 import { toast } from 'sonner';
 
@@ -63,21 +62,21 @@ export function UdhaarClient({
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  // Sync URL search params to auto-open receive modal or filter search
-  useEffect(() => {
+  // Apply ?search= / ?receive= from the URL (adjusted during render when the URL changes)
+  const paramsKey = searchParams.toString();
+  const [handledParams, setHandledParams] = useState<string | null>(null);
+  if (paramsKey !== handledParams) {
+    setHandledParams(paramsKey);
     const q = searchParams.get('search');
     if (q) setSearch(q);
-
     const receiveId = searchParams.get('receive') || searchParams.get('customer');
     if (receiveId) {
       setSelectedDebtorId(receiveId);
       const match = customersWithBalance.find((c) => c.id === receiveId);
-      if (match) {
-        setAmountInput(String(Math.round(match.udhaar_balance / 100)));
-      }
+      if (match) setAmountInput(String(Math.round(match.udhaar_balance / 100)));
       setIsReceivePaymentOpen(true);
     }
-  }, [searchParams, customersWithBalance]);
+  }
 
   const canManage = hasPermission(userRole, 'udhaar:payment');
   const canAddCredit = hasPermission(userRole, 'udhaar:credit');

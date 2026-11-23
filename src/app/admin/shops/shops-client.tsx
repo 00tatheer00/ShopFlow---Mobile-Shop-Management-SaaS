@@ -72,6 +72,8 @@ export function ShopsClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState(initialSearch);
+  // Captured once per mount: keeps render pure (trash countdown only needs day precision)
+  const [renderTime] = useState(() => Date.now());
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null);
 
   // Soft delete modal state
@@ -454,7 +456,7 @@ export function ShopsClient({
                   let isNearPurge = false;
                   if (shop.deleted_at) {
                     const delTime = new Date(shop.deleted_at).getTime();
-                    const daysElapsed = Math.floor((Date.now() - delTime) / (1000 * 60 * 60 * 24));
+                    const daysElapsed = Math.floor((renderTime - delTime) / (1000 * 60 * 60 * 24));
                     daysRemaining = Math.max(0, 30 - daysElapsed);
                     isNearPurge = daysRemaining <= 7;
                   }

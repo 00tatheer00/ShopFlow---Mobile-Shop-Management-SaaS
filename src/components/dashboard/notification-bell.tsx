@@ -39,11 +39,14 @@ export function NotificationBell({ className = '' }: NotificationBellProps) {
     }
   }, []);
 
-  // Initial fetch and poll every 45s
+  // Initial fetch (deferred to a timer callback) and poll every 45s
   useEffect(() => {
-    fetchLatestNotifications();
+    const first = setTimeout(fetchLatestNotifications, 0);
     const interval = setInterval(fetchLatestNotifications, 45000);
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(first);
+      clearInterval(interval);
+    };
   }, [fetchLatestNotifications]);
 
   // Close dropdown on click outside or Esc

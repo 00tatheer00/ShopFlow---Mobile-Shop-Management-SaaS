@@ -56,126 +56,130 @@
 }
 
 /* ============================================
-   ShopFlow Design System — Light Theme
-   Primary: Indigo (High-Saturation & Crisp Contrast)
+   ShopFlow Design System — "Bazaar Bright"
+   Vibrant but professional: one confident brand colour (electric violet),
+   a dark ink sidebar, and a bright signature colour per module so
+   shopkeepers recognise screens by colour + icon, not by reading.
+     Sale = emerald · Udhaar = amber · Stock = sky · Expenses = rose
+     Customers = fuchsia · Reports = violet · Suppliers = cyan
    ============================================ */
 
 :root {
-  /* Brand Primary — Vivid Electric Indigo */
-  --primary: oklch(0.48 0.28 268);
-  --primary-foreground: oklch(0.99 0.002 268);
+  --primary: oklch(0.52 0.24 285);
+  --primary-foreground: oklch(0.99 0.01 285);
 
-  /* Backgrounds — Crisp clean canvas with slate separation */
-  --background: oklch(0.975 0.006 250);
-  --foreground: oklch(0.12 0.02 256.72);
+  --background: oklch(0.975 0.008 285);
+  --foreground: oklch(0.21 0.03 280);
 
-  /* Cards & Surfaces — Pure white for maximum pop against canvas */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.12 0.02 256.72);
-
-  /* Popovers */
+  --card-foreground: oklch(0.21 0.03 280);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.12 0.02 256.72);
+  --popover-foreground: oklch(0.21 0.03 280);
 
-  /* Secondary — Crisp neutral */
-  --secondary: oklch(0.935 0.012 256.72);
-  --secondary-foreground: oklch(0.18 0.03 256.72);
+  --secondary: oklch(0.955 0.015 285);
+  --secondary-foreground: oklch(0.28 0.06 285);
 
-  /* Muted — High Contrast (eliminates washed-out gray on TN displays) */
-  --muted: oklch(0.93 0.01 256.72);
-  --muted-foreground: oklch(0.35 0.03 256.72);
+  --muted: oklch(0.955 0.01 285);
+  --muted-foreground: oklch(0.47 0.03 280);
 
-  /* Accent — Light indigo tint */
-  --accent: oklch(0.92 0.045 268);
-  --accent-foreground: oklch(0.30 0.24 268);
+  --accent: oklch(0.95 0.04 285);
+  --accent-foreground: oklch(0.40 0.20 285);
 
-  /* Destructive — Vivid Crimson */
-  --destructive: oklch(0.54 0.26 25);
+  --destructive: oklch(0.58 0.23 22);
 
-  /* Borders & Inputs — Ultra Crisp (Visible on any low-contrast laptop) */
-  --border: oklch(0.79 0.025 256.72);
-  --input: oklch(0.79 0.025 256.72);
-  --ring: oklch(0.48 0.28 268);
+  --border: oklch(0.90 0.012 285);
+  --input: oklch(0.86 0.015 285);
+  --ring: oklch(0.52 0.24 285);
 
-  /* Semantic Colors — Punchy & Saturated */
-  --success: oklch(0.50 0.22 145);
-  --success-foreground: oklch(0.99 0.005 145);
-  --warning: oklch(0.66 0.22 60);
-  --warning-foreground: oklch(0.18 0.08 55);
-  --info: oklch(0.52 0.22 245);
-  --info-foreground: oklch(0.99 0.005 245);
+  --success: oklch(0.63 0.17 155);
+  --success-foreground: oklch(0.99 0.01 155);
+  --warning: oklch(0.77 0.17 70);
+  --warning-foreground: oklch(0.26 0.07 60);
+  --info: oklch(0.62 0.17 240);
+  --info-foreground: oklch(0.99 0.01 240);
 
-  /* Charts — Rich & Distinct */
-  --chart-1: oklch(0.48 0.28 268);
-  --chart-2: oklch(0.50 0.22 145);
-  --chart-3: oklch(0.66 0.22 60);
-  --chart-4: oklch(0.54 0.26 25);
-  --chart-5: oklch(0.52 0.22 245);
+  --chart-1: oklch(0.52 0.24 285);
+  --chart-2: oklch(0.63 0.17 155);
+  --chart-3: oklch(0.77 0.17 70);
+  --chart-4: oklch(0.58 0.23 22);
+  --chart-5: oklch(0.62 0.17 240);
 
-  /* Radius */
-  --radius: 0.625rem;
+  --radius: 0.875rem;
 
-  /* Sidebar — Clean, High-Contrast Boundary */
-  --sidebar: oklch(0.965 0.008 268);
-  --sidebar-foreground: oklch(0.14 0.02 256.72);
-  --sidebar-primary: oklch(0.48 0.28 268);
-  --sidebar-primary-foreground: oklch(0.99 0.002 268);
-  --sidebar-accent: oklch(0.91 0.045 268);
-  --sidebar-accent-foreground: oklch(0.30 0.24 268);
-  --sidebar-border: oklch(0.79 0.025 256.72);
-  --sidebar-ring: oklch(0.48 0.28 268);
+  /* Dark "ink" sidebar in BOTH themes — makes the colourful icons pop */
+  --sidebar: oklch(0.20 0.04 280);
+  --sidebar-foreground: oklch(0.93 0.01 280);
+  --sidebar-primary: oklch(0.66 0.20 285);
+  --sidebar-primary-foreground: oklch(0.99 0.01 285);
+  --sidebar-accent: oklch(0.28 0.05 280);
+  --sidebar-accent-foreground: oklch(0.99 0.01 280);
+  --sidebar-border: oklch(0.30 0.04 280);
+  --sidebar-ring: oklch(0.66 0.20 285);
+
+  /* Brand gradient (hero cards, primary CTAs) */
+  --brand-gradient: linear-gradient(135deg, oklch(0.52 0.24 285), oklch(0.58 0.24 320));
 }
 
-/* Dark Mode (High-contrast dark) */
 .dark {
-  --primary: oklch(0.68 0.24 268);
-  --primary-foreground: oklch(0.10 0.02 268);
+  --primary: oklch(0.70 0.18 285);
+  --primary-foreground: oklch(0.17 0.04 285);
 
-  --background: oklch(0.12 0.015 256.72);
-  --foreground: oklch(0.98 0.005 256.72);
+  --background: oklch(0.16 0.025 280);
+  --foreground: oklch(0.96 0.008 280);
 
-  --card: oklch(0.17 0.018 256.72);
-  --card-foreground: oklch(0.98 0.005 256.72);
+  --card: oklch(0.21 0.03 280);
+  --card-foreground: oklch(0.96 0.008 280);
+  --popover: oklch(0.21 0.03 280);
+  --popover-foreground: oklch(0.96 0.008 280);
 
-  --popover: oklch(0.17 0.018 256.72);
-  --popover-foreground: oklch(0.98 0.005 256.72);
+  --secondary: oklch(0.27 0.035 280);
+  --secondary-foreground: oklch(0.94 0.01 280);
 
-  --secondary: oklch(0.22 0.018 256.72);
-  --secondary-foreground: oklch(0.95 0.005 256.72);
+  --muted: oklch(0.26 0.03 280);
+  --muted-foreground: oklch(0.74 0.02 280);
 
-  --muted: oklch(0.22 0.018 256.72);
-  --muted-foreground: oklch(0.72 0.02 256.72);
+  --accent: oklch(0.30 0.07 285);
+  --accent-foreground: oklch(0.90 0.08 285);
 
-  --accent: oklch(0.28 0.08 268);
-  --accent-foreground: oklch(0.92 0.12 268);
+  --destructive: oklch(0.68 0.20 22);
 
-  --destructive: oklch(0.68 0.24 25);
+  --border: oklch(0.33 0.035 280);
+  --input: oklch(0.40 0.035 280);
+  --ring: oklch(0.70 0.18 285);
 
-  --border: oklch(0.35 0.025 256.72);
-  --input: oklch(0.35 0.025 256.72);
-  --ring: oklch(0.68 0.24 268);
+  --success: oklch(0.72 0.16 155);
+  --success-foreground: oklch(0.17 0.04 155);
+  --warning: oklch(0.80 0.15 75);
+  --warning-foreground: oklch(0.20 0.05 60);
+  --info: oklch(0.72 0.14 240);
+  --info-foreground: oklch(0.17 0.04 240);
 
-  --success: oklch(0.65 0.22 145);
-  --success-foreground: oklch(0.10 0.03 145);
-  --warning: oklch(0.76 0.20 60);
-  --warning-foreground: oklch(0.14 0.05 55);
-  --info: oklch(0.68 0.18 245);
-  --info-foreground: oklch(0.10 0.03 245);
+  --chart-1: oklch(0.70 0.18 285);
+  --chart-2: oklch(0.72 0.16 155);
+  --chart-3: oklch(0.80 0.15 75);
+  --chart-4: oklch(0.68 0.20 22);
+  --chart-5: oklch(0.72 0.14 240);
 
-  --chart-1: oklch(0.68 0.24 268);
-  --chart-2: oklch(0.65 0.22 145);
-  --chart-3: oklch(0.76 0.20 60);
-  --chart-4: oklch(0.68 0.24 25);
-  --chart-5: oklch(0.68 0.18 245);
+  --sidebar: oklch(0.13 0.03 280);
+  --sidebar-foreground: oklch(0.93 0.01 280);
+  --sidebar-primary: oklch(0.70 0.18 285);
+  --sidebar-primary-foreground: oklch(0.17 0.04 285);
+  --sidebar-accent: oklch(0.22 0.04 280);
+  --sidebar-accent-foreground: oklch(0.99 0.01 280);
+  --sidebar-border: oklch(0.25 0.035 280);
+  --sidebar-ring: oklch(0.70 0.18 285);
 
-  --sidebar: oklch(0.15 0.018 268);
-  --sidebar-foreground: oklch(0.98 0.005 256.72);
-  --sidebar-primary: oklch(0.68 0.24 268);
-  --sidebar-primary-foreground: oklch(0.10 0.02 268);
-  --sidebar-accent: oklch(0.24 0.05 268);
-  --sidebar-accent-foreground: oklch(0.92 0.12 268);
-  --sidebar-border: oklch(0.35 0.025 256.72);
-  --sidebar-ring: oklch(0.68 0.24 268);
+  --brand-gradient: linear-gradient(135deg, oklch(0.55 0.22 285), oklch(0.58 0.22 320));
+}
+
+/* Large, thumb-friendly text input */
+@utility input-lg {
+  @apply h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/15 focus:outline-none transition;
+}
+
+/* Brand gradient fill */
+@utility bg-brand {
+  background-image: var(--brand-gradient);
 }
 
 @layer base {
@@ -187,6 +191,18 @@
   }
   html {
     @apply font-sans;
+    /* 17px base on phones/tablets: every rem size grows ~6% for easier reading */
+    font-size: 106.25%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (min-width: 1280px) {
+    html {
+      font-size: 100%;
+    }
+  }
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
   }
 
   /* Interactive Elements — Pointer Hand Cursor */
@@ -466,6 +482,43 @@
 
 .font-urdu {
   font-family: var(--font-urdu), "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Urdu Typesetting", Tahoma, sans-serif;
+  line-height: 1.9;
+}
+
+/* Readability floor (screen only): tiny 8-11px labels become legible.
+   Receipts keep exact sizes for printing. */
+@media screen {
+  .text-\[8px\], .text-\[8\.5px\], .text-\[9px\], .text-\[9\.5px\] { font-size: 11px; }
+  .text-\[10px\], .text-\[10\.5px\] { font-size: 11.5px; }
+  .text-\[11px\], .text-\[11\.5px\] { font-size: 12.5px; }
+}
+
+@keyframes sf-progress {
+  0% { width: 0%; }
+  40% { width: 55%; }
+  100% { width: 88%; }
+}
+
+@keyframes sf-pop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.animate-pop { animation: sf-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* Sonner toasts: big, bold, rounded — readable at a busy counter */
+[data-sonner-toaster] [data-sonner-toast] {
+  border-radius: 16px !important;
+  font-size: 15px !important;
+  padding: 14px 16px !important;
+  box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.25) !important;
+}
+[data-sonner-toaster] [data-sonner-toast] [data-title] {
+  font-weight: 700 !important;
 }
 
 /* Highly visible, clean scrollbars */

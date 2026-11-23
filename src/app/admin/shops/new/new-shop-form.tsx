@@ -10,10 +10,8 @@ import {
   Loader2,
   ArrowLeft,
   AlertCircle,
-  AlertTriangle,
   Eye,
   EyeOff,
-  CheckCircle2,
 } from 'lucide-react';
 import { createShopAction, checkShopEmailAvailabilityAction } from '@/app/admin/actions';
 import type { Plan } from '@/lib/types';

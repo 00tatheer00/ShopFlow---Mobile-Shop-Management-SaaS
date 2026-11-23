@@ -21,7 +21,6 @@ import {
 import type { UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
 import { exportToCSV } from '@/lib/export-csv';
-import { CardInfoTooltip } from '@/components/ui/card-info-tooltip';
 import { StatCard } from '@/components/ui/stat-card';
 
 interface ProductInventoryItem {
