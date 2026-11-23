@@ -9,11 +9,9 @@ import {
   MoreHorizontal,
   Pencil,
   Trash2,
-  AlertTriangle,
   ChevronLeft,
   ChevronRight,
   Smartphone,
-  Package,
   Sliders,
   Search,
   X,
@@ -23,6 +21,9 @@ import {
   Download,
 } from 'lucide-react';
 import type { UserRole } from '@/lib/types';
+import { formatPKR } from '@/lib/types';
+import { Badge } from '@/components/ui/kit';
+import { productVisual } from '@/components/ui/product-visual';
 import { exportToCSV } from '@/lib/export-csv';
 import {
   deleteProduct,
@@ -32,7 +33,6 @@ import {
   type ImeiSearchResult,
 } from './actions';
 import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { CurrencyDisplay } from '@/components/ui/currency-display';
 
 interface ProductRow {
   id: string;
@@ -275,196 +275,181 @@ export function ProductsTable({
 
   return (
     <div className="space-y-4">
-      {/* Feedback Messages */}
+      {/* Feedback */}
       {errorMessage && (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm font-medium text-destructive flex items-center justify-between">
+        <div role="alert" className="flex items-center justify-between gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-800 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-200">
           <span>{errorMessage}</span>
-          <button onClick={() => setErrorMessage(null)}>
+          <button onClick={() => setErrorMessage(null)} className="rounded p-0.5 hover:bg-rose-100 dark:hover:bg-rose-900" aria-label="Dismiss">
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
-
       {successMessage && (
-        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm font-medium text-emerald-700 dark:text-emerald-300 flex items-center justify-between">
-          <span className="flex items-center gap-1.5">
+        <div role="status" className="flex items-center justify-between gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
+          <span className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" />
             {successMessage}
           </span>
-          <button onClick={() => setSuccessMessage(null)}>
+          <button onClick={() => setSuccessMessage(null)} className="rounded p-0.5 hover:bg-emerald-100 dark:hover:bg-emerald-900" aria-label="Dismiss">
             <X className="h-4 w-4" />
           </button>
         </div>
       )}
 
-      {/* Action Header Banner */}
-      <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-xl border border-border p-3">
-        <span className="text-xs text-muted-foreground font-medium">
-          Showing {products.length} products on this page
-        </span>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="btn btn-outline"
-          >
-            <Download className="h-3.5 w-3.5 text-emerald-500" />
-            <span>Export CSV</span>
-          </button>
-
-          <button
-            onClick={() => {
-              setIsImeiModalOpen(true);
-              setImeiResults(null);
-              setImeiSearchQuery('');
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
-          >
-            <Search className="h-3.5 w-3.5" />
-            Search IMEI / Serial
-          </button>
-        </div>
-      </div>
-
-      {/* Table */}
       <div className="panel overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Toolbar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            <strong className="text-foreground">{products.length}</strong> item{products.length === 1 ? '' : 's'} on this page
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsImeiModalOpen(true);
+                setImeiResults(null);
+                setImeiSearchQuery('');
+              }}
+              className="btn btn-sm btn-outline"
+            >
+              <Search className="h-4 w-4" /> Find IMEI
+            </button>
+            <button type="button" onClick={handleExportCSV} className="btn btn-sm btn-outline">
+              <Download className="h-4 w-4" /> <span className="hidden sm:inline">Export</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Phone: cards */}
+        <ul className="divide-y divide-border md:hidden">
+          {products.map((product) => (
+            <li key={product.id} className={`flex items-start gap-3 p-4 ${!product.is_active ? 'opacity-60' : ''}`}>
+              <ProductIcon imei={product.is_imei_tracked} category={product.category_name} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold text-foreground">{product.name}</p>
+                <p className="truncate text-sm text-muted-foreground">
+                  {[product.model, product.category_name, product.brand_name].filter(Boolean).join(' · ') || '—'}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="font-mono text-base font-bold tabular-nums text-foreground">{formatPKR(product.sale_price)}</span>
+                  <StockPill product={product} />
+                  {!product.is_active && <Badge tone="slate">Archived</Badge>}
+                </div>
+              </div>
+              {(canEdit || canDelete) && (
+                <button type="button" onClick={(e) => handleToggleMenu(e, product.id)} className="icon-btn -mr-2" aria-label={`Actions for ${product.name}`}>
+                  <MoreHorizontal className="h-5 w-5" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop: table */}
+        <div className="hidden overflow-x-auto md:block">
           <table className="sf-table">
             <thead>
-              <tr className="border-b border-border bg-muted/40">
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Product</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden sm:table-cell">Category</th>
-                <th className="px-4 py-3 text-left font-medium text-muted-foreground hidden md:table-cell">Brand</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground">Sale Price</th>
-                <th className="px-4 py-3 text-right font-medium text-muted-foreground hidden lg:table-cell">Cost</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground">Stock</th>
-                <th className="px-4 py-3 text-center font-medium text-muted-foreground hidden sm:table-cell">Status</th>
-                {(canEdit || canDelete) && (
-                  <th className="px-4 py-3 text-right font-medium text-muted-foreground w-16">
-                    <span className="sr-only">Actions</span>
-                  </th>
-                )}
+              <tr>
+                <th>Product</th>
+                <th className="hidden lg:table-cell">Category · Brand</th>
+                <th className="text-right">Sale price</th>
+                {canEdit && <th className="hidden text-right xl:table-cell">Cost</th>}
+                <th>Stock</th>
+                <th className="hidden lg:table-cell">Status</th>
+                {(canEdit || canDelete) && <th className="text-right">Actions</th>}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
-              {products.map((product) => {
-                const isOutOfStock = product.stock_quantity <= 0;
-                const isLowStock =
-                  product.stock_quantity > 0 &&
-                  product.stock_quantity <= product.low_stock_threshold;
-
-                return (
-                  <tr
-                    key={product.id}
-                    className={`transition-colors hover:bg-muted/30 ${
-                      !product.is_active ? 'opacity-60 bg-muted/10' : ''
-                    }`}
-                  >
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`flex h-9 w-9 items-center justify-center rounded-lg ${
-                            product.is_imei_tracked
-                              ? 'bg-primary/10 text-primary'
-                              : 'bg-muted text-muted-foreground'
-                          }`}
-                        >
-                          {product.is_imei_tracked ? (
-                            <Smartphone className="h-4 w-4" />
-                          ) : (
-                            <Package className="h-4 w-4" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium text-foreground truncate max-w-[200px]">
-                            {product.name}
-                          </p>
-                          {product.model && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {product.model}
-                            </p>
-                          )}
-                        </div>
+            <tbody>
+              {products.map((product) => (
+                <tr key={product.id} className={!product.is_active ? 'opacity-60' : ''}>
+                  <td>
+                    <div className="flex items-center gap-3">
+                      <ProductIcon imei={product.is_imei_tracked} category={product.category_name} />
+                      <div className="min-w-0">
+                        <p className="max-w-[260px] truncate font-semibold text-foreground">{product.name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {product.model || (product.is_imei_tracked ? 'Mobile phone (IMEI)' : 'Item')}
+                        </p>
                       </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-muted-foreground hidden sm:table-cell">
-                      {product.category_name || '—'}
-                    </td>
-                    <td className="px-4 py-3.5 text-muted-foreground hidden md:table-cell">
-                      {product.brand_name || '—'}
-                    </td>
-                    <td className="px-4 py-3.5 text-right font-medium text-foreground">
-                      <CurrencyDisplay amount={product.sale_price} isPaisas={true} size="xs" />
-                    </td>
-                    <td className="px-4 py-3.5 text-right text-muted-foreground hidden lg:table-cell">
-                      <CurrencyDisplay amount={product.purchase_price} isPaisas={true} size="xs" variant="muted" />
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {product.is_imei_tracked ? (
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${
-                              isOutOfStock
-                                ? 'bg-rose-100 text-rose-950 dark:bg-rose-950/70 dark:text-rose-200'
-                                : isLowStock
-                                ? 'bg-amber-100 text-amber-950 dark:bg-amber-950/70 dark:text-amber-200'
-                                : 'bg-primary/15 text-primary dark:text-primary-foreground'
-                            }`}
+                    </div>
+                  </td>
+                  <td className="hidden text-muted-foreground lg:table-cell">
+                    {[product.category_name, product.brand_name].filter(Boolean).join(' · ') || '—'}
+                  </td>
+                  <td className="text-right font-mono font-bold tabular-nums text-foreground">{formatPKR(product.sale_price)}</td>
+                  {canEdit && (
+                    <td className="hidden text-right font-mono tabular-nums text-muted-foreground xl:table-cell">{formatPKR(product.purchase_price)}</td>
+                  )}
+                  <td>
+                    <StockPill product={product} />
+                  </td>
+                  <td className="hidden lg:table-cell">
+                    <Badge tone={product.is_active ? 'emerald' : 'slate'} dot>
+                      {product.is_active ? 'Active' : 'Archived'}
+                    </Badge>
+                  </td>
+                  {(canEdit || canDelete) && (
+                    <td className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {canEdit && !product.is_imei_tracked && product.is_active && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAdjustingProduct(product);
+                              setAdjustQty('');
+                              setAdjustReason('');
+                            }}
+                            className="btn btn-sm btn-ghost"
+                            title="Add or remove stock"
                           >
-                            <Smartphone className="h-3 w-3" />
-                            {product.stock_quantity} in stock
-                          </span>
-                        ) : (
-                          <>
-                            {isLowStock && (
-                              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
-                            )}
-                            <span
-                              className={`font-bold ${
-                                isOutOfStock
-                                  ? 'text-rose-700 dark:text-rose-300'
-                                  : isLowStock
-                                  ? 'text-amber-700 dark:text-amber-300'
-                                  : 'text-foreground'
-                              }`}
-                            >
-                              {product.stock_quantity}
-                              {isOutOfStock && ' (0)'}
-                            </span>
-                          </>
+                            <Sliders className="h-4 w-4" /> Adjust
+                          </button>
                         )}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3.5 text-center hidden sm:table-cell">
-                      <span
-                        className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                          product.is_active
-                            ? 'bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-200'
-                            : 'bg-muted border border-border text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        {product.is_active ? 'Active' : 'Archived'}
-                      </span>
-                    </td>
-                    {(canEdit || canDelete) && (
-                      <td className="px-4 py-3.5 text-right">
-                        <button
-                          type="button"
-                          onClick={(e) => handleToggleMenu(e, product.id)}
-                          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
-                          title="Actions"
-                          aria-label="Actions"
-                        >
+                        {canEdit && (
+                          <Link href={`/products/${product.id}/edit`} className="icon-btn" aria-label={`Edit ${product.name}`} title="Edit">
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        )}
+                        <button type="button" onClick={(e) => handleToggleMenu(e, product.id)} className="icon-btn" aria-label="More actions" title="More">
                           <MoreHorizontal className="h-4 w-4" />
                         </button>
-                      </td>
-                    )}
-                  </tr>
-                );
-              })}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 text-sm text-muted-foreground">
+            <span>
+              Page <strong className="text-foreground">{currentPage}</strong> of {totalPages}
+            </span>
+            <div className="flex items-center gap-2">
+              {currentPage > 1 ? (
+                <Link href={buildPageUrl(currentPage - 1)} className="btn btn-sm btn-outline">
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </Link>
+              ) : (
+                <span className="btn btn-sm btn-outline pointer-events-none opacity-50">
+                  <ChevronLeft className="h-4 w-4" /> Prev
+                </span>
+              )}
+              {currentPage < totalPages ? (
+                <Link href={buildPageUrl(currentPage + 1)} className="btn btn-sm btn-outline">
+                  Next <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <span className="btn btn-sm btn-outline pointer-events-none opacity-50">
+                  Next <ChevronRight className="h-4 w-4" />
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating Portal Action Menu (Completely immune to table overflow/clipping) */}
@@ -484,7 +469,7 @@ export function ProductsTable({
               ...(menuCoords.placeAbove
                 ? { bottom: `${window.innerHeight - menuCoords.top}px` }
                 : { top: `${menuCoords.top}px` }),
-              width: '180px',
+              width: '200px',
             }}
             className="pointer-events-auto z-[99999] rounded-xl border border-border bg-popover/98 backdrop-blur-md p-1.5 shadow-2xl animate-in fade-in-0 zoom-in-95 duration-100 ring-1 ring-border/60"
           >
@@ -495,7 +480,7 @@ export function ProductsTable({
                   setOpenMenuId(null);
                   setMenuCoords(null);
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors"
               >
                 <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                 Edit Details
@@ -513,7 +498,7 @@ export function ProductsTable({
                   setAdjustQty('');
                   setAdjustReason('');
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors cursor-pointer"
               >
                 <Sliders className="h-3.5 w-3.5 text-muted-foreground" />
                 Adjust Stock
@@ -529,7 +514,7 @@ export function ProductsTable({
                   setMenuCoords(null);
                   handleToggleStatus(prod.id, !prod.is_active);
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-foreground hover:bg-accent transition-colors cursor-pointer"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors cursor-pointer"
               >
                 {activeMenuProduct.is_active ? (
                   <>
@@ -554,7 +539,7 @@ export function ProductsTable({
                   setMenuCoords(null);
                   setProductToDelete(prod);
                 }}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete
@@ -563,45 +548,6 @@ export function ProductsTable({
           </div>
         </div>,
         document.body
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Page {currentPage} of {totalPages}
-          </p>
-          <div className="flex items-center gap-2">
-            {currentPage > 1 ? (
-              <Link
-                href={buildPageUrl(currentPage - 1)}
-                className="inline-flex h-9 items-center gap-1 rounded-lg border border-input bg-background px-3 text-sm text-foreground hover:bg-accent transition-colors"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Link>
-            ) : (
-              <span className="inline-flex h-9 items-center gap-1 rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground opacity-50 cursor-not-allowed">
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </span>
-            )}
-            {currentPage < totalPages ? (
-              <Link
-                href={buildPageUrl(currentPage + 1)}
-                className="inline-flex h-9 items-center gap-1 rounded-lg border border-input bg-background px-3 text-sm text-foreground hover:bg-accent transition-colors"
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Link>
-            ) : (
-              <span className="inline-flex h-9 items-center gap-1 rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground opacity-50 cursor-not-allowed">
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </span>
-            )}
-          </div>
-        </div>
       )}
 
       {/* Delete / Archive Confirmation Dialog */}
@@ -824,4 +770,25 @@ export function ProductsTable({
       )}
     </div>
   );
+}
+
+// ---------------- helpers ----------------
+
+function ProductIcon({ imei, category }: { imei: boolean; category?: string | null }) {
+  const visual = productVisual(imei, category || undefined);
+  const Icon = visual.icon;
+  return (
+    <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${visual.chip}`} aria-hidden="true">
+      <Icon className="h-5 w-5" />
+    </span>
+  );
+}
+
+/** Stock shown as words + colour: Out of stock / Low / In stock. */
+function StockPill({ product }: { product: { stock_quantity: number; low_stock_threshold: number; is_imei_tracked: boolean } }) {
+  const qty = product.stock_quantity;
+  const unit = product.is_imei_tracked ? (qty === 1 ? 'phone' : 'phones') : 'in stock';
+  if (qty <= 0) return <Badge tone="rose" dot>Out of stock</Badge>;
+  if (qty <= product.low_stock_threshold) return <Badge tone="amber" dot>Low · {qty} {unit === 'in stock' ? 'left' : unit}</Badge>;
+  return <Badge tone="emerald" dot>{qty} {unit}</Badge>;
 }

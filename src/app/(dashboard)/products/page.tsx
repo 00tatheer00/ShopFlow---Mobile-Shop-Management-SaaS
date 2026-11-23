@@ -1,7 +1,10 @@
-import { PageHeader } from '@/components/ui/kit';
+import { EmptyBlock, IconChip, PageHeader, type Tone } from '@/components/ui/kit';
+import { Ur } from '@/components/ui/urdu';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Plus, Package } from 'lucide-react';
+import { Plus, Package, AlertTriangle, PackageX, Wallet } from 'lucide-react';
+import { fetchAllRows, sanitizeSearch } from '@/lib/supabase/queries';
+import { formatPKR } from '@/lib/types';
 import { requireShopAccess, hasPermission } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { ProductsTable } from './products-table';
@@ -25,12 +28,14 @@ export default async function ProductsPage(props: {
   const supabase = await createClient();
   const searchParams = await props.searchParams;
   const canCreate = hasPermission(user.role, 'products:create');
+  // Cost prices are owner/manager information
+  const canSeeCost = hasPermission(user.role, 'products:edit');
 
-  const search = searchParams.search || '';
+  const search = sanitizeSearch(searchParams.search);
   const categoryFilter = searchParams.category || '';
   const brandFilter = searchParams.brand || '';
   const statusFilter = searchParams.status || 'active';
-  const page = Number(searchParams.page) || 1;
+  const page = Math.max(1, Math.floor(Number(searchParams.page)) || 1);
   const perPage = 20;
 
   // Build product query
@@ -65,7 +70,7 @@ export default async function ProductsPage(props: {
   query = query.range(from, from + perPage - 1);
 
   // Fetch product list, categories, and brands concurrently in single round-trip
-  const [{ data: products, count }, { data: categories }, { data: brands }] = await Promise.all([
+  const [{ data: products, count }, { data: categories }, { data: brands }, stockRows] = await Promise.all([
     query,
     supabase
       .from('product_categories')
@@ -77,7 +82,28 @@ export default async function ProductsPage(props: {
       .select('id, name')
       .eq('shop_id', user.shop_id!)
       .order('name'),
+    // Whole-shop stock summary (all active items, not just this page)
+    fetchAllRows<{ stock_quantity: number; low_stock_threshold: number; purchase_price: number }>(() =>
+      supabase
+        .from('products')
+        .select('stock_quantity, low_stock_threshold, purchase_price')
+        .eq('shop_id', user.shop_id!)
+        .eq('is_active', true)
+        .order('id', { ascending: true })
+    ),
   ]);
+
+  const summary = stockRows.reduce(
+    (acc, r) => {
+      acc.items += 1;
+      acc.units += r.stock_quantity;
+      if (r.stock_quantity <= 0) acc.out += 1;
+      else if (r.stock_quantity <= r.low_stock_threshold) acc.low += 1;
+      acc.value += r.stock_quantity * (r.purchase_price || 0);
+      return acc;
+    },
+    { items: 0, units: 0, low: 0, out: 0, value: 0 }
+  );
 
   const totalPages = Math.ceil((count || 0) / perPage);
 
@@ -116,6 +142,7 @@ export default async function ProductsPage(props: {
 
   const formattedProducts = (products || []).map((p) => ({
     ...p,
+    purchase_price: canSeeCost ? p.purchase_price : 0,
     category_name: (p.product_categories as unknown as { name: string })?.name || null,
     brand_name: (p.brands as unknown as { name: string })?.name || null,
   }));
@@ -133,7 +160,7 @@ export default async function ProductsPage(props: {
         ur="مال / اسٹاک"
         icon={Package}
         tone="sky"
-        description={<>Manage your product catalog — {count ?? 0} product{count !== 1 ? 's' : ''}</>}
+        description={<>All items in your shop, their price and stock</>}
         actions={
         <>
           {canCreate && (
@@ -142,12 +169,24 @@ export default async function ProductsPage(props: {
               className="btn btn-primary"
             >
               <Plus className="h-4 w-4" />
-              Add Product
+              Add Item
             </Link>
           )}
         </>
       }
       />
+
+      {/* Stock summary */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <SummaryTile icon={Package} tone="sky" en="Items" ur="کل آئٹم" value={String(summary.items)} note={`${summary.units.toLocaleString()} units in shop`} />
+        <SummaryTile icon={AlertTriangle} tone="amber" en="Low stock" ur="کم مال" value={String(summary.low)} note="Order more soon" />
+        <SummaryTile icon={PackageX} tone="rose" en="Out of stock" ur="مال ختم" value={String(summary.out)} note="Cannot be sold now" />
+        {canSeeCost ? (
+          <SummaryTile icon={Wallet} tone="violet" en="Stock value" ur="مال کی قیمت" value={formatPKR(summary.value)} note="At purchase cost" />
+        ) : (
+          <SummaryTile icon={Package} tone="slate" en="Categories" ur="قسمیں" value={String((categories || []).length)} note="Groups of items" />
+        )}
+      </div>
 
       {/* Filters */}
       <ProductFilters
@@ -177,29 +216,50 @@ export default async function ProductsPage(props: {
           }}
         />
       ) : (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-16 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/5">
-            <Package className="h-7 w-7 text-primary/60" />
-          </div>
-          <h3 className="mt-5 text-lg font-semibold text-foreground">
-            {search || categoryFilter || brandFilter ? 'No products found' : 'No products yet'}
-          </h3>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            {search || categoryFilter || brandFilter
-              ? 'Try adjusting your search or filters.'
-              : 'Add your first product to start managing your inventory.'}
-          </p>
-          {canCreate && !search && !categoryFilter && !brandFilter && (
-            <Link
-              href="/products/new"
-              className="btn btn-primary"
-            >
-              <Plus className="h-4 w-4" />
-              Add First Product
-            </Link>
-          )}
-        </div>
+        <EmptyBlock
+          icon={Package}
+          tone="sky"
+          title={search || categoryFilter || brandFilter ? 'No items match your search' : 'No items yet'}
+          ur={search || categoryFilter || brandFilter ? 'کوئی آئٹم نہیں ملا' : 'ابھی کوئی مال درج نہیں'}
+          text={search || categoryFilter || brandFilter ? 'Try a different name or clear the filters.' : 'Add your first item to start selling.'}
+          action={
+            canCreate && !search && !categoryFilter && !brandFilter ? (
+              <Link href="/products/new" className="btn btn-primary">
+                <Plus className="h-4 w-4" /> Add first item
+              </Link>
+            ) : undefined
+          }
+        />
       )}
+    </div>
+  );
+}
+
+function SummaryTile({
+  icon,
+  tone,
+  en,
+  ur,
+  value,
+  note,
+}: {
+  icon: React.ElementType;
+  tone: Tone;
+  en: string;
+  ur: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <div className="panel flex items-center gap-3 p-4">
+      <IconChip icon={icon} tone={tone} />
+      <div className="min-w-0">
+        <p className="flex items-baseline gap-1.5 text-sm font-semibold text-foreground">
+          {en} <Ur className="text-xs font-normal text-muted-foreground">{ur}</Ur>
+        </p>
+        <p className="truncate font-mono text-xl font-bold tabular-nums text-foreground">{value}</p>
+        <p className="truncate text-xs text-muted-foreground">{note}</p>
+      </div>
     </div>
   );
 }

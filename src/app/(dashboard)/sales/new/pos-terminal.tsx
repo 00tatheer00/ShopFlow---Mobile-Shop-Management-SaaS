@@ -35,6 +35,7 @@ import { createCustomer } from '../../customers/actions';
 import { ReceiptModal, type ReceiptData } from '@/components/ui/receipt-modal';
 import { Ur } from '@/components/ui/urdu';
 import type { ProductWithStock } from '@/components/pos/pos-types';
+import { productVisual } from '@/components/ui/product-visual';
 import { toast } from 'sonner';
 
 interface PosTerminalProps {
@@ -665,39 +666,50 @@ export function PosTerminal({
                   const inCart = cartQty.get(p.id) || 0;
                   const low = p.stock_quantity <= p.low_stock_threshold;
                   const category = categories.find((c) => c.id === p.category_id)?.name;
+                  const visual = productVisual(p.is_imei_tracked, category);
+                  const VisualIcon = visual.icon;
                   return (
                     <button
                       key={p.id}
                       type="button"
                       onClick={() => addProduct(p)}
-                      style={{ contentVisibility: 'auto', containIntrinsicSize: '120px' }}
-                      className={`group relative flex min-h-[120px] flex-col rounded-xl border bg-card p-3 text-left shadow-[0_1px_2px_rgb(0_0_0/0.04)] transition hover:shadow-md active:scale-[0.98] ${
-                        inCart > 0 ? 'border-primary ring-1 ring-primary' : 'border-border hover:border-primary/40'
+                      style={{ contentVisibility: 'auto', containIntrinsicSize: '168px' }}
+                      className={`group relative flex min-h-[168px] flex-col rounded-2xl border bg-card p-3.5 text-left shadow-[0_1px_2px_rgb(0_0_0/0.04)] transition hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 active:scale-[0.98] ${
+                        inCart > 0 ? 'border-primary ring-2 ring-primary/25' : 'border-border hover:border-primary/40'
                       }`}
                     >
                       <span className="flex items-start justify-between gap-2">
-                        <span className="line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">{p.name}</span>
-                        {inCart > 0 && (
-                          <span className="animate-pop flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground">
-                            {inCart}
+                        <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${visual.chip}`} aria-hidden="true">
+                          <VisualIcon className="h-[22px] w-[22px]" />
+                        </span>
+                        {inCart > 0 ? (
+                          <span className="animate-pop flex h-7 min-w-7 items-center justify-center rounded-full bg-primary px-2 text-xs font-bold text-primary-foreground shadow-sm">
+                            ×{inCart}
+                          </span>
+                        ) : (
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                            <Plus className="h-4 w-4" />
                           </span>
                         )}
                       </span>
-                      <span className="mt-0.5 truncate text-[13px] text-muted-foreground">
-                        {[p.model, category].filter(Boolean).join(' · ') || ' '}
+
+                      <span className="mt-3 line-clamp-2 text-[15px] font-semibold leading-snug text-foreground">{p.name}</span>
+                      <span className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {[p.model, category].filter(Boolean).join(' · ') || (p.is_imei_tracked ? 'Mobile phone' : 'Item')}
                       </span>
-                      <span className="mt-auto flex items-end justify-between gap-2 pt-3">
-                        <span className="whitespace-nowrap font-mono text-base font-bold tabular-nums text-foreground">
+
+                      <span className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5 border-t border-dashed border-border pt-2.5">
+                        <span className="whitespace-nowrap font-mono text-base font-bold tabular-nums text-foreground sm:text-[17px]">
                           {formatPKR(p.sale_price)}
                         </span>
                         <span
-                          className={`whitespace-nowrap rounded-md px-1.5 py-0.5 text-[11px] font-semibold ${
-                            low
-                              ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
-                              : 'bg-muted text-muted-foreground'
+                          className={`flex items-center gap-1 whitespace-nowrap text-xs font-semibold ${
+                            low ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'
                           }`}
                         >
-                          {p.is_imei_tracked ? `${p.stock_quantity} phone${p.stock_quantity === 1 ? '' : 's'}` : `${p.stock_quantity} in stock`}
+                          <span className={`h-1.5 w-1.5 rounded-full ${low ? 'bg-amber-500' : 'bg-emerald-500'}`} aria-hidden="true" />
+                          {p.stock_quantity}
+                          {p.is_imei_tracked ? (p.stock_quantity === 1 ? ' phone' : ' phones') : ' left'}
                         </span>
                       </span>
                     </button>
@@ -1231,6 +1243,7 @@ export function PosTerminal({
 }
 
 // ---------------- building blocks ----------------
+
 
 function Kbd({ children, tone = 'light' }: { children: React.ReactNode; tone?: 'light' | 'dark' }) {
   return (
