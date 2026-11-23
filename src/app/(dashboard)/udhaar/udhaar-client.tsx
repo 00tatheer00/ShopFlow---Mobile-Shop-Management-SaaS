@@ -1,5 +1,6 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -78,7 +79,8 @@ export function UdhaarClient({
     }
   }, [searchParams, customersWithBalance]);
 
-  const canManage = hasPermission(userRole, 'payments:create');
+  const canManage = hasPermission(userRole, 'udhaar:payment');
+  const canAddCredit = hasPermission(userRole, 'udhaar:credit');
 
   const currentSelectedCustomer = customersWithBalance.find((c) => c.id === selectedDebtorId);
 
@@ -166,8 +168,8 @@ export function UdhaarClient({
       {/* Header */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Udhaar Ledger (Credit)</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Udhaar Khata <Ur className="text-xl text-muted-foreground">ادھار کھاتہ</Ur></h1>
+          <p className="text-sm text-muted-foreground">
             Manage customer credit, record recoveries (Vasooli), and send WhatsApp balance reminders.
           </p>
         </div>
@@ -184,6 +186,7 @@ export function UdhaarClient({
 
           {canManage && (
             <>
+              {canAddCredit && (
               <button
                 onClick={() => {
                   setFormError(null);
@@ -194,6 +197,7 @@ export function UdhaarClient({
                 <Plus className="h-3.5 w-3.5" />
                 Add Udhaar
               </button>
+              )}
               <button
                 type="button"
                 onClick={() => {

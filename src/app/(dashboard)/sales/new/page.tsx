@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { requireShopAccess } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { PosTerminal } from './pos-terminal';
+import type { PaymentMethod } from '@/lib/types';
 
 export const metadata: Metadata = { title: 'New Sale (POS)' };
 
@@ -16,6 +17,7 @@ export default async function NewSalePage() {
     { data: categories },
     { data: brands },
     { data: shop },
+    { data: settings },
   ] = await Promise.all([
     supabase
       .from('products')
@@ -47,6 +49,11 @@ export default async function NewSalePage() {
       .select('name, phone, address')
       .eq('id', user.shop_id!)
       .maybeSingle(),
+    supabase
+      .from('shop_settings')
+      .select('default_payment_method')
+      .eq('shop_id', user.shop_id!)
+      .maybeSingle(),
   ]);
 
   const activeProducts = (products || []).map((p) => ({
@@ -63,6 +70,7 @@ export default async function NewSalePage() {
       shopName={shop?.name || 'Mobile Shop'}
       shopPhone={shop?.phone || null}
       shopAddress={shop?.address || null}
+      defaultPaymentMethod={(settings?.default_payment_method as PaymentMethod) || 'cash'}
     />
   );
 }

@@ -15,13 +15,6 @@ export const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
-export const resetPasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
 
 // ---- Shop ----
 
@@ -41,13 +34,6 @@ export const createShopSchema = z.object({
   owner_phone: z.string().max(20).optional().or(z.literal('')),
 });
 
-export const updateShopSchema = z.object({
-  name: z.string().min(2, 'Shop name must be at least 2 characters').max(100),
-  city: z.string().min(2, 'City is required').max(50),
-  address: z.string().max(255).optional().or(z.literal('')),
-  phone: z.string().max(20).optional().or(z.literal('')),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
-});
 
 export const updateShopStatusSchema = z.object({
   shop_id: z.string().uuid('Shop ID is required'),
@@ -377,25 +363,3 @@ export const stockAdjustmentSchema = z.object({
   adjustment: z.number().int().refine((val) => val !== 0, 'Adjustment cannot be 0'),
   reason: z.string().min(1, 'Reason is required').max(255),
 });
-
-// ---- Type exports ----
-
-export type LoginInput = z.infer<typeof loginSchema>;
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
-export type CreateShopInput = z.infer<typeof createShopSchema>;
-export type UpdateShopInput = z.infer<typeof updateShopSchema>;
-export type ProductInput = z.infer<typeof productSchema>;
-export type CategoryInput = z.infer<typeof categorySchema>;
-export type BrandInput = z.infer<typeof brandSchema>;
-export type CustomerInput = z.infer<typeof customerSchema>;
-export type SupplierInput = z.infer<typeof supplierSchema>;
-export type CreateSaleInput = z.infer<typeof createSaleSchema>;
-export type CreatePurchaseInput = z.infer<typeof createPurchaseSchema>;
-export type RecordPaymentInput = z.infer<typeof recordPaymentSchema>;
-export type ExpenseInput = z.infer<typeof expenseSchema>;
-export type ExpenseCategoryInput = z.infer<typeof expenseCategorySchema>;
-export type ShopSettingsInput = z.infer<typeof shopSettingsSchema>;
-export type ShopProfileInput = z.infer<typeof shopProfileSchema>;
-export type CreateStaffInput = z.infer<typeof createStaffSchema>;
-export type StockAdjustmentInput = z.infer<typeof stockAdjustmentSchema>;

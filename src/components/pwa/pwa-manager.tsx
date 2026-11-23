@@ -6,27 +6,16 @@ import { WifiOff } from 'lucide-react';
 
 export function PwaManager() {
   useEffect(() => {
-    // 1. Register Service Worker in production
-    if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'test') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((reg) => {
-            reg.addEventListener('updatefound', () => {
-              const newWorker = reg.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[PWA] New version ready.');
-                  }
-                });
-              }
-            });
-          })
-          .catch((err) => {
-            console.warn('[PWA] Service Worker registration failed:', err);
-          });
+    // 1. Register the Service Worker. This effect usually runs AFTER the
+    //    window 'load' event, so only waiting for 'load' meant it often never registered.
+    const registerSw = () => {
+      navigator.serviceWorker.register('/sw.js').catch((err) => {
+        console.warn('[PWA] Service Worker registration failed:', err);
       });
+    };
+    if ('serviceWorker' in navigator) {
+      if (document.readyState === 'complete') registerSw();
+      else window.addEventListener('load', registerSw, { once: true });
     }
 
     // 2. Online/Offline Listeners
@@ -39,7 +28,7 @@ export function PwaManager() {
 
     const handleOffline = () => {
       toast.warning('Internet Disconnect Hai!', {
-        description: 'Aap offline hain. App cached screen dikha rahi hai.',
+        description: 'Aap offline hain. Sale save karne ke liye internet zaroori hai.',
         icon: <WifiOff className="w-4 h-4 text-amber-500" />,
         duration: 5000,
       });
@@ -51,6 +40,7 @@ export function PwaManager() {
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('load', registerSw);
     };
   }, []);
 

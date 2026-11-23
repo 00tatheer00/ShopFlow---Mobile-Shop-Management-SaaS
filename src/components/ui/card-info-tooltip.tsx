@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useIsClient } from '@/lib/hooks';
 import { createPortal } from 'react-dom';
 import { Info, X } from 'lucide-react';
 
@@ -25,13 +26,12 @@ export function CardInfoTooltip({
   variant = 'default',
 }: CardInfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
   const [coords, setCoords] = useState<Coords | null>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };

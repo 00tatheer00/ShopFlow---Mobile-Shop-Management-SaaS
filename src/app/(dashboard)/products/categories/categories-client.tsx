@@ -1,5 +1,6 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -82,7 +83,7 @@ export function CategoriesClient({ categories, userRole }: CategoriesClientProps
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Product Categories</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Categories <Ur className="text-lg text-muted-foreground">قسمیں</Ur></h1>
             <p className="text-xs text-muted-foreground">
               Classify inventory (Smartphones, Accessories, Tablets, Spare Parts)
             </p>

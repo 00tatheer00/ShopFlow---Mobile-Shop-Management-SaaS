@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
+import { useIsClient } from '@/lib/hooks';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -73,13 +74,10 @@ export function ProductsTable({
   const [isPending, startTransition] = useTransition();
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [menuCoords, setMenuCoords] = useState<{ top: number; left: number; placeAbove: boolean } | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   // Automatically open adjust stock modal if navigated from notification
   useEffect(() => {
@@ -779,7 +777,7 @@ export function ProductsTable({
                                 r.status === 'in_stock'
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                                   : r.status === 'sold'
-                                  ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300'
+                                  ? 'bg-primary text-primary dark:bg-primary/60 dark:text-primary'
                                   : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
                               }`}
                             >
@@ -800,7 +798,7 @@ export function ProductsTable({
                                 </p>
                               )}
                               {r.sale && (
-                                <p className="text-indigo-600 dark:text-indigo-400 font-medium">
+                                <p className="text-primary dark:text-primary font-medium">
                                   <strong>Sold:</strong> {r.sale.invoice_number}
                                   {r.sale.customer_name && ` to ${r.sale.customer_name}`}
                                 </p>

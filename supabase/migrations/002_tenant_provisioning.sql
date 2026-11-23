@@ -47,12 +47,16 @@ BEGIN
 END $$;
 
 -- 5. Audit logs RLS policies for Super Admin and authenticated users
+-- (DROP first so this migration is re-runnable; 001 already defines them)
+DROP POLICY IF EXISTS "Super admins can insert audit logs" ON audit_logs;
 CREATE POLICY "Super admins can insert audit logs" ON audit_logs
   FOR INSERT WITH CHECK (is_super_admin());
 
+DROP POLICY IF EXISTS "Authenticated users can insert audit logs" ON audit_logs;
 CREATE POLICY "Authenticated users can insert audit logs" ON audit_logs
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- 6. Super admin management for plans
+DROP POLICY IF EXISTS "Super admins can manage plans" ON plans;
 CREATE POLICY "Super admins can manage plans" ON plans
   FOR ALL USING (is_super_admin());

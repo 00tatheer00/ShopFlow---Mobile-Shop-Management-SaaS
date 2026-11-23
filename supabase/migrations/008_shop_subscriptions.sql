@@ -1,13 +1,13 @@
 -- ============================================
--- ShopFlow: Monthly Shop Subscriptions (Rs. 6,500 / month)
+-- ShopFlow: Monthly Shop Subscriptions (Rs. 8,000 / month)
 -- ============================================
 
--- 1. Create or update Standard Plan for Rs. 6,500 / month (650,000 paisas)
+-- 1. Create or update Standard Plan for Rs. 8,000 / month (800,000 paisas)
 INSERT INTO plans (id, name, description, max_users, max_products, price, status)
 VALUES (
   '55555555-5555-5555-5555-555555555555',
   'ShopFlow Monthly Plan',
-  'Full access to POS, Inventory, IMEI, Udhaar, and Daily Reports — Rs. 6,500/month',
+  'Full access to POS, Inventory, IMEI, Udhaar, and Daily Reports — Rs. 8,000/month',
   10,
   10000,
   800000, -- 8,000 PKR in paisas
@@ -19,7 +19,7 @@ ON CONFLICT (id) DO UPDATE SET
   price = 800000,
   status = 'active';
 
--- Update all existing shops to link to this standard 6,500 plan if null
+-- Update all existing shops to link to this standard plan if null
 UPDATE shops 
 SET plan_id = '55555555-5555-5555-5555-555555555555' 
 WHERE plan_id IS NULL OR plan_id = '11111111-1111-1111-1111-111111111111';

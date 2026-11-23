@@ -1,49 +1,53 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Pages for signing in. Logged-in users are sent to the dashboard from here.
+const AUTH_ROUTES = ['/login', '/forgot-password'];
+
+// Pages anyone may open, logged in or not. Nothing is redirected here.
+// - /reset-password: the email link must work even if a session cookie exists
+// - /offline: precached by the service worker for every visitor
+// - /shop-suspended, /unauthorized: shown to users who cannot use the app
+const OPEN_ROUTES = ['/reset-password', '/privacy', '/terms', '/offline', '/shop-suspended', '/unauthorized'];
+
+// Files that must never be redirected to /login (PWA would break for logged-out visitors)
+const OPEN_FILES = ['/manifest.json', '/sw.js', '/robots.txt', '/sitemap.xml', '/favicon.ico', '/api/version'];
+
+function matches(pathname: string, routes: string[]) {
+  return routes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
+
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next({ request });
 
   const { pathname } = request.nextUrl;
 
-  // Public routes that don't require authentication
-  const publicRoutes = [
-    '/login',
-    '/forgot-password',
-    '/reset-password',
-    '/privacy',
-    '/terms',
-    '/manifest.json',
-    '/sw.js',
-    '/robots.txt',
-    '/sitemap.xml',
-  ];
-  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
-
-  const allCookies = request.cookies.getAll();
-  const hasAuthCookie = allCookies.some(
-    (c) => c.name.startsWith('sb-') && c.name.endsWith('-auth-token')
-  );
-
-  // 1. Instant Fast-Path: Unauthenticated user accessing protected route -> redirect in 0ms without waiting for Supabase API
-  if (!hasAuthCookie && !isPublicRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  // 2. Instant Fast-Path: Next.js internal RSC client navigation (menu/tab clicks)
-  // Server Components (getAuthUser) already perform authoritative authentication and deduplication.
-  // Skipping duplicate getUser() in middleware saves 250-400ms off every single menu click!
-  const isRscRequest = request.headers.get('rsc') === '1' || request.nextUrl.searchParams.has('_rsc');
-  if (isRscRequest && hasAuthCookie) {
+  if (OPEN_FILES.includes(pathname) || matches(pathname, OPEN_ROUTES)) {
     return supabaseResponse;
   }
 
-  // 3. For full page document requests: perform token refresh & session verification
+  const isAuthRoute = matches(pathname, AUTH_ROUTES);
+
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith('sb-') && /-auth-token(\.\d+)?$/.test(c.name));
+
+  // 1. Fast path: no session cookie on a protected route -> login (no network call)
+  if (!hasAuthCookie && !isAuthRoute) {
+    return redirectToLogin(request, pathname);
+  }
+  if (!hasAuthCookie && isAuthRoute) {
+    return supabaseResponse;
+  }
+
+  // 2. Fast path: client-side RSC navigation. Server components (getAuthUser)
+  //    perform the authoritative check, so skip the duplicate network round trip.
+  const isRscRequest = request.headers.get('rsc') === '1' || request.nextUrl.searchParams.has('_rsc');
+  if (isRscRequest) {
+    return supabaseResponse;
+  }
+
+  // 3. Full document request: refresh token & verify session
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -53,12 +57,8 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           );
@@ -68,32 +68,46 @@ export async function updateSession(request: NextRequest) {
   );
 
   let user = null;
+  let timedOut = false;
   try {
-    const authPromise = supabase.auth.getUser();
-    const timeoutPromise = new Promise<{ data: { user: null }; error: Error }>((_, reject) =>
-      setTimeout(() => reject(new Error('Supabase auth check timed out')), 3500)
-    );
-    const result = await Promise.race([authPromise, timeoutPromise]);
+    const result = await Promise.race([
+      supabase.auth.getUser(),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Supabase auth check timed out')), 3500)
+      ),
+    ]);
     user = result?.data?.user ?? null;
   } catch (error) {
-    console.warn('Middleware auth verification timed out or unreachable:', error);
-    user = null;
+    // Slow internet on the auth server must not log the shopkeeper out.
+    // Let the request through; server components re-check the session.
+    console.warn('Middleware auth check skipped:', error);
+    timedOut = true;
   }
 
-  // If user is not logged in and trying to access a protected route
-  if (!user && !isPublicRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+  if (timedOut) {
+    return supabaseResponse;
   }
 
-  // If user is logged in and trying to access login page, redirect to dashboard
-  if (user && isPublicRoute) {
+  if (!user && !isAuthRoute) {
+    return redirectToLogin(request, pathname);
+  }
+
+  if (user && isAuthRoute) {
     const url = request.nextUrl.clone();
     url.pathname = '/dashboard';
+    url.search = '';
     return NextResponse.redirect(url);
   }
 
   return supabaseResponse;
+}
+
+function redirectToLogin(request: NextRequest, pathname: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = '/login';
+  url.search = '';
+  if (pathname !== '/' && pathname !== '/login') {
+    url.searchParams.set('redirect', pathname);
+  }
+  return NextResponse.redirect(url);
 }

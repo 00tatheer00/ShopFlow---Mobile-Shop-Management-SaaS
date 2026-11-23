@@ -1,5 +1,6 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -185,7 +186,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Record Supplier Purchase</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Stock In (Purchase) <Ur className="text-lg text-muted-foreground">مال آیا</Ur></h1>
           <p className="text-xs text-muted-foreground">
             Add incoming stock, assign serial numbers / IMEIs, and update inventory cost.
           </p>

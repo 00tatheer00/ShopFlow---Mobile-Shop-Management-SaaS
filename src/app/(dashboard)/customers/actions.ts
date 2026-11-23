@@ -40,7 +40,7 @@ export async function createCustomer(formData: FormData) {
       return { error: `A customer with this phone number already exists: "${existing.name}". Duplicate customers are not allowed within the same shop.` };
     } else {
       // Reactivate the archived customer with updated data
-      const { error: reactivateError } = await supabase
+      const { data: reactivated, error: reactivateError } = await supabase
         .from('customers')
         .update({
           name: result.data.name,
@@ -51,9 +51,11 @@ export async function createCustomer(formData: FormData) {
           is_active: true,
         })
         .eq('id', existing.id)
-        .eq('shop_id', user.shop_id!);
+        .eq('shop_id', user.shop_id!)
+        .select()
+        .single();
 
-      if (reactivateError) {
+      if (reactivateError || !reactivated) {
         return { error: 'Failed to reactivate customer. Please try again.' };
       }
 
@@ -68,7 +70,7 @@ export async function createCustomer(formData: FormData) {
       });
 
       revalidatePath('/customers');
-      return { success: true, reactivated: true };
+      return { success: true, reactivated: true, customer: reactivated };
     }
   }
 

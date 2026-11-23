@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
       dynamic: 600,
       static: 600,
     },
-    optimizePackageImports: ['lucide-react', 'recharts', 'sonner', 'qrcode.react', 'zod'],
+    optimizePackageImports: ['lucide-react', 'sonner', 'qrcode.react', 'zod'],
   },
   async headers() {
     return [

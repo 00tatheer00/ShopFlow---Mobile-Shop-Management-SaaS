@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import type { ExpenseCategory } from '@/lib/types';
+import { pktRangeStart, pktTodayDateStr } from '@/lib/time';
+import type { ExpenseCategory, PaymentMethod } from '@/lib/types';
 import { ExpensesClient } from './expenses-client';
 
 export const metadata: Metadata = { title: 'Expenses' };
@@ -9,12 +10,12 @@ export const metadata: Metadata = { title: 'Expenses' };
 export default async function ExpensesPage(props: {
   searchParams: Promise<{ category?: string; page?: string }>;
 }) {
-  const user = await requireShopAccess();
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
   const category = searchParams.category || '';
-  const page = Number(searchParams.page) || 1;
+  const page = Math.max(1, Math.floor(Number(searchParams.page)) || 1);
   const perPage = 20;
 
   let query = supabase
@@ -24,7 +25,7 @@ export default async function ExpensesPage(props: {
     .order('expense_date', { ascending: false })
     .order('created_at', { ascending: false });
 
-  if (category) {
+  if (category && /^[0-9a-f-]{36}$/i.test(category)) {
     query = query.eq('category_id', category);
   }
 
@@ -32,8 +33,9 @@ export default async function ExpensesPage(props: {
   query = query.range(from, from + perPage - 1);
 
   // 3. Compute Today's Total and This Month's Total & fetch list in parallel
-  const todayStr = new Date().toISOString().split('T')[0];
-  const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+  // Pakistan calendar dates (expense_date is a DATE column)
+  const todayStr = pktTodayDateStr();
+  const startOfMonth = pktRangeStart('month')!.date;
 
   const [{ data: categories }, { data: rawExpenses, count }, { data: todayData }, { data: monthData }] = await Promise.all([
     supabase
@@ -57,7 +59,21 @@ export default async function ExpensesPage(props: {
   const todayTotal = (todayData || []).reduce((sum: number, item: { amount: number | null }) => sum + (item.amount || 0), 0);
   const monthTotal = (monthData || []).reduce((sum: number, item: { amount: number | null }) => sum + (item.amount || 0), 0);
 
-  const expenses = (rawExpenses || []).map((exp: Record<string, any>) => ({
+  type ExpenseRow = {
+    id: string;
+    shop_id: string;
+    category_id: string | null;
+    amount: number;
+    description: string | null;
+    expense_date: string;
+    payment_method: PaymentMethod;
+    notes: string | null;
+    created_by: string;
+    created_at: string;
+    expense_categories?: unknown;
+  };
+
+  const expenses = ((rawExpenses || []) as ExpenseRow[]).map((exp) => ({
     id: exp.id,
     shop_id: exp.shop_id,
     category_id: exp.category_id,

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireShopAccess } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getLatestUdhaarBalances } from '@/lib/supabase/queries';
 import type { Customer } from '@/lib/types';
 import { UdhaarClient } from './udhaar-client';
 
@@ -15,7 +16,7 @@ export default async function UdhaarPage() {
     { data: shop },
     { data: customers },
     { data: ledgerEntries },
-    { data: allBalances },
+    balances,
   ] = await Promise.all([
     supabase
       .from('shops')
@@ -37,26 +38,16 @@ export default async function UdhaarPage() {
       .eq('shop_id', user.shop_id!)
       .order('created_at', { ascending: false })
       .limit(100),
-    supabase
-      .from('udhaar_ledger')
-      .select('customer_id, balance_after, created_at')
-      .eq('shop_id', user.shop_id!)
-      .order('created_at', { ascending: false }),
+    // Latest balance per customer (not capped at 1000 ledger rows)
+    getLatestUdhaarBalances(supabase, user.shop_id!),
   ]);
-
-  // Group latest balance per customer
-  const latestBalanceMap = new Map<string, number>();
-  allBalances?.forEach((entry) => {
-    if (!latestBalanceMap.has(entry.customer_id)) {
-      latestBalanceMap.set(entry.customer_id, entry.balance_after);
-    }
-  });
 
   // Filter customers who have an outstanding balance > 0
   const customersWithBalance = (customers || [])
     .map((c) => ({
       ...c,
-      udhaar_balance: latestBalanceMap.get(c.id) || 0,
+      udhaar_balance: balances.get(c.id)?.balance_after || 0,
+      last_activity: balances.get(c.id)?.last_activity,
     }))
     .filter((c) => c.udhaar_balance > 0)
     .sort((a, b) => b.udhaar_balance - a.udhaar_balance);

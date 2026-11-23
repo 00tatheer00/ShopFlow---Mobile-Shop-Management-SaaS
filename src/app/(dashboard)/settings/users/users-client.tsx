@@ -1,11 +1,13 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Shield, X } from 'lucide-react';
+import { KeyRound, Plus, Shield, X } from 'lucide-react';
+import { toast } from 'sonner';
 import type { ShopUser } from '@/lib/types';
-import { addStaffMember, updateStaffRole, toggleStaffStatus } from '../actions';
+import { addStaffMember, updateStaffRole, toggleStaffStatus, resetStaffPassword } from '../actions';
 
 interface UsersClientProps {
   staffMembers: (ShopUser & {
@@ -36,8 +38,19 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
         setFormError(res.error);
       } else {
         setIsAddOpen(false);
+        toast.success('Staff member added. Give them their email and password to log in.');
         router.refresh();
       }
+    });
+  }
+
+  function handleResetPassword(shopUserId: string, name: string) {
+    const newPassword = window.prompt(`New password for ${name} (at least 8 characters):`);
+    if (!newPassword) return;
+    startTransition(async () => {
+      const res = await resetStaffPassword(shopUserId, newPassword);
+      if (res.error) toast.error(res.error);
+      else toast.success(`Password changed for ${name}.`);
     });
   }
 
@@ -45,7 +58,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
     startTransition(async () => {
       const res = await updateStaffRole(shopUserId, newRole);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       }
       router.refresh();
     });
@@ -55,7 +68,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
     startTransition(async () => {
       const res = await toggleStaffStatus(shopUserId, !currentStatus);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       }
       router.refresh();
     });
@@ -87,7 +100,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Staff & User Management</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Staff <Ur className="text-lg text-muted-foreground">ملازمین</Ur></h1>
           <p className="text-xs text-muted-foreground">
             Control employee roles (Manager, Cashier), manage permissions, and assign access.
           </p>
@@ -170,6 +183,15 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       {!isOwner && !isSelf && (
+                        <div className="inline-flex items-center gap-1">
+                        <button
+                          disabled={isPending}
+                          onClick={() => handleResetPassword(member.id, member.profile?.full_name || 'staff')}
+                          className="inline-flex items-center gap-1 rounded px-2.5 py-1 text-xs font-semibold text-foreground hover:bg-muted"
+                          title="Change password"
+                        >
+                          <KeyRound className="h-3.5 w-3.5" /> Password
+                        </button>
                         <button
                           disabled={isPending}
                           onClick={() => handleToggleStatus(member.id, member.is_active)}
@@ -181,6 +203,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                         >
                           {member.is_active ? 'Deactivate' : 'Activate'}
                         </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -210,27 +233,51 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
 
             <form onSubmit={handleAddStaff} className="mt-4 space-y-3 text-xs">
               <div>
-                <label className="block font-semibold mb-1">User Account Email *</label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  placeholder="e.g. employee@example.com"
-                  className="w-full rounded border border-border bg-background p-2 focus:border-primary focus:outline-none"
-                />
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  Must be registered on ShopFlow.
-                </p>
-              </div>
-
-              <div>
-                <label className="block font-semibold mb-1">Full Name *</label>
+                <label className="block font-semibold mb-1">Full Name / پورا نام *</label>
                 <input
                   type="text"
                   name="full_name"
                   required
                   placeholder="e.g. Bilal Ahmed"
-                  className="w-full rounded border border-border bg-background p-2 focus:border-primary focus:outline-none"
+                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Login Email / ای میل *</label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  autoComplete="off"
+                  placeholder="e.g. bilal.shop@gmail.com"
+                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm focus:border-primary focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Password / پاس ورڈ *</label>
+                <input
+                  type="text"
+                  name="password"
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm font-mono focus:border-primary focus:outline-none"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Write this down and give it to the staff member. They log in with this email and password.
+                </p>
+              </div>
+
+              <div>
+                <label className="block font-semibold mb-1">Phone / فون</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="03001234567"
+                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm focus:border-primary focus:outline-none"
                 />
               </div>
 

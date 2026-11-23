@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { ProductForm } from '../../new/product-form';
 
@@ -10,7 +10,7 @@ export default async function EditProductPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await props.params;
-  const user = await requireShopAccess();
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
 
   const [{ data: product }, { data: categories }, { data: brands }] = await Promise.all([

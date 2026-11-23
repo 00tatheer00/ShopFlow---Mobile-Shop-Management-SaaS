@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { PurchaseForm } from './purchase-form';
 
 export const metadata: Metadata = { title: 'New Purchase' };
 
 export default async function NewPurchasePage() {
-  const user = await requireShopAccess();
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
 
   // Fetch suppliers and products concurrently in a single round-trip

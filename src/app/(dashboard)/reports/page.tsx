@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { fetchAllRows } from '@/lib/supabase/queries';
+import { pktRangeStart, type ReportRange } from '@/lib/time';
 import { ReportsClient } from './reports-client';
 
 export const metadata: Metadata = { title: 'Reports & Analytics' };
@@ -8,101 +10,96 @@ export const metadata: Metadata = { title: 'Reports & Analytics' };
 export default async function ReportsPage(props: {
   searchParams: Promise<{ range?: string; tab?: string }>;
 }) {
-  const user = await requireShopAccess();
+  // Reports contain cost prices & profit: owner and manager only
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
-  const range = searchParams.range || 'month';
+  const allowedRanges: ReportRange[] = ['today', 'week', 'month', 'all'];
+  const range: ReportRange = allowedRanges.includes(searchParams.range as ReportRange)
+    ? (searchParams.range as ReportRange)
+    : 'month';
   const activeTab = searchParams.tab || 'pnl';
 
-  // Compute date filter boundary in UTC
-  const now = new Date();
-  let startDate: string | null = null;
+  // Period start in Pakistan time (shop day starts at 12:00 AM PKT)
+  const periodStart = pktRangeStart(range);
+  const shopId = user.shop_id!;
 
-  if (range === 'today') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-  } else if (range === 'week') {
-    const day = now.getDay() || 7;
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - day + 1);
-    monday.setHours(0, 0, 0, 0);
-    startDate = monday.toISOString();
-  } else if (range === 'month') {
-    startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-  }
+  type SaleRow = {
+    id: string;
+    invoice_number: string;
+    total_amount: number;
+    discount: number;
+    payment_method: string;
+    amount_paid: number;
+    amount_due: number;
+    status: string;
+    created_at: string;
+    sale_items: unknown[];
+  };
 
-  // 1. Fetch Completed Sales within period
-  let salesQuery = supabase
-    .from('sales')
-    .select(`
-      id, invoice_number, total_amount, discount, payment_method, amount_paid, amount_due, status, created_at,
-      customers(name),
-      sale_items(
-        quantity, unit_price, total_price, product_id,
-        products(name, model, purchase_price)
-      )
-    `)
-    .eq('shop_id', user.shop_id!)
-    .eq('status', 'completed');
+  // Paged fetches: busy shops have more than 1000 rows per month
+  const salesPromise = fetchAllRows<SaleRow>(() => {
+    let q = supabase
+      .from('sales')
+      .select(`
+        id, invoice_number, total_amount, discount, payment_method, amount_paid, amount_due, status, created_at,
+        sale_items(
+          quantity, unit_price, total_price, product_id,
+          products(name, model, purchase_price)
+        )
+      `)
+      .eq('shop_id', shopId)
+      .eq('status', 'completed');
+    if (periodStart) q = q.gte('created_at', periodStart.iso);
+    return q.order('created_at', { ascending: false });
+  });
 
-  if (startDate) {
-    salesQuery = salesQuery.gte('created_at', startDate);
-  }
+  const cancelledPromise = fetchAllRows<{ id: string; total_amount: number }>(() => {
+    let q = supabase
+      .from('sales')
+      .select('id, total_amount')
+      .eq('shop_id', shopId)
+      .eq('status', 'cancelled');
+    if (periodStart) q = q.gte('created_at', periodStart.iso);
+    return q.order('created_at', { ascending: false });
+  });
 
-  // 2. Fetch Cancelled Sales separately (Preserves history without polluting active revenue)
-  let cancelledSalesQuery = supabase
-    .from('sales')
-    .select('id, invoice_number, total_amount, created_at')
-    .eq('shop_id', user.shop_id!)
-    .eq('status', 'cancelled');
+  const purchasesPromise = fetchAllRows<{ id: string; total_amount: number; suppliers: unknown }>(() => {
+    let q = supabase
+      .from('purchases')
+      .select('id, total_amount, purchase_date, supplier_id, suppliers(name, company)')
+      .eq('shop_id', shopId);
+    if (periodStart) q = q.gte('purchase_date', periodStart.date);
+    return q.order('purchase_date', { ascending: false }).order('id', { ascending: true });
+  });
 
-  if (startDate) {
-    cancelledSalesQuery = cancelledSalesQuery.gte('created_at', startDate);
-  }
-
-  // 3. Fetch Purchases within period
-  let purchasesQuery = supabase
-    .from('purchases')
-    .select(`
-      id, total_amount, purchase_date, notes, supplier_id,
-      suppliers(name, company)
-    `)
-    .eq('shop_id', user.shop_id!);
-
-  if (startDate) {
-    purchasesQuery = purchasesQuery.gte('purchase_date', startDate.split('T')[0]);
-  }
-
-  // 4. Fetch Expenses within period
-  let expensesQuery = supabase
-    .from('expenses')
-    .select(`
-      id, amount, expense_date, payment_method, description, notes, category_id,
-      expense_categories(name)
-    `)
-    .eq('shop_id', user.shop_id!);
-
-  if (startDate) {
-    expensesQuery = expensesQuery.gte('expense_date', startDate.split('T')[0]);
-  }
+  const expensesPromise = fetchAllRows<Record<string, unknown>>(() => {
+    let q = supabase
+      .from('expenses')
+      .select('id, amount, expense_date, payment_method, description, notes, category_id, expense_categories(name)')
+      .eq('shop_id', shopId);
+    if (periodStart) q = q.gte('expense_date', periodStart.date);
+    return q.order('expense_date', { ascending: false }).order('created_at', { ascending: false });
+  });
 
   // 5. Fetch Inventory catalog snapshot & IMEIs
   const [
-    { data: sales },
-    { data: cancelledSales },
-    { data: purchases },
-    { data: expenses },
+    sales,
+    cancelledSales,
+    purchases,
+    expenses,
     { data: products },
     { count: inStockImeiCount },
   ] = await Promise.all([
-    salesQuery.order('created_at', { ascending: false }),
-    cancelledSalesQuery.order('created_at', { ascending: false }),
-    purchasesQuery.order('purchase_date', { ascending: false }),
-    expensesQuery.order('expense_date', { ascending: false }),
+    salesPromise,
+    cancelledPromise,
+    purchasesPromise,
+    expensesPromise,
     supabase
       .from('products')
       .select('id, name, model, stock_quantity, low_stock_threshold, purchase_price, sale_price, is_imei_tracked')
-      .eq('shop_id', user.shop_id!)
+      .eq('shop_id', shopId)
       .eq('is_active', true)
       .order('name'),
     supabase
@@ -165,8 +162,8 @@ export default async function ReportsPage(props: {
   const cancelledCount = cancelledSales?.length || 0;
   const cancelledTotal = (cancelledSales || []).reduce((sum, s) => sum + (s.total_amount || 0), 0);
 
-  // Profit calculation
-  const grossProfit = Math.max(0, totalRevenue - cogs);
+  // Profit calculation (negative = loss; never hide it)
+  const grossProfit = totalRevenue - cogs;
 
   // Expenses totals & category grouping
   let totalExpenses = 0;

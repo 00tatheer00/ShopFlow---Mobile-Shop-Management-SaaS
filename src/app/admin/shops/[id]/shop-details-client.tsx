@@ -28,6 +28,7 @@ import {
   sendOwnerPasswordResetAction,
   softDeleteShopAction,
   restoreShopAction,
+  setShopOwnerPasswordAction,
 } from '@/app/admin/actions';
 import type { Shop, Plan } from '@/lib/types';
 import { toast } from 'sonner';
@@ -198,6 +199,21 @@ export function ShopDetailsClient({
     } else {
       toast.success('Shop restored successfully.');
       router.refresh();
+    }
+  }
+
+  // Directly set a new owner password (for owners who don't use email)
+  async function handleSetOwnerPassword() {
+    const newPassword = window.prompt('New password for the shop owner (at least 8 characters):');
+    if (!newPassword) return;
+    setLoading(true);
+    setFeedback(null);
+    const res = await setShopOwnerPasswordAction(shop.id, newPassword);
+    setLoading(false);
+    if (res?.error) {
+      setFeedback({ type: 'error', message: res.error });
+    } else {
+      setFeedback({ type: 'success', message: 'Owner password updated. Share it with the owner on the phone.' });
     }
   }
 
@@ -466,6 +482,15 @@ export function ShopDetailsClient({
                 >
                   <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
                   <span>Send Password Reset Email</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  onClick={handleSetOwnerPassword}
+                  className="mt-2 w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                >
+                  <KeyRound className="h-3.5 w-3.5" />
+                  <span>Set New Password Directly</span>
                 </button>
               </div>
             </div>

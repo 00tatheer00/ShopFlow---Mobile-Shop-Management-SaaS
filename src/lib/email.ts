@@ -3,6 +3,9 @@
 // ============================================
 
 import { createClient } from '@/lib/supabase/server';
+import { SHOPFLOW_PAYMENT_CHANNELS } from '@/lib/payment-channels';
+
+export { SHOPFLOW_PAYMENT_CHANNELS };
 
 export interface SendEmailParams {
   shopId: string;
@@ -16,18 +19,15 @@ export interface SendEmailParams {
   sentByUserId?: string;
 }
 
-/**
- * Standard Bank & Mobile Wallet Details for ShopFlow Subscriptions
- */
-export const SHOPFLOW_PAYMENT_CHANNELS = {
-  bankName: 'Meezan Bank Ltd',
-  accountTitle: 'Syed Muhammad SAqlain',
-  accountNumber: '03143176526',
-  iban: 'PK49MEZN0002890108392101',
-  easyPaisa: '03143176526 (Syed Muhammad SAqlain)',
-  jazzCash: '03143176526 (Syed Muhammad SAqlain)',
-  monthlyFee: 'Rs. 8,000 / month',
-};
+/** Escape user-provided text before placing it inside email HTML. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 /**
  * Template 1: Payment Approved & Official Receipt Email
@@ -80,20 +80,20 @@ export function generatePaymentApprovedEmail({
       <div style="text-align: center;">
         <span class="badge">&#10003; PAYMENT CONFIRMED</span>
       </div>
-      <p style="font-size: 16px; color: #e2e8f0;">Dear <strong>${ownerName}</strong> (${shopName}),</p>
+      <p style="font-size: 16px; color: #e2e8f0;">Dear <strong>${escapeHtml(ownerName)}</strong> (${escapeHtml(shopName)}),</p>
       <p style="color: #94a3b8; line-height: 1.6;">
-        We have received and verified your monthly subscription payment for <strong>${monthName}</strong>. 
+        We have received and verified your monthly subscription payment for <strong>${escapeHtml(monthName)}</strong>. 
         Your shop account is fully active with uninterrupted access to POS, Inventory, IMEI Tracking, and Udhaar Khata.
       </p>
 
       <div class="receipt-box">
         <div class="receipt-row">
           <span class="receipt-label">Shop Name:</span>
-          <span class="receipt-value">${shopName}</span>
+          <span class="receipt-value">${escapeHtml(shopName)}</span>
         </div>
         <div class="receipt-row">
           <span class="receipt-label">Billing Month:</span>
-          <span class="receipt-value">${monthName}</span>
+          <span class="receipt-value">${escapeHtml(monthName)}</span>
         </div>
         <div class="receipt-row">
           <span class="receipt-label">Approval Date:</span>
@@ -101,12 +101,12 @@ export function generatePaymentApprovedEmail({
         </div>
         <div class="receipt-row">
           <span class="receipt-label">Payment Method:</span>
-          <span class="receipt-value">${paymentMethod || 'Online Bank Transfer / Mobile Wallet'}</span>
+          <span class="receipt-value">${escapeHtml(paymentMethod || 'Online Bank Transfer / Mobile Wallet')}</span>
         </div>
         ${referenceId ? `
         <div class="receipt-row">
           <span class="receipt-label">Transaction Ref ID:</span>
-          <span class="receipt-value">${referenceId}</span>
+          <span class="receipt-value">${escapeHtml(referenceId)}</span>
         </div>` : ''}
         <div class="receipt-row">
           <span class="receipt-label">Amount Paid:</span>
@@ -120,7 +120,7 @@ export function generatePaymentApprovedEmail({
     </div>
     <div class="footer">
       &copy; ${new Date().getFullYear()} ShopFlow Technologies. Hall Road & Hafeez Centre Support Desk.<br>
-      Email: support@shopflow.pk &bull; Helpline: 03143176526
+      Email: support@shopflow.pk &bull; Helpline: ${SHOPFLOW_PAYMENT_CHANNELS.whatsapp}
     </div>
   </div>
 </body>
@@ -169,12 +169,12 @@ export function generatePaymentReminderEmail({
   <div class="container">
     <div class="header">
       <h1>ShopFlow Subscription Notice</h1>
-      <p>Monthly SaaS Fee &bull; ${monthName}</p>
+      <p>Monthly SaaS Fee &bull; ${escapeHtml(monthName)}</p>
     </div>
     <div class="content">
-      <p style="font-size: 16px; color: #e2e8f0;">Dear <strong>${ownerName}</strong> (${shopName}),</p>
+      <p style="font-size: 16px; color: #e2e8f0;">Dear <strong>${escapeHtml(ownerName)}</strong> (${escapeHtml(shopName)}),</p>
       <p style="color: #94a3b8; line-height: 1.6;">
-        This is a friendly reminder that your ShopFlow monthly software subscription for <strong>${monthName}</strong> is currently pending.
+        This is a friendly reminder that your ShopFlow monthly software subscription for <strong>${escapeHtml(monthName)}</strong> is currently pending.
       </p>
 
       <div class="amount-box">
@@ -183,7 +183,7 @@ export function generatePaymentReminderEmail({
         <div style="font-size: 13px; color: #94a3b8;">Due Date: <strong>${dueDate}</strong></div>
       </div>
 
-      ${customNote ? `<div style="background: #334155/50; padding: 12px; border-radius: 8px; font-size: 13px; color: #e2e8f0; margin-bottom: 20px;">${customNote}</div>` : ''}
+      ${customNote ? `<div style="background: rgba(51, 65, 85, 0.5); padding: 12px; border-radius: 8px; font-size: 13px; color: #e2e8f0; margin-bottom: 20px;">${escapeHtml(customNote)}</div>` : ''}
 
       <h3 style="font-size: 15px; color: #f8fafc; margin-bottom: 10px;">Payment Instructions (Official Channels):</h3>
       <div class="bank-card">
@@ -200,7 +200,7 @@ export function generatePaymentReminderEmail({
     </div>
     <div class="footer">
       &copy; ${new Date().getFullYear()} ShopFlow Technologies. Pakistan's Premier Mobile Shop SaaS.<br>
-      Email: support@shopflow.pk &bull; Helpline: 03143176526
+      Email: support@shopflow.pk &bull; Helpline: ${SHOPFLOW_PAYMENT_CHANNELS.whatsapp}
     </div>
   </div>
 </body>
@@ -215,10 +215,14 @@ export async function sendAndLogEmail(params: SendEmailParams): Promise<{ succes
   try {
     const supabase = await createClient();
 
-    // 1. If RESEND_API_KEY is configured in env, attempt live HTTP dispatch
+    // 1. Live dispatch via Resend when configured. Without a key the email is
+    //    only logged as 'queued' (previously it was falsely logged as 'sent').
+    let status: 'sent' | 'failed' | 'queued' = 'queued';
+    let dispatchError: string | undefined;
+
     if (process.env.RESEND_API_KEY) {
       try {
-        await fetch('https://api.resend.com/emails', {
+        const res = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -231,8 +235,12 @@ export async function sendAndLogEmail(params: SendEmailParams): Promise<{ succes
             html: params.htmlContent,
           }),
         });
+        status = res.ok ? 'sent' : 'failed';
+        if (!res.ok) dispatchError = `Email provider rejected the message (HTTP ${res.status}).`;
       } catch (err) {
-        console.warn('Resend live dispatch warning (falling back to audit log):', err);
+        console.warn('Resend dispatch failed:', err);
+        status = 'failed';
+        dispatchError = 'Could not reach the email provider.';
       }
     }
 
@@ -245,7 +253,7 @@ export async function sendAndLogEmail(params: SendEmailParams): Promise<{ succes
       subject: params.subject,
       template_type: params.templateType,
       content_html: params.htmlContent,
-      status: 'sent',
+      status,
       metadata: params.metadata || {},
       sent_by: params.sentByUserId || null,
     });
@@ -254,6 +262,9 @@ export async function sendAndLogEmail(params: SendEmailParams): Promise<{ succes
       console.error('Failed to log email in email_logs table:', dbError);
     }
 
+    if (status === 'failed') {
+      return { success: false, error: dispatchError };
+    }
     return { success: true };
   } catch (error) {
     console.error('sendAndLogEmail error:', error);

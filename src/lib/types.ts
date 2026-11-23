@@ -18,31 +18,6 @@ export type PaymentType = 'sale_payment' | 'udhaar_payment';
 
 export type UdhaarType = 'credit' | 'debit';
 
-export type AuditAction =
-  | 'sale_created'
-  | 'sale_cancelled'
-  | 'purchase_created'
-  | 'product_created'
-  | 'product_updated'
-  | 'product_deleted'
-  | 'payment_received'
-  | 'expense_created'
-  | 'expense_updated'
-  | 'expense_deleted'
-  | 'user_created'
-  | 'user_updated'
-  | 'user_deactivated'
-  | 'settings_changed'
-  | 'shop_created'
-  | 'shop_updated'
-  | 'shop_suspended'
-  | 'shop_activated'
-  | 'shop_deactivated'
-  | 'shop_deleted'
-  | 'shop_restored'
-  | 'shop_permanently_deleted'
-  | 'stock_adjusted';
-
 // ---- Platform Entities ----
 
 export interface Shop {
@@ -78,13 +53,6 @@ export interface Plan {
   created_at: string;
 }
 
-export interface AdminDashboardMetrics {
-  totalShops: number;
-  activeShops: number;
-  suspendedShops: number;
-  deactivatedShops: number;
-  totalUsers: number;
-}
 
 export type SubscriptionStatus = 'unpaid' | 'paid' | 'overdue';
 
@@ -368,7 +336,7 @@ export interface AuditLog {
   id: string;
   shop_id: string | null;
   user_id: string;
-  action: AuditAction;
+  action: string;
   entity_type: string;
   entity_id: string | null;
   metadata: Record<string, unknown> | null;
@@ -404,6 +372,16 @@ export interface DashboardMetrics {
   today_net_profit?: number;
   today_sales_count?: number;
   total_products?: number;
+  /** Cash received today (cash sales + cash udhaar recovery), cancelled sales excluded */
+  today_cash_received?: number;
+  /** EasyPaisa / JazzCash / bank received today */
+  today_online_received?: number;
+  /** Udhaar recovered today (all methods) */
+  today_udhaar_recovered?: number;
+  /** New udhaar given on today's sales */
+  today_udhaar_given?: number;
+  /** Expenses paid in cash today */
+  today_cash_expenses?: number;
   recent_transactions: RecentTransaction[];
 }
 
@@ -415,23 +393,6 @@ export interface RecentTransaction {
   created_at: string;
 }
 
-// ---- Pagination ----
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  per_page: number;
-  total_pages: number;
-}
-
-export interface PaginationParams {
-  page?: number;
-  per_page?: number;
-  search?: string;
-  sort_by?: string;
-  sort_order?: 'asc' | 'desc';
-}
 
 // ---- Auth Context ----
 
@@ -442,15 +403,6 @@ export interface AuthUser {
   role: UserRole;
   shop_id: string | null;
   shop?: Shop;
-}
-
-// ---- API Response ----
-
-export interface ApiResponse<T = void> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
 }
 
 // ---- Currency Helper ----

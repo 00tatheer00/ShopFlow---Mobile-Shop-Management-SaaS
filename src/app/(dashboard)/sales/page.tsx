@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { requireShopAccess } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { fetchAllRows, getLatestUdhaarBalances, sanitizeSearch } from '@/lib/supabase/queries';
+import { pktTodayRange } from '@/lib/time';
 import { SalesClient } from './sales-client';
 import type { Customer } from '@/lib/types';
 
@@ -15,9 +17,9 @@ export default async function SalesPage(props: {
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
-  const search = searchParams.search || '';
-  const status = searchParams.status || '';
-  const page = Number(searchParams.page) || 1;
+  const search = sanitizeSearch(searchParams.search);
+  const status = ['completed', 'cancelled'].includes(searchParams.status || '') ? searchParams.status! : '';
+  const page = Math.max(1, Math.floor(Number(searchParams.page)) || 1);
   const perPage = 20;
 
   // Build query
@@ -41,37 +43,46 @@ export default async function SalesPage(props: {
   }
 
   if (search) {
-    query = query.or(`invoice_number.ilike.%${search}%`);
+    query = query.ilike('invoice_number', `%${search}%`);
   }
 
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  // Aggregate Metrics & Sales data concurrently in single round-trip
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Aggregate metrics concurrently. "Today" = Pakistan day.
+  const { start: todayStart, end: todayEnd } = pktTodayRange();
 
-  const [{ data: rawSales, count }, { data: revenueData }, { data: todayData }, { data: shop }] = await Promise.all([
+  const [{ data: rawSales, count }, revenueRows, { count: todayCount }, { data: shop }, balances] = await Promise.all([
     query,
+    fetchAllRows<{ total_amount: number }>(() =>
+      supabase
+        .from('sales')
+        .select('total_amount')
+        .eq('shop_id', user.shop_id!)
+        .eq('status', 'completed')
+        .order('created_at', { ascending: true })
+    ),
     supabase
       .from('sales')
-      .select('total_amount, amount_due')
+      .select('id', { count: 'exact', head: true })
       .eq('shop_id', user.shop_id!)
-      .eq('status', 'completed'),
-    supabase
-      .from('sales')
-      .select('id')
-      .eq('shop_id', user.shop_id!)
-      .gte('created_at', `${todayStr}T00:00:00Z`),
+      .gte('created_at', todayStart)
+      .lt('created_at', todayEnd),
     supabase
       .from('shops')
       .select('name, phone, address')
       .eq('id', user.shop_id!)
       .maybeSingle(),
+    getLatestUdhaarBalances(supabase, user.shop_id!),
   ]);
 
-  const totalRevenue = (revenueData || []).reduce((sum, s) => sum + (s.total_amount || 0), 0);
-  const totalUdhaarDue = (revenueData || []).reduce((sum, s) => sum + (s.amount_due || 0), 0);
-  const todaySalesCount = todayData?.length || 0;
+  const totalRevenue = revenueRows.reduce((sum, s) => sum + (s.total_amount || 0), 0);
+  // Real outstanding udhaar today (falls as customers pay), not original invoice dues
+  let totalUdhaarDue = 0;
+  for (const b of balances.values()) {
+    if (b.balance_after > 0) totalUdhaarDue += b.balance_after;
+  }
+  const todaySalesCount = todayCount || 0;
 
   const sales = (rawSales || []).map((s) => ({
     id: s.id,

@@ -22,7 +22,7 @@ ShopFlow is a modern, high-performance web platform built for mobile phone retai
 - **Language**: TypeScript
 - **Frontend**: React 19, Tailwind CSS
 - **Database & Auth**: Supabase (PostgreSQL 15, SSR Auth, RLS)
-- **UI Components**: Lucide React, Recharts, Sonner
+- **UI Components**: Lucide React, Sonner
 
 ---
 

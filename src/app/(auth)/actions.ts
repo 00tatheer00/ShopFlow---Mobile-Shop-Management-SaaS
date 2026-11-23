@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { getAdminClient } from '@/lib/supabase/admin';
-import { loginSchema } from '@/lib/validations';
+import { forgotPasswordSchema, loginSchema } from '@/lib/validations';
 import { redirect } from 'next/navigation';
 
 export async function loginAction(formData: FormData) {
@@ -25,7 +25,14 @@ export async function loginAction(formData: FormData) {
   });
 
   if (error) {
-    return { error: 'Invalid email or password. Please try again.' };
+    console.error('[Supabase Auth Error]:', error.message);
+    if (/email not confirmed/i.test(error.message)) {
+      return { error: 'This account is not activated yet. Please contact ShopFlow support.' };
+    }
+    if (/fetch|network|timeout/i.test(error.message)) {
+      return { error: 'Internet problem. Please check your connection and try again.' };
+    }
+    return { error: 'Wrong email or password. Please try again.' };
   }
 
   // Get user role to determine redirect
@@ -45,6 +52,8 @@ export async function loginAction(formData: FormData) {
     .select('role, shop_id')
     .eq('user_id', user.id)
     .eq('is_active', true)
+    .order('created_at', { ascending: true })
+    .limit(1)
     .maybeSingle();
 
   if (shopUser) {
@@ -59,6 +68,8 @@ export async function loginAction(formData: FormData) {
         .select('role, shop_id')
         .eq('user_id', user.id)
         .eq('is_active', true)
+        .order('created_at', { ascending: true })
+        .limit(1)
         .maybeSingle();
 
       if (adminSu) {
@@ -83,11 +94,11 @@ export async function loginAction(formData: FormData) {
     const adminClient = getAdminClient() || supabase;
     const { data: shop } = await adminClient
       .from('shops')
-      .select('status')
+      .select('status, deleted_at')
       .eq('id', userShopId)
       .maybeSingle();
 
-    shopStatus = shop?.status || null;
+    shopStatus = shop?.deleted_at ? 'deactivated' : shop?.status || null;
   }
 
   if (shopStatus === 'suspended') {
@@ -112,14 +123,14 @@ export async function logoutAction() {
 export async function forgotPasswordAction(formData: FormData) {
   const supabase = await createClient();
 
-  const email = formData.get('email') as string;
-
-  if (!email) {
-    return { error: 'Please enter your email address.' };
+  const parsed = forgotPasswordSchema.safeParse({ email: ((formData.get('email') as string) || '').trim() });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
   }
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://shopflow.pk';
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    redirectTo: `${appUrl}/reset-password`,
   });
 
   if (error) {

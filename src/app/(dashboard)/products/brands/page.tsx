@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { BrandsClient } from './brands-client';
 
 export const metadata: Metadata = { title: 'Brands' };
 
 export default async function BrandsPage() {
-  const user = await requireShopAccess();
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
 
   const { data: brands } = await supabase

@@ -1,5 +1,6 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -82,7 +83,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Phone & Accessory Brands</h1>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">Brands <Ur className="text-lg text-muted-foreground">کمپنیاں</Ur></h1>
             <p className="text-xs text-muted-foreground">
               Manage mobile manufacturers and brands (Apple, Samsung, Xiaomi, Infinix, Realme, Oppo)
             </p>

@@ -40,7 +40,10 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
     return { error: 'Subscription record not found.' };
   }
 
-  const amountPaisas = payload.amountRupees ? payload.amountRupees * 100 : sub.amount || SUBSCRIPTION_PRICE_PAISAS;
+  const amountPaisas =
+    payload.amountRupees && payload.amountRupees > 0
+      ? Math.round(payload.amountRupees * 100)
+      : sub.amount || SUBSCRIPTION_PRICE_PAISAS;
   const now = new Date().toISOString();
 
   // 2. Mark subscription as PAID
@@ -146,7 +149,7 @@ export async function approveSubscriptionPayment(payload: ApprovePaymentPayload)
     action: 'settings_changed',
     entity_type: 'shop_subscriptions',
     entity_id: sub.id,
-    details: {
+    metadata: {
       action: 'subscription_approved',
       month: sub.billing_month,
       amount_paisas: amountPaisas,
@@ -192,7 +195,17 @@ export async function revokeSubscriptionPayment(subscriptionId: string) {
 
   if (error) return { error: 'Failed to revoke payment.' };
 
+  await supabase.from('audit_logs').insert({
+    shop_id: sub.shop_id,
+    user_id: user.id,
+    action: 'settings_changed',
+    entity_type: 'shop_subscriptions',
+    entity_id: sub.id,
+    metadata: { action: 'subscription_revoked', month: sub.billing_month },
+  });
+
   revalidatePath('/admin/subscriptions');
+  revalidatePath(`/admin/shops/${sub.shop_id}`);
   return { success: true };
 }
 

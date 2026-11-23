@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, Check, Smartphone } from 'lucide-react';
+import { Download, Check } from 'lucide-react';
+import { useIsIos, useIsStandalone } from '@/lib/hooks';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -10,32 +11,27 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function PwaInstallButton({ className = '' }: { className?: string }) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isIos, setIsIos] = useState(false);
+  const [justInstalled, setJustInstalled] = useState(false);
+  const isStandalone = useIsStandalone();
+  const isIos = useIsIos();
+  const isInstalled = isStandalone || justInstalled;
 
   useEffect(() => {
-    // Check if already installed
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-    setIsInstalled(isStandalone);
-
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    setIsIos(/iphone|ipad|ipod/.test(userAgent));
-
     const handlePrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
+    const handleInstalled = () => {
+      setJustInstalled(true);
+      setDeferredPrompt(null);
+    };
 
     window.addEventListener('beforeinstallprompt', handlePrompt);
-    window.addEventListener('appinstalled', () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-    });
+    window.addEventListener('appinstalled', handleInstalled);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handlePrompt);
+      window.removeEventListener('appinstalled', handleInstalled);
     };
   }, []);
 
@@ -53,7 +49,7 @@ export function PwaInstallButton({ className = '' }: { className?: string }) {
       await deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
       if (choice.outcome === 'accepted') {
-        setIsInstalled(true);
+        setJustInstalled(true);
       }
       setDeferredPrompt(null);
     } else if (isIos) {

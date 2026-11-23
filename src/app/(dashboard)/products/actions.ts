@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { escapeLike } from '@/lib/supabase/queries';
 import { requireShopAccess, hasPermission } from '@/lib/auth';
 import {
   productSchema,
@@ -11,6 +12,13 @@ import {
 import { revalidatePath } from 'next/cache';
 
 // ---- Products ----
+
+/** Empty -> default 5, but an explicit 0 ("never warn") is respected. */
+function parseThreshold(value: FormDataEntryValue | null): number {
+  if (value === null || String(value).trim() === '') return 5;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? Math.floor(n) : 5;
+}
 
 export async function createProduct(formData: FormData) {
   const user = await requireShopAccess();
@@ -27,7 +35,7 @@ export async function createProduct(formData: FormData) {
     sale_price: Number(formData.get('sale_price')) || 0,
     purchase_price: Number(formData.get('purchase_price')) || 0,
     stock_quantity: Number(formData.get('stock_quantity')) || 0,
-    low_stock_threshold: Number(formData.get('low_stock_threshold')) || 5,
+    low_stock_threshold: parseThreshold(formData.get('low_stock_threshold')),
   };
 
   const result = productSchema.safeParse(raw);
@@ -42,8 +50,9 @@ export async function createProduct(formData: FormData) {
     .from('products')
     .select('id')
     .eq('shop_id', user.shop_id!)
-    .ilike('name', result.data.name)
+    .ilike('name', escapeLike(result.data.name))
     .eq('is_active', true)
+    .limit(1)
     .maybeSingle();
 
   if (duplicate) {
@@ -130,7 +139,7 @@ export async function updateProduct(id: string, formData: FormData) {
     sale_price: Number(formData.get('sale_price')) || 0,
     purchase_price: Number(formData.get('purchase_price')) || 0,
     stock_quantity: Number(formData.get('stock_quantity')) || 0,
-    low_stock_threshold: Number(formData.get('low_stock_threshold')) || 5,
+    low_stock_threshold: parseThreshold(formData.get('low_stock_threshold')),
   };
 
   const result = productSchema.safeParse(raw);
@@ -183,9 +192,10 @@ export async function updateProduct(id: string, formData: FormData) {
       .from('products')
       .select('id')
       .eq('shop_id', user.shop_id!)
-      .ilike('name', result.data.name)
+      .ilike('name', escapeLike(result.data.name))
       .eq('is_active', true)
       .neq('id', id)
+      .limit(1)
       .maybeSingle();
 
     if (duplicate) {
@@ -213,10 +223,8 @@ export async function updateProduct(id: string, formData: FormData) {
     if (!brand) return { error: 'Invalid brand for this shop.' };
   }
 
-  // Preserve existing stock quantity! Stock adjustments must go through adjustStock or Purchases/Sales
-  const updatedStock = existing.is_imei_tracked
-    ? existing.stock_quantity
-    : existing.stock_quantity;
+  // Stock is NOT written here. Writing back the value read above would erase any
+  // sale made in between. Stock only changes via sales, purchases and adjustStock.
 
   const { error } = await supabase
     .from('products')
@@ -228,7 +236,6 @@ export async function updateProduct(id: string, formData: FormData) {
       is_imei_tracked: result.data.is_imei_tracked,
       sale_price: Math.round(result.data.sale_price * 100),
       purchase_price: Math.round(result.data.purchase_price * 100),
-      stock_quantity: updatedStock,
       low_stock_threshold: result.data.low_stock_threshold,
     })
     .eq('id', id)
@@ -439,25 +446,26 @@ export async function adjustStock(payload: {
     };
   }
 
-  const oldStock = product.stock_quantity || 0;
-  const newStock = oldStock + result.data.adjustment;
+  const adjustment = result.data.adjustment;
+  const qty = Math.abs(adjustment);
 
-  if (newStock < 0) {
-    return {
-      error: `Stock cannot become negative. Current stock is ${oldStock}, adjustment requested is ${result.data.adjustment}.`,
-    };
-  }
-
-  // 2. Perform atomic stock update
-  const { error: updateError } = await supabase
-    .from('products')
-    .update({ stock_quantity: newStock })
-    .eq('id', product.id)
-    .eq('shop_id', user.shop_id!);
+  // 2. Atomic stock change in the database (safe even while the POS is selling)
+  const { data: newStockValue, error: updateError } = await supabase.rpc(
+    adjustment > 0 ? 'increment_product_stock' : 'decrement_product_stock',
+    { p_shop_id: user.shop_id, p_product_id: product.id, p_quantity: qty }
+  );
 
   if (updateError) {
+    if (adjustment < 0) {
+      return {
+        error: `Stock cannot become negative. Current stock is ${product.stock_quantity || 0}, you tried to remove ${qty}.`,
+      };
+    }
     return { error: 'Failed to update stock quantity.' };
   }
+
+  const newStock = Number(newStockValue);
+  const oldStock = newStock - adjustment;
 
   // 3. Record in stock_adjustments table for complete auditability
   await supabase.from('stock_adjustments').insert({
@@ -524,7 +532,8 @@ export async function searchImei(imeiQuery: string): Promise<{
   results?: ImeiSearchResult[];
 }> {
   const user = await requireShopAccess();
-  const trimmed = imeiQuery?.trim();
+  // IMEIs are digits only; stripping everything else also neutralises LIKE wildcards
+  const trimmed = (imeiQuery || '').replace(/\D/g, '').slice(0, 15);
   if (!trimmed || trimmed.length < 3) {
     return { error: 'Please enter at least 3 digits to search IMEI.' };
   }

@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronUp,
-  Clock,
   ArrowRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,7 +25,6 @@ export function AppUpdateNotifier() {
   const [showPopup, setShowPopup] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
   const isMountedRef = useRef(true);
 
   // Initialize client version in local/session state on first mount
@@ -60,7 +58,6 @@ export function AppUpdateNotifier() {
 
   // Check for updates against /api/version
   const checkForUpdate = useCallback(async (manual = false) => {
-    if (manual) setIsChecking(true);
     try {
       const res = await fetch(`/api/version?t=${Date.now()}`, {
         cache: 'no-store',
@@ -97,15 +94,11 @@ export function AppUpdateNotifier() {
           description: `You are running the latest version (v${localVersion}).`,
         });
       }
-    } catch (err) {
+    } catch {
       if (manual) {
         toast.error('Could not check for updates', {
           description: 'Please check your internet connection.',
         });
-      }
-    } finally {
-      if (isMountedRef.current && manual) {
-        setIsChecking(false);
       }
     }
   }, []);

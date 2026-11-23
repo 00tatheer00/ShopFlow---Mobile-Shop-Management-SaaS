@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { SuppliersClient } from './suppliers-client';
 
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Suppliers' };
 export default async function SuppliersPage(props: {
   searchParams: Promise<{ search?: string; page?: string }>;
 }) {
-  const user = await requireShopAccess();
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 

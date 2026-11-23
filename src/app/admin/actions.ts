@@ -282,7 +282,13 @@ export async function createShopAction(formData: FormData) {
 
   if (shopUserError) {
     console.error('Shop user link error:', shopUserError);
+    return {
+      error: `Shop ${shop.display_shop_id} was created but the owner account could not be linked. Open the shop and try again, or contact support.`,
+    };
   }
+
+  // Default expense categories (Rent, Bijli, Chai...) so the owner can start immediately
+  await db.rpc('seed_default_expense_categories', { p_shop_id: shop.id });
 
   // 8. Log Super Admin Action in audit_logs
   await db.from('audit_logs').insert({
@@ -821,6 +827,49 @@ export async function clearAuditLogsAction() {
 
   revalidatePath('/admin/dashboard');
   revalidatePath('/admin/settings');
+
+  return { success: true };
+}
+
+/**
+ * Super Admin Action: Directly set a new password for a shop's owner.
+ * Most shopkeepers do not use email, so a reset link is often useless;
+ * the admin can set a password and tell the owner on the phone.
+ */
+export async function setShopOwnerPasswordAction(shopId: string, newPassword: string) {
+  const admin = await requireSuperAdmin();
+
+  if (typeof newPassword !== 'string' || newPassword.length < 8) {
+    return { error: 'Password must be at least 8 characters.' };
+  }
+
+  const adminClient = getAdminClient();
+  if (!adminClient) {
+    return { error: 'Service role key is not configured (SUPABASE_SERVICE_ROLE_KEY).' };
+  }
+
+  const { data: owner } = await adminClient
+    .from('shop_users')
+    .select('user_id')
+    .eq('shop_id', shopId)
+    .eq('role', 'shop_owner')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!owner) return { error: 'No owner account found for this shop.' };
+
+  const { error } = await adminClient.auth.admin.updateUserById(owner.user_id, { password: newPassword });
+  if (error) return { error: 'Could not update the owner password.' };
+
+  await adminClient.from('audit_logs').insert({
+    shop_id: shopId,
+    user_id: admin.id,
+    action: 'user_updated',
+    entity_type: 'user',
+    entity_id: owner.user_id,
+    metadata: { action: 'owner_password_set_by_admin', admin_email: admin.email },
+  });
 
   return { success: true };
 }

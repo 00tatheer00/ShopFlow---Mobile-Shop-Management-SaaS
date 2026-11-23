@@ -5,7 +5,6 @@ import {
   CreditCard,
   CheckCircle2,
   Clock,
-  AlertCircle,
   Mail,
   Search,
   Check,
@@ -16,9 +15,6 @@ import {
   PlusCircle,
   Eye,
   X,
-  Phone,
-  FileText,
-  BadgeAlert,
   Download,
 } from 'lucide-react';
 import type { ShopSubscription, Shop, EmailLog } from '@/lib/types';

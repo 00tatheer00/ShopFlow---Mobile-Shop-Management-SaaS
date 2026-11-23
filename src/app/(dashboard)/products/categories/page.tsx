@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import { requireShopAccess } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { CategoriesClient } from './categories-client';
 
 export const metadata: Metadata = { title: 'Product Categories' };
 
 export default async function CategoriesPage() {
-  const user = await requireShopAccess();
+  const user = await requireRole(['shop_owner', 'manager']);
   const supabase = await createClient();
 
   const { data: categories } = await supabase

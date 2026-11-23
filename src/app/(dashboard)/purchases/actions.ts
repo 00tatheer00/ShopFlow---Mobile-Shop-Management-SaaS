@@ -43,23 +43,22 @@ export async function createPurchase(payload: CreatePurchasePayload) {
     return { error: 'Supplier not found or does not belong to this shop.' };
   }
 
-  // 2. Verify all products belong to this shop, check active status, and validate IMEI counts & formats
+  // 2. Verify all products belong to this shop (single query), and validate IMEI counts & formats
   const allImeis: string[] = [];
-  const productCache = new Map<string, { id: string; name: string; is_imei_tracked: boolean; stock_quantity: number }>();
+  const uniqueProductIds = Array.from(new Set(result.data.items.map((i) => i.product_id)));
+  const { data: dbProducts } = await supabase
+    .from('products')
+    .select('id, name, is_imei_tracked, is_active')
+    .in('id', uniqueProductIds)
+    .eq('shop_id', user.shop_id!);
+
+  if (!dbProducts || dbProducts.length !== uniqueProductIds.length) {
+    return { error: 'One or more selected products do not belong to your shop.' };
+  }
+  const productCache = new Map(dbProducts.map((p) => [p.id, p]));
 
   for (const item of result.data.items) {
-    const { data: product } = await supabase
-      .from('products')
-      .select('id, name, is_imei_tracked, stock_quantity, is_active')
-      .eq('id', item.product_id)
-      .eq('shop_id', user.shop_id!)
-      .single();
-
-    if (!product) {
-      return { error: 'One or more selected products do not belong to your shop.' };
-    }
-
-    productCache.set(product.id, product);
+    const product = productCache.get(item.product_id)!;
 
     if (product.is_imei_tracked) {
       const imeis = (item.imei_numbers || [])
@@ -72,7 +71,6 @@ export async function createPurchase(payload: CreatePurchasePayload) {
         };
       }
 
-      // Validate 15-digit format for each IMEI
       for (const imei of imeis) {
         const val = validateImeiString(imei);
         if (!val.isValidFormat) {
@@ -182,18 +180,14 @@ export async function createPurchase(payload: CreatePurchasePayload) {
       }
     }
 
-    // Increment product stock and update purchase price
-    const currentProd = productCache.get(item.product_id);
-    const newStock = (currentProd?.stock_quantity || 0) + item.quantity;
-
-    const { error: stockError } = await supabase
-      .from('products')
-      .update({
-        stock_quantity: newStock,
-        purchase_price: unitPricePaisas,
-      })
-      .eq('id', item.product_id)
-      .eq('shop_id', user.shop_id!);
+    // Increment stock ATOMICALLY (stock = stock + qty in the database).
+    // The old code wrote "cached stock + qty", which lost concurrent sales and
+    // dropped the first line when the same product appeared twice in one purchase.
+    const { error: stockError } = await supabase.rpc('increment_product_stock', {
+      p_shop_id: user.shop_id,
+      p_product_id: item.product_id,
+      p_quantity: item.quantity,
+    });
 
     if (stockError) {
       rollbackNeeded = true;
@@ -202,20 +196,24 @@ export async function createPurchase(payload: CreatePurchasePayload) {
     }
 
     stockIncrementsToRollback.push({ productId: item.product_id, quantity: item.quantity });
+
+    // Latest purchase cost becomes the product's cost price (used for profit)
+    await supabase
+      .from('products')
+      .update({ purchase_price: unitPricePaisas })
+      .eq('id', item.product_id)
+      .eq('shop_id', user.shop_id!);
   }
 
   // 6. ROLLBACK IF ANY ERROR OCCURRED (Section 12: Purchase + IMEI Atomicity)
   if (rollbackNeeded) {
-    // Reverse any applied stock increments
+    // Reverse any applied stock increments atomically
     for (const rb of stockIncrementsToRollback) {
-      const curr = productCache.get(rb.productId);
-      if (curr) {
-        await supabase
-          .from('products')
-          .update({ stock_quantity: curr.stock_quantity })
-          .eq('id', rb.productId)
-          .eq('shop_id', user.shop_id!);
-      }
+      await supabase.rpc('decrement_product_stock', {
+        p_shop_id: user.shop_id,
+        p_product_id: rb.productId,
+        p_quantity: rb.quantity,
+      });
     }
 
     // Clean up created purchase (cascades items and IMEIs)
@@ -286,41 +284,43 @@ export async function deletePurchase(purchaseId: string) {
     }
   }
 
-  // 3. Pre-verify stock reversal: verify reversing stock won't violate non-negative stock constraint
-  if (purchase.purchase_items) {
-    for (const item of purchase.purchase_items) {
-      const { data: prod } = await supabase
-        .from('products')
-        .select('name, stock_quantity')
-        .eq('id', item.product_id)
-        .eq('shop_id', user.shop_id!)
-        .single();
+  // 3. Pre-verify stock reversal won't make stock negative (sum per product)
+  const qtyByProduct = new Map<string, number>();
+  for (const item of purchase.purchase_items || []) {
+    qtyByProduct.set(item.product_id, (qtyByProduct.get(item.product_id) || 0) + item.quantity);
+  }
 
-      if (prod && (prod.stock_quantity || 0) < item.quantity) {
+  if (qtyByProduct.size > 0) {
+    const { data: prods } = await supabase
+      .from('products')
+      .select('id, name, stock_quantity')
+      .in('id', Array.from(qtyByProduct.keys()))
+      .eq('shop_id', user.shop_id!);
+
+    for (const prod of prods || []) {
+      const qty = qtyByProduct.get(prod.id) || 0;
+      if ((prod.stock_quantity || 0) < qty) {
         return {
-          error: `Cannot delete purchase: stock for "${prod.name}" has already been depleted (${prod.stock_quantity} available, purchase was ${item.quantity}).`,
+          error: `Cannot delete purchase: stock for "${prod.name}" has already been sold (${prod.stock_quantity} left, purchase was ${qty}).`,
         };
       }
     }
 
-    // Safely decrement stock
-    for (const item of purchase.purchase_items) {
-      const { data: prod } = await supabase
-        .from('products')
-        .select('stock_quantity')
-        .eq('id', item.product_id)
-        .eq('shop_id', user.shop_id!)
-        .single();
-
-      if (prod) {
-        await supabase
-          .from('products')
-          .update({
-            stock_quantity: Math.max(0, (prod.stock_quantity || 0) - item.quantity),
-          })
-          .eq('id', item.product_id)
-          .eq('shop_id', user.shop_id!);
+    // Atomic decrement per product (fails safely if stock changed meanwhile)
+    const reverted: { id: string; qty: number }[] = [];
+    for (const [productId, qty] of qtyByProduct) {
+      const { error: decError } = await supabase.rpc('decrement_product_stock', {
+        p_shop_id: user.shop_id,
+        p_product_id: productId,
+        p_quantity: qty,
+      });
+      if (decError) {
+        for (const r of reverted) {
+          await supabase.rpc('increment_product_stock', { p_shop_id: user.shop_id, p_product_id: r.id, p_quantity: r.qty });
+        }
+        return { error: 'Stock changed while deleting this purchase. Please try again.' };
       }
+      reverted.push({ id: productId, qty });
     }
   }
 

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Printer, X, CheckCircle2, ShieldCheck, FileText, QrCode } from 'lucide-react';
-import { CurrencyDisplay } from './currency-display';
+import { Printer, X, ShieldCheck } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export interface ReceiptItem {

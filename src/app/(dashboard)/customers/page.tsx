@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireShopAccess } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { getLatestUdhaarBalances, sanitizeSearch } from '@/lib/supabase/queries';
 import { CustomersClient } from './customers-client';
 
 export const metadata: Metadata = { title: 'Customers' };
@@ -12,8 +13,9 @@ export default async function CustomersPage(props: {
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
-  const search = searchParams.search || '';
-  const page = Number(searchParams.page) || 1;
+  // Sanitised: commas/parentheses would otherwise break the PostgREST .or() filter
+  const search = sanitizeSearch(searchParams.search);
+  const page = Math.max(1, Math.floor(Number(searchParams.page)) || 1);
   const perPage = 20;
 
   let query = supabase
@@ -34,27 +36,11 @@ export default async function CustomersPage(props: {
 
   // Get udhaar balances for each customer
   const customerIds = customers?.map((c) => c.id) || [];
-  const udhaarMap = new Map<string, number>();
-
-  if (customerIds.length > 0) {
-    const { data: udhaarData } = await supabase
-      .from('udhaar_ledger')
-      .select('customer_id, balance_after')
-      .eq('shop_id', user.shop_id!)
-      .in('customer_id', customerIds)
-      .order('created_at', { ascending: false });
-
-    // Get latest balance per customer
-    udhaarData?.forEach((entry) => {
-      if (!udhaarMap.has(entry.customer_id)) {
-        udhaarMap.set(entry.customer_id, entry.balance_after);
-      }
-    });
-  }
+  const balances = await getLatestUdhaarBalances(supabase, user.shop_id!, customerIds);
 
   const enrichedCustomers = (customers || []).map((c) => ({
     ...c,
-    udhaar_balance: udhaarMap.get(c.id) || 0,
+    udhaar_balance: balances.get(c.id)?.balance_after || 0,
   }));
 
   const totalPages = Math.ceil((count || 0) / perPage);

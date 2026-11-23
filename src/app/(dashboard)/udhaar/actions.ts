@@ -1,33 +1,19 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { getAdminClient } from '@/lib/supabase/admin';
+import { getCustomerBalance } from '@/lib/supabase/queries';
 import { requireShopAccess, hasPermission } from '@/lib/auth';
 import { recordPaymentSchema } from '@/lib/validations';
 import { toPaisas, PaymentMethod } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 
-// Helper to get latest balance of a customer
-async function getCustomerLatestBalance(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  shopId: string,
-  customerId: string
-): Promise<number> {
-  const { data } = await supabase
-    .from('udhaar_ledger')
-    .select('balance_after')
-    .eq('shop_id', shopId)
-    .eq('customer_id', customerId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  return data?.balance_after || 0;
-}
-
 export async function recordUdhaarPayment(formData: FormData) {
   const user = await requireShopAccess();
-  if (!hasPermission(user.role, 'payments:create')) {
+  // NOTE: previously checked 'payments:create', a permission no role had —
+  // which silently blocked every udhaar recovery in the shop.
+  if (!hasPermission(user.role, 'udhaar:payment')) {
     return { error: 'You do not have permission to record payments.' };
   }
 
@@ -64,7 +50,7 @@ export async function recordUdhaarPayment(formData: FormData) {
   }
 
   // 2. Fetch authoritative outstanding balance
-  const currentBalance = await getCustomerLatestBalance(supabase, user.shop_id!, result.data.customer_id);
+  const currentBalance = await getCustomerBalance(supabase, user.shop_id!, result.data.customer_id);
 
   if (currentBalance <= 0) {
     return { error: `Customer "${customer.name}" has no outstanding Udhaar balance to settle.` };
@@ -118,7 +104,8 @@ export async function recordUdhaarPayment(formData: FormData) {
   if (ledgerError) {
     console.error('Ledger insert error:', ledgerError);
     // Rollback payment row to avoid orphaned financial records
-    await supabase.from('payments').delete().eq('id', payment.id).eq('shop_id', user.shop_id!);
+    // (cashiers cannot delete payments under RLS, so use the server admin client)
+    await (getAdminClient() ?? supabase).from('payments').delete().eq('id', payment.id).eq('shop_id', user.shop_id!);
     return { error: 'Payment transaction failed while updating customer ledger.' };
   }
 
@@ -154,8 +141,8 @@ const manualCreditSchema = z.object({
 
 export async function addManualUdhaarCredit(formData: FormData) {
   const user = await requireShopAccess();
-  if (!hasPermission(user.role, 'payments:create')) {
-    return { error: 'You do not have permission to add credit.' };
+  if (!hasPermission(user.role, 'udhaar:credit')) {
+    return { error: 'Only the shop owner or manager can add udhaar manually.' };
   }
 
   const raw = {
@@ -184,7 +171,7 @@ export async function addManualUdhaarCredit(formData: FormData) {
   }
 
   const amountPaisas = toPaisas(result.data.amount);
-  const currentBalance = await getCustomerLatestBalance(supabase, user.shop_id!, result.data.customer_id);
+  const currentBalance = await getCustomerBalance(supabase, user.shop_id!, result.data.customer_id);
   const newBalance = currentBalance + amountPaisas;
 
   const { data: ledgerEntry, error } = await supabase

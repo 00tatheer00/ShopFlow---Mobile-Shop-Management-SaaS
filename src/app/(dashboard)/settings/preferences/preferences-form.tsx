@@ -1,5 +1,6 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -59,7 +60,7 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
       </div>
 
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">POS & Invoice Preferences</h1>
+        <h1 className="text-xl font-bold tracking-tight text-foreground">Bill & Printing <Ur className="text-lg text-muted-foreground">بل کی سیٹنگ</Ur></h1>
         <p className="text-xs text-muted-foreground">
           Customize receipt notes, low stock alerts, and invoice numbering.
         </p>

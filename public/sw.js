@@ -1,9 +1,18 @@
 // ShopFlow Service Worker
-const CACHE_NAME = 'shopflow-v1.2.0';
+//
+// Privacy & correctness rules:
+//  * App pages (dashboard, udhaar, sales...) contain private shop data and live
+//    money figures. They are NEVER stored in the cache. When offline, the
+//    shopkeeper sees the /offline page instead of yesterday's numbers or the
+//    previous user's data on a shared phone.
+//  * Only static, non-personal files (JS/CSS bundles, icons, fonts) are cached.
+//
+// Bump CACHE_NAME on every release that changes caching behaviour; the activate
+// step deletes all older caches (this also wipes pages cached by older versions).
+const CACHE_NAME = 'shopflow-static-v1.3.0';
 const OFFLINE_URL = '/offline';
 
 const PRECACHE_ASSETS = [
-  '/',
   '/offline',
   '/manifest.json',
   '/icons/icon-192x192.png',
@@ -14,137 +23,88 @@ const PRECACHE_ASSETS = [
   '/favicon.ico',
 ];
 
-// Install: precache essential shell assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-          console.warn('[SW] Precache asset failure (skipping non-fatal):', err);
-        });
-      })
+      .then((cache) =>
+        Promise.all(
+          PRECACHE_ASSETS.map((url) =>
+            cache.add(new Request(url, { cache: 'reload' })).catch((err) => {
+              console.warn('[SW] Precache skipped for', url, err);
+            })
+          )
+        )
+      )
       .then(() => self.skipWaiting())
   );
 });
 
-// Activate: clean up outdated caches and claim clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches
       .keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((name) => {
-            if (name !== CACHE_NAME) {
-              return caches.delete(name);
-            }
-          })
-        );
-      })
+      .then((names) => Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n))))
       .then(() => self.clients.claim())
   );
 });
 
-// Fetch: Strategy
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // 1. Skip non-GET requests (mutations, Supabase auth, server actions)
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // 2. Skip external API calls and Supabase queries (live transactional integrity)
-  if (
-    url.hostname.includes('supabase.co') ||
-    url.pathname.startsWith('/api/') ||
-    url.pathname.includes('/auth/')
-  ) {
-    return;
-  }
-
-  // 3. Navigation requests (HTML pages)
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          // If valid response, clone into cache
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(async () => {
-          // Fallback to cache, or offline page
-          const cachedResponse = await caches.match(request);
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          const offlineResponse = await caches.match(OFFLINE_URL);
-          if (offlineResponse) {
-            return offlineResponse;
-          }
-          return new Response('Internet disconnect hai. Please refresh.', {
-            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-          });
-        })
-    );
-    return;
-  }
-
-  // 4. Static assets (_next/static, images, icons, fonts)
-  if (
+function isStaticAsset(url) {
+  return (
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/icons/') ||
-    url.pathname.endsWith('.png') ||
-    url.pathname.endsWith('.svg') ||
-    url.pathname.endsWith('.ico') ||
-    url.pathname.endsWith('.css') ||
-    url.pathname.endsWith('.js')
-  ) {
-    event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          // Return cached and update in background (Stale-While-Revalidate)
-          fetch(request)
-            .then((networkResponse) => {
-              if (networkResponse && networkResponse.status === 200) {
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(request, networkResponse);
-                });
-              }
-            })
-            .catch(() => {});
-          return cachedResponse;
-        }
+    /\.(?:png|svg|ico|webp|jpg|jpeg|woff2?|css|js)$/.test(url.pathname)
+  );
+}
 
-        // Not in cache, fetch from network
-        return fetch(request).then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const clone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, clone);
-            });
-          }
-          return networkResponse;
-        });
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
+
+  // Only handle our own origin; never touch Supabase / APIs / auth
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('/auth/')) return;
+  if (url.pathname === '/sw.js') return;
+
+  // Page navigations: always network. Offline -> offline page. Never cached.
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).catch(async () => {
+        const offline = await caches.match(OFFLINE_URL);
+        return (
+          offline ||
+          new Response('Internet band hai. Internet chalu kar ke dobara koshish karein.', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          })
+        );
       })
     );
     return;
   }
 
-  // Default: Network with cache fallback
-  event.respondWith(
-    fetch(request).catch(() => caches.match(request))
-  );
+  // Static assets: cache-first with background refresh
+  if (isStaticAsset(url)) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const network = fetch(request)
+          .then((response) => {
+            if (response && response.status === 200 && response.type === 'basic') {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => cached);
+        return cached || network;
+      })
+    );
+  }
+  // Everything else (RSC payloads, data): straight to network, no caching.
 });
 
-// Listen for message from client (e.g. skipWaiting)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();

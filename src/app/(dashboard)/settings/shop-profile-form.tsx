@@ -1,5 +1,6 @@
 'use client';
 
+import { Ur } from '@/components/ui/urdu';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -57,7 +58,7 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
       </div>
 
       <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">Shop Profile</h1>
+        <h1 className="text-xl font-bold tracking-tight text-foreground">Shop Profile <Ur className="text-lg text-muted-foreground">دکان کی معلومات</Ur></h1>
         <p className="text-xs text-muted-foreground">
           Update your store&apos;s business details, city, and customer contact information.
         </p>

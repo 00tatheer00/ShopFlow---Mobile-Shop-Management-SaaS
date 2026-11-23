@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Smartphone, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from 'lucide-react';
 import { loginAction } from '../actions';
+import { Ur } from '@/components/ui/urdu';
+import { SHOPFLOW_PAYMENT_CHANNELS } from '@/lib/payment-channels';
 
 export default function LoginPage() {
   const [isPending, startTransition] = useTransition();
@@ -33,10 +35,10 @@ export default function LoginPage() {
           <Smartphone className="h-8 w-8 text-primary-foreground" />
         </div>
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Welcome back
+          ShopFlow
         </h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">
-          Sign in to your ShopFlow account
+        <p className="mt-1.5 text-base text-muted-foreground">
+          Sign in to your shop <Ur className="block text-lg">اپنی دکان میں داخل ہوں</Ur>
         </p>
       </div>
 
@@ -55,9 +57,9 @@ export default function LoginPage() {
           <div className="space-y-1.5">
             <label
               htmlFor="login-email"
-              className="block text-sm font-medium text-foreground"
+              className="flex items-baseline gap-2 text-sm font-semibold text-foreground"
             >
-              Email
+              Email <Ur className="text-sm text-muted-foreground">ای میل</Ur>
             </label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -69,7 +71,7 @@ export default function LoginPage() {
                 required
                 placeholder="you@example.com"
                 disabled={isPending}
-                className="h-11 w-full rounded-xl border border-input bg-background pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-12 w-full rounded-xl border-2 border-input bg-background pl-10 pr-4 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
@@ -79,14 +81,13 @@ export default function LoginPage() {
             <div className="flex items-center justify-between">
               <label
                 htmlFor="login-password"
-                className="block text-sm font-medium text-foreground"
+                className="flex items-baseline gap-2 text-sm font-semibold text-foreground"
               >
-                Password
+                Password <Ur className="text-sm text-muted-foreground">پاس ورڈ</Ur>
               </label>
               <Link
                 href="/forgot-password"
-                className="text-xs font-medium text-primary hover:text-primary/80 transition-colors"
-                tabIndex={-1}
+                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Forgot password?
               </Link>
@@ -101,13 +102,12 @@ export default function LoginPage() {
                 required
                 placeholder="Enter your password"
                 disabled={isPending}
-                className="h-11 w-full rounded-xl border border-input bg-background pl-10 pr-11 text-sm text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-12 w-full rounded-xl border-2 border-input bg-background pl-10 pr-12 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                tabIndex={-1}
+                className="absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? (
@@ -124,7 +124,7 @@ export default function LoginPage() {
             type="submit"
             disabled={isPending}
             id="login-submit"
-            className="relative mt-2 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
+            className="relative mt-2 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-sm shadow-primary/20 transition-all duration-200 hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isPending ? (
               <>
@@ -134,12 +134,24 @@ export default function LoginPage() {
             ) : (
               <>
                 <span>Sign in</span>
+                <Ur className="text-base font-normal">داخل ہوں</Ur>
                 <ArrowRight className="h-4 w-4" />
               </>
             )}
           </button>
         </form>
       </div>
+
+      {/* Help */}
+      <p className="mt-5 rounded-xl bg-card/70 px-4 py-3 text-center text-sm text-muted-foreground">
+        Password bhool gaye? Help ke liye WhatsApp karein{' '}
+        <a
+          href={`https://wa.me/92${SHOPFLOW_PAYMENT_CHANNELS.whatsapp.slice(1)}`}
+          className="font-mono font-bold text-primary"
+        >
+          {SHOPFLOW_PAYMENT_CHANNELS.whatsapp}
+        </a>
+      </p>
 
       {/* Footer */}
       <div className="mt-6 flex flex-col items-center gap-2 text-xs text-muted-foreground">
