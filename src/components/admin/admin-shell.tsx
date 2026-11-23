@@ -13,6 +13,7 @@ import {
   LogOut,
   ShieldAlert,
   CreditCard,
+  Plus,
 } from 'lucide-react';
 import type { AuthUser } from '@/lib/types';
 import { logoutAction } from '@/app/(auth)/actions';
@@ -27,11 +28,11 @@ interface AdminShellProps {
 }
 
 const navItems = [
-  { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
-  { label: 'Shops', href: '/admin/shops', icon: Store },
-  { label: 'Subscriptions (Rs 8,000)', href: '/admin/subscriptions', icon: CreditCard },
-  { label: 'Create Shop', href: '/admin/shops/new', icon: PlusCircle },
-  { label: 'Audit Logs', href: '/admin/settings', icon: ShieldCheck },
+  { label: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard, color: 'text-violet-300' },
+  { label: 'Shops', href: '/admin/shops', icon: Store, color: 'text-sky-300' },
+  { label: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard, color: 'text-emerald-300' },
+  { label: 'Create Shop', href: '/admin/shops/new', icon: PlusCircle, color: 'text-amber-300' },
+  { label: 'Activity Log', href: '/admin/settings', icon: ShieldCheck, color: 'text-slate-300' },
 ];
 
 export function AdminShell({ user, children }: AdminShellProps) {
@@ -40,74 +41,69 @@ export function AdminShell({ user, children }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const adminRoutes = ['/admin', '/admin/dashboard', '/admin/shops', '/admin/shops/new', '/admin/subscriptions', '/admin/settings'];
     const timer = setTimeout(() => {
-      adminRoutes.forEach((route) => {
+      ['/admin/dashboard', '/admin/shops', '/admin/shops/new', '/admin/subscriptions', '/admin/settings'].forEach((route) => {
         try {
           router.prefetch(route);
         } catch {
-          // Ignore
+          // ignore
         }
       });
-    }, 1200);
+    }, 800);
     return () => clearTimeout(timer);
   }, [router]);
 
   const isActive = (href: string) => {
-    if (href === '/admin/dashboard') {
-      return pathname === '/admin' || pathname === '/admin/dashboard';
-    }
+    if (href === '/admin/dashboard') return pathname === '/admin' || pathname === '/admin/dashboard';
     if (href === '/admin/shops') {
       return (pathname === '/admin/shops' || pathname.startsWith('/admin/shops/')) && !pathname.startsWith('/admin/shops/new');
     }
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const current = navItems.find((n) => isActive(n.href));
+  const initials =
+    (user.full_name || 'Super Admin')
+      .split(' ')
+      .filter(Boolean)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'SA';
+
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-[100dvh] overflow-hidden bg-background">
       <NavigationProgress />
       <AppUpdateNotifier />
-      {/* Mobile backdrop */}
+
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden backdrop-blur-sm transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 bg-slate-950/60 lg:hidden" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-border bg-card transition-transform duration-200 lg:static lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-50 flex w-[264px] flex-col bg-sidebar text-sidebar-foreground transition-transform duration-200 lg:static lg:translate-x-0 ${
+          sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
+        aria-label="Admin menu"
       >
-        {/* Brand header */}
-        <div className="flex h-16 items-center justify-between border-b border-border px-6">
+        <div className="flex h-16 shrink-0 items-center justify-between px-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
               <ShieldAlert className="h-5 w-5" />
             </div>
-            <div>
-              <span className="font-bold text-lg text-foreground tracking-tight">ShopFlow</span>
-              <span className="ml-2 inline-flex items-center rounded-md bg-indigo-500/10 px-2 py-0.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                Admin
-              </span>
+            <div className="leading-tight">
+              <p className="text-[15px] font-bold text-white">ShopFlow</p>
+              <p className="text-xs font-medium text-white/50">Platform Admin</p>
             </div>
           </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent cursor-pointer lg:hidden"
-            aria-label="Close sidebar"
-          >
+          <button onClick={() => setSidebarOpen(false)} className="rounded-lg p-2 text-white/60 hover:bg-white/10 lg:hidden" aria-label="Close menu">
             <X className="h-5 w-5" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1.5 overflow-y-auto p-4">
-          <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Platform Management
-          </div>
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-3">
+          <p className="px-3 pb-1.5 pt-2 text-[11px] font-bold uppercase tracking-[0.12em] text-white/40">Platform</p>
           {navItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
@@ -115,103 +111,66 @@ export function AdminShell({ user, children }: AdminShellProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                prefetch={true}
-                onMouseEnter={() => router.prefetch(item.href)}
-                onTouchStart={() => router.prefetch(item.href)}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all ${
-                  active
-                    ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/25 font-semibold'
-                    : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                aria-current={active ? 'page' : undefined}
+                className={`group flex min-h-12 items-center gap-3 rounded-xl px-2.5 transition ${
+                  active ? 'bg-white/10 text-white' : 'text-white/75 hover:bg-white/5 hover:text-white'
                 }`}
               >
-                <Icon className={`h-4 w-4 shrink-0 ${active ? 'text-primary-foreground' : 'text-muted-foreground'}`} />
-                <span>{item.label}</span>
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    active ? 'bg-white/15' : 'bg-white/[0.06] group-hover:bg-white/10'
+                  } ${item.color}`}
+                >
+                  <Icon className="h-[18px] w-[18px]" />
+                </span>
+                <span className={`flex-1 text-[15px] ${active ? 'font-bold' : 'font-medium'}`}>{item.label}</span>
+                {active && <span className="h-5 w-1 rounded-full bg-sidebar-primary" aria-hidden="true" />}
               </Link>
             );
           })}
         </nav>
 
-        {/* User profile & logout */}
-        <div className="border-t border-border p-4 bg-muted/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 font-bold text-sm">
-                SA
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-semibold text-foreground">{user.full_name || 'Super Admin'}</p>
-                <p className="truncate text-[11px] text-muted-foreground">{user.email}</p>
-              </div>
+        <div className="shrink-0 border-t border-white/10 p-3">
+          <div className="flex items-center gap-3 rounded-xl px-2 py-2">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+              {initials}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-white">{user.full_name || 'Super Admin'}</p>
+              <p className="truncate text-xs text-white/50">{user.email}</p>
             </div>
             <form action={logoutAction}>
-              <button
-                type="submit"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
-                title="Log out"
-              >
+              <button type="submit" className="rounded-lg p-2 text-white/60 hover:bg-rose-500/15 hover:text-rose-300" title="Sign out" aria-label="Sign out">
                 <LogOut className="h-4 w-4" />
               </button>
             </form>
           </div>
-
-          {/* Admin Shell Version Indicator */}
-          <div className="mt-2 pt-2 border-t border-border/50 px-2 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span className="font-mono font-medium">ShopFlow v{CURRENT_APP_VERSION.version}</span>
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 font-medium">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-            </span>
-          </div>
+          <p className="px-2 pt-1 text-xs text-white/40">ShopFlow v{CURRENT_APP_VERSION.version}</p>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top Navbar */}
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-lg p-2 text-muted-foreground hover:bg-accent cursor-pointer lg:hidden"
-              aria-label="Open sidebar"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>Super Admin Portal</span>
-              <span>/</span>
-              {pathname.startsWith('/admin/shops/new') ? (
-                <>
-                  <Link href="/admin/shops" className="hover:text-foreground transition-colors">
-                    Shops
-                  </Link>
-                  <span>/</span>
-                  <span className="font-medium text-foreground">Create Shop</span>
-                </>
-              ) : (
-                <span className="font-medium text-foreground capitalize">
-                  {pathname.split('/')[2] || 'Dashboard'}
-                </span>
-              )}
-            </div>
+      {/* Main */}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-border bg-card px-3 lg:px-6">
+          <button onClick={() => setSidebarOpen(true)} className="icon-btn lg:hidden" aria-label="Open menu">
+            <Menu className="h-6 w-6" />
+          </button>
+          <div className="min-w-0">
+            <p className="truncate text-base font-bold text-foreground">{current?.label || 'Admin'}</p>
+            <p className="truncate text-xs text-muted-foreground">Super Admin Portal</p>
           </div>
-
-          <div className="flex items-center gap-3">
-            <PwaInstallButton />
-            <Link
-              href="/admin/shops/new"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
-            >
-              <PlusCircle className="h-3.5 w-3.5" />
-              <span>New Shop</span>
+          <div className="ml-auto flex items-center gap-2">
+            <PwaInstallButton className="hidden sm:inline-flex" />
+            <Link href="/admin/shops/new" className="btn btn-primary">
+              <Plus className="h-4 w-4" />
+              <span className="hidden sm:inline">New Shop</span>
             </Link>
           </div>
         </header>
 
-        {/* Scrollable page body */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-background">
-          <div className="mx-auto max-w-7xl">{children}</div>
+        <main className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-7xl px-3 py-5 sm:px-4 lg:px-8 lg:py-8">{children}</div>
         </main>
       </div>
     </div>

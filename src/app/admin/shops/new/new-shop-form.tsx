@@ -166,7 +166,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               name="name"
               required
               placeholder="e.g. New York Mobile Center"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             />
           </div>
 
@@ -179,7 +179,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               name="display_shop_id"
               defaultValue={suggestedDisplayId}
               placeholder={suggestedDisplayId}
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field uppercase font-mono"
             />
             <p className="text-[11px] text-muted-foreground">
               Auto-generated sequential ID. Can be customized if following standard format (e.g. SHOP-005).
@@ -195,7 +195,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               name="city"
               required
               placeholder="e.g. Lahore, Karachi, Rawalpindi"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             />
           </div>
 
@@ -205,7 +205,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               type="tel"
               name="phone"
               placeholder="e.g. 03001234567"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             />
           </div>
 
@@ -215,7 +215,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               type="text"
               name="address"
               placeholder="e.g. Shop #12, Hafeez Center, Main Boulevard, Gulberg III"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             />
           </div>
 
@@ -271,7 +271,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               name="owner_name"
               required
               placeholder="e.g. Muhammad Usman"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             />
           </div>
 
@@ -333,7 +333,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
                 required
                 minLength={8}
                 placeholder="At least 8 characters"
-                className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="field pr-10"
               />
               <button
                 type="button"
@@ -354,7 +354,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
               type="tel"
               name="owner_phone"
               placeholder="e.g. 03001234567"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             />
           </div>
         </div>
@@ -377,7 +377,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
             <label className="text-xs font-semibold text-foreground">Subscription Plan</label>
             <select
               name="plan_id"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             >
               {plans.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -392,7 +392,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
             <select
               name="status"
               defaultValue="active"
-              className="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field"
             >
               <option value="active">Active (Operational immediately)</option>
               <option value="suspended">Suspended (Blocked until activated)</option>
@@ -412,7 +412,7 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
         <button
           type="submit"
           disabled={loading || !!ownerEmailConflict || !!shopEmailConflict || checkingOwnerEmail}
-          className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          className="btn btn-primary"
         >
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           <span>{loading ? 'Provisioning Shop...' : 'Create & Provision Shop'}</span>

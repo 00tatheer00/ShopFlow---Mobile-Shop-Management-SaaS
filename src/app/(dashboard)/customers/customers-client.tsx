@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge, PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -189,21 +190,20 @@ export function CustomersClient({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Customers</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Manage your customer database, contact details, and credit records ({totalCount} total).
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Customers"
+        ur="گاہک"
+        icon={Users}
+        tone="pink"
+        description={<>Manage your customer database, contact details, and credit records ({totalCount} total).</>}
+        actions={
+        <>
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
+            className="btn btn-outline"
           >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            <Download className="h-4 w-4 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
@@ -213,14 +213,15 @@ export function CustomersClient({
                 setFormError(null);
                 setIsAddModalOpen(true);
               }}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition-colors cursor-pointer"
+              className="btn btn-primary"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               <span>Add Customer</span>
             </button>
           )}
-        </div>
-      </div>
+        </>
+      }
+      />
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -231,7 +232,7 @@ export function CustomersClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by customer name or phone number..."
-            className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="field pr-4 pl-10"
           />
         </form>
         {search && (
@@ -243,7 +244,7 @@ export function CustomersClient({
             }}
             className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3.5 w-3.5" /> Clear search
+            <X className="h-4 w-4" /> Clear search
           </button>
         )}
       </div>
@@ -261,7 +262,7 @@ export function CustomersClient({
           {canCreate && !search && (
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              className="btn btn-primary mt-4"
             >
               <Plus className="h-4 w-4" />
               Add First Customer
@@ -269,9 +270,74 @@ export function CustomersClient({
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+        <div className="panel overflow-hidden">
+          {/* Phone: card list */}
+          <ul className="divide-y divide-border sm:hidden">
+            {customers.map((customer) => {
+              const udhaar = customer.udhaar_balance || 0;
+              return (
+                <li key={customer.id} className="p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-foreground">{customer.name}</p>
+                      <p className="font-mono text-sm text-muted-foreground">{customer.phone}</p>
+                    </div>
+                    {udhaar > 0 ? (
+                      <Badge tone="amber">Udhaar {formatPKR(udhaar)}</Badge>
+                    ) : (
+                      <Badge tone="emerald" dot>Clear</Badge>
+                    )}
+                  </div>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {udhaar > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSettleError(null);
+                          setSettlingCustomer(customer);
+                          setSettleAmount(String(Math.round(udhaar / 100)));
+                        }}
+                        className="btn btn-sm btn-success"
+                      >
+                        <ArrowDownLeft className="h-4 w-4" /> Receive
+                      </button>
+                    )}
+                    <a
+                      href={getWhatsAppUrl(customer.phone, customer.name, udhaar)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-sm btn-outline"
+                    >
+                      <MessageCircle className="h-4 w-4 text-emerald-600" /> WhatsApp
+                    </a>
+                    <Link href={`/udhaar?search=${encodeURIComponent(customer.name)}`} className="icon-btn" aria-label="Khata history">
+                      <History className="h-4 w-4" />
+                    </Link>
+                    {canEdit && (
+                      <button
+                        onClick={() => {
+                          setFormError(null);
+                          setEditingCustomer(customer);
+                        }}
+                        className="icon-btn"
+                        aria-label="Edit customer"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button onClick={() => setCustomerToDelete(customer)} className="icon-btn hover:!text-rose-600" aria-label="Delete customer">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-x-auto sm:block">
+            <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Customer</th>
@@ -305,7 +371,7 @@ export function CustomersClient({
                             className="inline-flex items-center justify-center rounded p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                             title={udhaar > 0 ? "Send Udhaar reminder on WhatsApp" : "Chat on WhatsApp"}
                           >
-                            <MessageCircle className="h-3.5 w-3.5" />
+                            <MessageCircle className="h-4 w-4" />
                           </a>
                         </div>
                         {customer.email && (
@@ -318,7 +384,7 @@ export function CustomersClient({
                       <td className="px-4 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
                         {customer.address ? (
                           <div className="flex items-center gap-1">
-                            <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+                            <MapPin className="h-4 w-4 shrink-0 text-muted-foreground/70" />
                             <span className="line-clamp-1">{customer.address}</span>
                           </div>
                         ) : (
@@ -335,7 +401,7 @@ export function CustomersClient({
                             <CurrencyDisplay amount={udhaar} isPaisas={true} variant="danger" size="xs" />
                           </Link>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 border border-emerald-400 text-emerald-950 dark:bg-emerald-950/40 dark:border-emerald-600 dark:text-emerald-300">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-300">
                             Nil (Clear)
                           </span>
                         )}
@@ -350,7 +416,7 @@ export function CustomersClient({
                                 setSettlingCustomer(customer);
                                 setSettleAmount(String(Math.round(udhaar / 100)));
                               }}
-                              className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2 py-1 text-xs font-semibold text-white shadow-2xs transition-colors cursor-pointer"
+                              className="btn btn-success"
                               title="Receive payment or clear Udhaar"
                             >
                               <ArrowDownLeft className="h-3 w-3" />
@@ -406,14 +472,14 @@ export function CustomersClient({
                   onClick={() => handlePageChange(currentPage - 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                  <ChevronLeft className="h-4 w-4" /> Previous
                 </button>
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -451,7 +517,7 @@ export function CustomersClient({
                   name="name"
                   required
                   placeholder="e.g. Muhammad Ali"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -464,7 +530,7 @@ export function CustomersClient({
                   name="phone"
                   required
                   placeholder="e.g. 03001234567"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -476,7 +542,7 @@ export function CustomersClient({
                   type="email"
                   name="email"
                   placeholder="e.g. ali@example.com"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -488,7 +554,7 @@ export function CustomersClient({
                   type="text"
                   name="address"
                   placeholder="e.g. Shop 4, Hafeez Centre, Lahore"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -500,7 +566,7 @@ export function CustomersClient({
                   name="notes"
                   rows={2}
                   placeholder="Special instructions or credit notes..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -555,7 +621,7 @@ export function CustomersClient({
                   name="name"
                   required
                   defaultValue={editingCustomer.name}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -568,7 +634,7 @@ export function CustomersClient({
                   name="phone"
                   required
                   defaultValue={editingCustomer.phone}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -580,7 +646,7 @@ export function CustomersClient({
                   type="email"
                   name="email"
                   defaultValue={editingCustomer.email || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -592,7 +658,7 @@ export function CustomersClient({
                   type="text"
                   name="address"
                   defaultValue={editingCustomer.address || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -604,7 +670,7 @@ export function CustomersClient({
                   name="notes"
                   rows={2}
                   defaultValue={editingCustomer.notes || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -703,7 +769,7 @@ export function CustomersClient({
                     value={settleAmount}
                     onChange={(e) => setSettleAmount(e.target.value)}
                     placeholder={`Max ${Math.round((settlingCustomer.udhaar_balance || 0) / 100).toLocaleString()}`}
-                    className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field pr-3 pl-10"
                   />
                 </div>
 
@@ -712,7 +778,7 @@ export function CustomersClient({
                   <button
                     type="button"
                     onClick={() => setSettleAmount(String(Math.round((settlingCustomer.udhaar_balance || 0) / 100)))}
-                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer"
+                    className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer"
                   >
                     Clear Full (Rs {Math.round((settlingCustomer.udhaar_balance || 0) / 100).toLocaleString()})
                   </button>
@@ -750,7 +816,7 @@ export function CustomersClient({
                 <select
                   name="payment_method"
                   defaultValue="cash"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                  className="field cursor-pointer"
                 >
                   <option value="cash">Cash (نقد)</option>
                   <option value="easypaisa">EasyPaisa (ایزی پیسہ)</option>
@@ -769,7 +835,7 @@ export function CustomersClient({
                   type="text"
                   name="reference"
                   placeholder="e.g. TRX12345678 or Receipt #"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -782,7 +848,7 @@ export function CustomersClient({
                   type="text"
                   name="notes"
                   placeholder="e.g. Received money later from customer"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 

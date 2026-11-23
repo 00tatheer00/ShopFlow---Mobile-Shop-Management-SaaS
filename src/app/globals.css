@@ -56,130 +56,178 @@
 }
 
 /* ============================================
-   ShopFlow Design System — "Bazaar Bright"
-   Vibrant but professional: one confident brand colour (electric violet),
-   a dark ink sidebar, and a bright signature colour per module so
-   shopkeepers recognise screens by colour + icon, not by reading.
+   ShopFlow Design System — "Calm Counter"
+   Clean and professional. Colour is used with restraint and always
+   carries meaning: one brand colour for primary actions, soft tinted
+   icon chips to tell modules apart, white cards with quiet borders.
+   No gradients on everyday UI.
      Sale = emerald · Udhaar = amber · Stock = sky · Expenses = rose
-     Customers = fuchsia · Reports = violet · Suppliers = cyan
+     Customers = pink · Reports = violet · Suppliers = cyan
    ============================================ */
 
 :root {
-  --primary: oklch(0.52 0.24 285);
-  --primary-foreground: oklch(0.99 0.01 285);
+  --primary: oklch(0.50 0.19 280);
+  --primary-foreground: oklch(0.99 0.005 280);
 
-  --background: oklch(0.975 0.008 285);
-  --foreground: oklch(0.21 0.03 280);
+  --background: oklch(0.977 0.004 270);
+  --foreground: oklch(0.22 0.025 270);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.21 0.03 280);
+  --card-foreground: oklch(0.22 0.025 270);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.21 0.03 280);
+  --popover-foreground: oklch(0.22 0.025 270);
 
-  --secondary: oklch(0.955 0.015 285);
-  --secondary-foreground: oklch(0.28 0.06 285);
+  --secondary: oklch(0.96 0.008 270);
+  --secondary-foreground: oklch(0.30 0.04 275);
 
-  --muted: oklch(0.955 0.01 285);
-  --muted-foreground: oklch(0.47 0.03 280);
+  --muted: oklch(0.962 0.006 270);
+  --muted-foreground: oklch(0.48 0.02 270);
 
-  --accent: oklch(0.95 0.04 285);
-  --accent-foreground: oklch(0.40 0.20 285);
+  --accent: oklch(0.955 0.025 280);
+  --accent-foreground: oklch(0.42 0.16 280);
 
-  --destructive: oklch(0.58 0.23 22);
+  --destructive: oklch(0.57 0.21 25);
 
-  --border: oklch(0.90 0.012 285);
-  --input: oklch(0.86 0.015 285);
-  --ring: oklch(0.52 0.24 285);
+  --border: oklch(0.912 0.008 270);
+  --input: oklch(0.87 0.012 270);
+  --ring: oklch(0.50 0.19 280);
 
-  --success: oklch(0.63 0.17 155);
+  --success: oklch(0.60 0.15 155);
   --success-foreground: oklch(0.99 0.01 155);
-  --warning: oklch(0.77 0.17 70);
-  --warning-foreground: oklch(0.26 0.07 60);
-  --info: oklch(0.62 0.17 240);
+  --warning: oklch(0.76 0.15 70);
+  --warning-foreground: oklch(0.27 0.07 60);
+  --info: oklch(0.60 0.15 240);
   --info-foreground: oklch(0.99 0.01 240);
 
-  --chart-1: oklch(0.52 0.24 285);
-  --chart-2: oklch(0.63 0.17 155);
-  --chart-3: oklch(0.77 0.17 70);
-  --chart-4: oklch(0.58 0.23 22);
-  --chart-5: oklch(0.62 0.17 240);
+  --chart-1: oklch(0.50 0.19 280);
+  --chart-2: oklch(0.60 0.15 155);
+  --chart-3: oklch(0.76 0.15 70);
+  --chart-4: oklch(0.57 0.21 25);
+  --chart-5: oklch(0.60 0.15 240);
 
-  --radius: 0.875rem;
+  --radius: 0.75rem;
 
-  /* Dark "ink" sidebar in BOTH themes — makes the colourful icons pop */
-  --sidebar: oklch(0.20 0.04 280);
-  --sidebar-foreground: oklch(0.93 0.01 280);
-  --sidebar-primary: oklch(0.66 0.20 285);
-  --sidebar-primary-foreground: oklch(0.99 0.01 285);
-  --sidebar-accent: oklch(0.28 0.05 280);
-  --sidebar-accent-foreground: oklch(0.99 0.01 280);
-  --sidebar-border: oklch(0.30 0.04 280);
-  --sidebar-ring: oklch(0.66 0.20 285);
-
-  /* Brand gradient (hero cards, primary CTAs) */
-  --brand-gradient: linear-gradient(135deg, oklch(0.52 0.24 285), oklch(0.58 0.24 320));
+  /* Sidebar: deep slate-indigo, calm and readable */
+  --sidebar: oklch(0.23 0.03 275);
+  --sidebar-foreground: oklch(0.92 0.01 275);
+  --sidebar-primary: oklch(0.66 0.16 280);
+  --sidebar-primary-foreground: oklch(0.99 0.005 280);
+  --sidebar-accent: oklch(0.30 0.04 275);
+  --sidebar-accent-foreground: oklch(0.99 0.005 275);
+  --sidebar-border: oklch(0.32 0.03 275);
+  --sidebar-ring: oklch(0.66 0.16 280);
 }
 
 .dark {
-  --primary: oklch(0.70 0.18 285);
-  --primary-foreground: oklch(0.17 0.04 285);
+  --primary: oklch(0.70 0.15 280);
+  --primary-foreground: oklch(0.18 0.03 280);
 
-  --background: oklch(0.16 0.025 280);
-  --foreground: oklch(0.96 0.008 280);
+  --background: oklch(0.17 0.015 270);
+  --foreground: oklch(0.95 0.006 270);
 
-  --card: oklch(0.21 0.03 280);
-  --card-foreground: oklch(0.96 0.008 280);
-  --popover: oklch(0.21 0.03 280);
-  --popover-foreground: oklch(0.96 0.008 280);
+  --card: oklch(0.215 0.018 270);
+  --card-foreground: oklch(0.95 0.006 270);
+  --popover: oklch(0.215 0.018 270);
+  --popover-foreground: oklch(0.95 0.006 270);
 
-  --secondary: oklch(0.27 0.035 280);
-  --secondary-foreground: oklch(0.94 0.01 280);
+  --secondary: oklch(0.27 0.02 270);
+  --secondary-foreground: oklch(0.93 0.008 270);
 
-  --muted: oklch(0.26 0.03 280);
-  --muted-foreground: oklch(0.74 0.02 280);
+  --muted: oklch(0.26 0.018 270);
+  --muted-foreground: oklch(0.73 0.015 270);
 
-  --accent: oklch(0.30 0.07 285);
-  --accent-foreground: oklch(0.90 0.08 285);
+  --accent: oklch(0.30 0.05 280);
+  --accent-foreground: oklch(0.90 0.06 280);
 
-  --destructive: oklch(0.68 0.20 22);
+  --destructive: oklch(0.67 0.19 25);
 
-  --border: oklch(0.33 0.035 280);
-  --input: oklch(0.40 0.035 280);
-  --ring: oklch(0.70 0.18 285);
+  --border: oklch(0.32 0.02 270);
+  --input: oklch(0.39 0.02 270);
+  --ring: oklch(0.70 0.15 280);
 
-  --success: oklch(0.72 0.16 155);
-  --success-foreground: oklch(0.17 0.04 155);
-  --warning: oklch(0.80 0.15 75);
-  --warning-foreground: oklch(0.20 0.05 60);
-  --info: oklch(0.72 0.14 240);
-  --info-foreground: oklch(0.17 0.04 240);
+  --success: oklch(0.71 0.15 155);
+  --success-foreground: oklch(0.18 0.04 155);
+  --warning: oklch(0.80 0.14 75);
+  --warning-foreground: oklch(0.21 0.05 60);
+  --info: oklch(0.71 0.13 240);
+  --info-foreground: oklch(0.18 0.04 240);
 
-  --chart-1: oklch(0.70 0.18 285);
-  --chart-2: oklch(0.72 0.16 155);
-  --chart-3: oklch(0.80 0.15 75);
-  --chart-4: oklch(0.68 0.20 22);
-  --chart-5: oklch(0.72 0.14 240);
+  --chart-1: oklch(0.70 0.15 280);
+  --chart-2: oklch(0.71 0.15 155);
+  --chart-3: oklch(0.80 0.14 75);
+  --chart-4: oklch(0.67 0.19 25);
+  --chart-5: oklch(0.71 0.13 240);
 
-  --sidebar: oklch(0.13 0.03 280);
-  --sidebar-foreground: oklch(0.93 0.01 280);
-  --sidebar-primary: oklch(0.70 0.18 285);
-  --sidebar-primary-foreground: oklch(0.17 0.04 285);
-  --sidebar-accent: oklch(0.22 0.04 280);
-  --sidebar-accent-foreground: oklch(0.99 0.01 280);
-  --sidebar-border: oklch(0.25 0.035 280);
-  --sidebar-ring: oklch(0.70 0.18 285);
-
-  --brand-gradient: linear-gradient(135deg, oklch(0.55 0.22 285), oklch(0.58 0.22 320));
+  --sidebar: oklch(0.15 0.02 275);
+  --sidebar-foreground: oklch(0.92 0.01 275);
+  --sidebar-primary: oklch(0.70 0.15 280);
+  --sidebar-primary-foreground: oklch(0.18 0.03 280);
+  --sidebar-accent: oklch(0.23 0.03 275);
+  --sidebar-accent-foreground: oklch(0.99 0.005 275);
+  --sidebar-border: oklch(0.26 0.025 275);
+  --sidebar-ring: oklch(0.70 0.15 280);
 }
+
+/* ---------- Shared building blocks (use these instead of ad-hoc classes) ---------- */
 
 /* Large, thumb-friendly text input */
 @utility input-lg {
-  @apply h-12 w-full rounded-xl border-2 border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/15 focus:outline-none transition;
+  @apply h-12 w-full rounded-xl border border-input bg-card px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/12 focus:outline-none transition;
+}
+/* Standard form field (inputs / selects / textareas) */
+@utility field {
+  @apply min-h-11 w-full rounded-xl border border-input bg-card px-3 py-2 text-[15px] text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/12 focus:outline-none transition disabled:opacity-60;
+}
+@utility field-label {
+  @apply mb-1.5 flex items-baseline gap-2 text-sm font-semibold text-foreground;
 }
 
-/* Brand gradient fill */
-@utility bg-brand {
-  background-image: var(--brand-gradient);
+/* Buttons */
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold whitespace-nowrap transition active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50;
+}
+@utility btn-sm {
+  @apply min-h-9 rounded-lg px-3 text-[13px];
+}
+@utility btn-primary {
+  @apply bg-primary text-primary-foreground shadow-sm hover:bg-primary/90;
+}
+@utility btn-success {
+  @apply bg-emerald-600 text-white shadow-sm hover:bg-emerald-700;
+}
+@utility btn-danger {
+  @apply bg-destructive text-white shadow-sm hover:bg-destructive/90;
+}
+@utility btn-outline {
+  @apply border border-border bg-card text-foreground hover:bg-muted;
+}
+@utility btn-ghost {
+  @apply text-muted-foreground hover:bg-muted hover:text-foreground;
+}
+@utility icon-btn {
+  @apply inline-flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted hover:text-foreground;
+}
+
+/* Surfaces */
+@utility panel {
+  @apply rounded-2xl border border-border bg-card shadow-[0_1px_2px_rgb(0_0_0/0.04)];
+}
+
+/* Tables: consistent, readable rows */
+@utility sf-table {
+  @apply w-full text-left text-sm;
+  & thead {
+    @apply border-b border-border bg-muted/60 text-xs font-semibold uppercase tracking-wide text-muted-foreground;
+  }
+  & th {
+    @apply px-4 py-3 font-semibold;
+  }
+  & td {
+    @apply px-4 py-3.5 align-middle;
+  }
+  & tbody tr {
+    @apply border-b border-border/70 transition-colors last:border-0 hover:bg-muted/40;
+  }
 }
 
 @layer base {

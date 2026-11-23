@@ -35,7 +35,7 @@ export function CurrencyDisplay({
       sizeClass = 'text-lg sm:text-xl font-extrabold tracking-tight';
       break;
     case 'xl':
-      sizeClass = 'text-2xl sm:text-3xl font-black tracking-tight';
+      sizeClass = 'text-2xl sm:text-3xl font-bold tracking-tight';
       break;
   }
 

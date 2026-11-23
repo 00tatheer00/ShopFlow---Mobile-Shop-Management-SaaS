@@ -62,9 +62,9 @@ type OnlineMethod = 'easypaisa' | 'jazzcash' | 'bank_transfer';
 type DiscountType = 'rs' | 'percent';
 
 const ONLINE_METHODS: { id: OnlineMethod; label: string; cls: string }[] = [
-  { id: 'easypaisa', label: 'EasyPaisa', cls: 'from-emerald-500 to-green-600' },
-  { id: 'jazzcash', label: 'JazzCash', cls: 'from-orange-500 to-red-500' },
-  { id: 'bank_transfer', label: 'Bank', cls: 'from-sky-500 to-blue-600' },
+  { id: 'easypaisa', label: 'EasyPaisa', cls: 'bg-emerald-600' },
+  { id: 'jazzcash', label: 'JazzCash', cls: 'bg-orange-500' },
+  { id: 'bank_transfer', label: 'Bank', cls: 'bg-sky-600' },
 ];
 
 const PAYMENT_LABEL: Record<PaymentMethod, string> = {
@@ -556,7 +556,7 @@ export function PosTerminal({
         >
           <Menu className="h-5 w-5" />
         </button>
-        <span className="hidden h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 shadow-md sm:flex">
+        <span className="hidden h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 shadow-md sm:flex">
           <ShoppingCart className="h-[18px] w-[18px]" />
         </span>
         <div className="min-w-0 leading-tight">
@@ -735,13 +735,13 @@ export function PosTerminal({
 
         {/* ================= Bill ================= */}
         <section
-          className={`min-h-0 flex-col overflow-hidden rounded-3xl bg-card shadow-xl shadow-slate-900/5 ring-1 ring-border lg:col-span-5 lg:flex xl:col-span-4 ${
+          className={`min-h-0 flex-col overflow-hidden rounded-3xl bg-card shadow-sm ring-1 ring-border lg:col-span-5 lg:flex xl:col-span-4 ${
             mobileView === 'bill' ? 'flex' : 'hidden'
           }`}
           aria-label="Bill"
         >
           {/* header */}
-          <div className="flex shrink-0 items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-2.5 text-white">
+          <div className="flex shrink-0 items-center gap-2 bg-emerald-600 px-3 py-2.5 text-white">
             <button
               type="button"
               onClick={() => setMobileView('items')}
@@ -839,7 +839,7 @@ export function PosTerminal({
             >
               <span
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white ${
-                  selectedCustomer ? 'bg-gradient-to-br from-fuchsia-500 to-pink-500' : 'bg-slate-400'
+                  selectedCustomer ? 'bg-fuchsia-600' : 'bg-slate-400'
                 }`}
               >
                 <User className="h-5 w-5" />
@@ -857,8 +857,8 @@ export function PosTerminal({
 
             {/* payment mode */}
             <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Payment method">
-              <PayTile active={payMode === 'cash'} onClick={() => { setPayMode('cash'); setReceivedInput(''); }} icon={Banknote} en="Cash" ur={UR.cash} gradient="from-emerald-500 to-teal-500" />
-              <PayTile active={payMode === 'online'} onClick={() => { setPayMode('online'); setReceivedInput(''); }} icon={Smartphone} en="Online" ur={UR.onlinePay} gradient="from-sky-500 to-blue-600" />
+              <PayTile active={payMode === 'cash'} onClick={() => { setPayMode('cash'); setReceivedInput(''); }} icon={Banknote} en="Cash" ur={UR.cash} gradient="bg-emerald-600" />
+              <PayTile active={payMode === 'online'} onClick={() => { setPayMode('online'); setReceivedInput(''); }} icon={Smartphone} en="Online" ur={UR.onlinePay} gradient="bg-sky-600" />
               <PayTile
                 active={payMode === 'udhaar'}
                 onClick={() => {
@@ -869,7 +869,7 @@ export function PosTerminal({
                 icon={Wallet}
                 en="Udhaar"
                 ur={UR.credit}
-                gradient="from-amber-400 to-orange-500"
+                gradient="bg-amber-400 !text-amber-950"
               />
             </div>
 
@@ -882,7 +882,7 @@ export function PosTerminal({
                     onClick={() => setOnlineMethod(m.id)}
                     className={`h-10 rounded-xl text-sm font-bold transition ${
                       onlineMethod === m.id
-                        ? `bg-gradient-to-r ${m.cls} text-white shadow-md`
+                        ? `${m.cls} text-white shadow-md`
                         : 'bg-card text-foreground ring-1 ring-border hover:ring-sky-400'
                     }`}
                   >
@@ -1011,7 +1011,7 @@ export function PosTerminal({
               type="button"
               onClick={requestCheckout}
               disabled={cart.length === 0 || isSaving}
-              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-lg font-extrabold text-white shadow-lg shadow-emerald-600/25 transition hover:brightness-110 active:scale-[0.98] disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-500 disabled:shadow-none dark:disabled:from-slate-700 dark:disabled:to-slate-700"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-lg font-extrabold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98] disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none dark:disabled:bg-slate-700"
             >
               <Check className="h-6 w-6" /> Complete Sale <Ur className="text-base font-normal">{UR.completeSale}</Ur>
             </button>
@@ -1026,7 +1026,7 @@ export function PosTerminal({
             type="button"
             onClick={() => setMobileView('bill')}
             disabled={cart.length === 0}
-            className="flex h-14 w-full items-center justify-between rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-white shadow-xl shadow-emerald-600/30 disabled:from-slate-300 disabled:to-slate-300 disabled:text-slate-600 disabled:shadow-none"
+            className="flex h-14 w-full items-center justify-between rounded-2xl bg-emerald-600 px-4 text-white shadow-sm disabled:bg-slate-300 disabled:text-slate-600 disabled:shadow-none"
           >
             <span className="flex items-center gap-2 text-base font-bold">
               <span className="flex h-8 min-w-8 items-center justify-center rounded-full bg-white/25 px-2">{itemCount}</span>
@@ -1041,7 +1041,7 @@ export function PosTerminal({
 
       {/* -------- IMEI picker -------- */}
       {imeiProduct && (
-        <Sheet title="Choose phone (IMEI)" ur={UR.chooseImei} accent="from-sky-500 to-blue-600" onClose={() => setImeiProduct(null)}>
+        <Sheet title="Choose phone (IMEI)" ur={UR.chooseImei} accent="bg-sky-600" onClose={() => setImeiProduct(null)}>
           <p className="font-semibold text-foreground">{imeiProduct.name}</p>
           <input
             type="search"
@@ -1078,7 +1078,7 @@ export function PosTerminal({
 
       {/* -------- Customer picker -------- */}
       {customerPickerOpen && (
-        <Sheet title="Choose customer" ur="گاہک چنیں" accent="from-fuchsia-500 to-pink-500" onClose={() => setCustomerPickerOpen(false)}>
+        <Sheet title="Choose customer" ur="گاہک چنیں" accent="bg-fuchsia-600" onClose={() => setCustomerPickerOpen(false)}>
           {addingCustomer ? (
             <form onSubmit={handleAddCustomer} className="space-y-3">
               <Field label="Name" ur="نام">
@@ -1094,7 +1094,7 @@ export function PosTerminal({
                 <button
                   type="submit"
                   disabled={isAddingCustomer}
-                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 font-bold text-white disabled:opacity-60"
+                  className="flex h-12 flex-1 items-center justify-center gap-2 rounded-xl bg-fuchsia-600 font-bold text-white disabled:opacity-60"
                 >
                   {isAddingCustomer && <Loader2 className="h-4 w-4 animate-spin" />} Save customer
                 </button>
@@ -1114,7 +1114,7 @@ export function PosTerminal({
                 <button
                   type="button"
                   onClick={() => setAddingCustomer(true)}
-                  className="inline-flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-500 px-3 font-bold text-white"
+                  className="inline-flex h-12 shrink-0 items-center gap-1.5 rounded-xl bg-fuchsia-600 px-3 font-bold text-white"
                 >
                   <UserPlus className="h-5 w-5" />
                   <span className="hidden sm:inline">New</span>
@@ -1148,7 +1148,7 @@ export function PosTerminal({
 
       {/* -------- Clear bill confirm -------- */}
       {clearOpen && (
-        <Sheet title="Clear this bill?" ur="بل صاف کریں؟" accent="from-rose-500 to-red-500" onClose={() => setClearOpen(false)}>
+        <Sheet title="Clear this bill?" ur="بل صاف کریں؟" accent="bg-rose-600" onClose={() => setClearOpen(false)}>
           <p className="text-muted-foreground">All {itemCount} items will be removed from the bill.</p>
           <div className="mt-4 flex gap-2">
             <button onClick={() => setClearOpen(false)} className="h-12 flex-1 rounded-xl font-bold ring-1 ring-border hover:bg-muted">
@@ -1160,7 +1160,7 @@ export function PosTerminal({
                 resetSale();
                 toast('Bill cleared');
               }}
-              className="h-12 flex-1 rounded-xl bg-gradient-to-r from-rose-500 to-red-500 font-bold text-white"
+              className="h-12 flex-1 rounded-xl bg-rose-600 font-bold text-white"
             >
               Yes, clear
             </button>
@@ -1170,7 +1170,7 @@ export function PosTerminal({
 
       {/* -------- Confirm sale -------- */}
       {confirmOpen && (
-        <Sheet title="Confirm sale" ur="سیل کی تصدیق" accent="from-emerald-500 to-teal-500" onClose={() => !isSaving && setConfirmOpen(false)}>
+        <Sheet title="Confirm sale" ur="سیل کی تصدیق" accent="bg-emerald-600" onClose={() => !isSaving && setConfirmOpen(false)}>
           <div className="rounded-2xl bg-sidebar p-4 text-white">
             <p className="text-sm text-white/70">Total to receive</p>
             <p className="font-mono text-4xl font-extrabold text-emerald-300">{money(total)}</p>
@@ -1193,7 +1193,7 @@ export function PosTerminal({
               onClick={confirmSale}
               disabled={isSaving}
               autoFocus
-              className="flex h-14 flex-[2] items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-lg font-extrabold text-white shadow-lg disabled:opacity-70"
+              className="flex h-14 flex-[2] items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-lg font-extrabold text-white shadow-lg disabled:opacity-70"
             >
               {isSaving ? (
                 <>
@@ -1213,7 +1213,7 @@ export function PosTerminal({
       {completed && !showReceipt && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 sm:items-center sm:p-4" role="dialog" aria-modal="true">
           <div className="w-full max-w-md overflow-hidden rounded-t-3xl bg-card shadow-2xl animate-in slide-in-from-bottom-6 sm:rounded-3xl">
-            <div className="relative bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 px-6 pb-6 pt-8 text-center text-white">
+            <div className="relative bg-emerald-600 px-6 pb-6 pt-8 text-center text-white">
               <span className="animate-pop mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white text-emerald-500 shadow-xl">
                 <Check className="h-11 w-11" strokeWidth={3} />
               </span>
@@ -1265,7 +1265,7 @@ export function PosTerminal({
               <button
                 onClick={resetSale}
                 autoFocus
-                className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-lg font-extrabold text-white shadow-lg"
+                className="flex h-14 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-lg font-extrabold text-white shadow-lg"
               >
                 <Plus className="h-6 w-6" /> Next sale <Ur className="text-base font-normal">اگلی سیل</Ur>
                 <kbd className="ml-1 hidden rounded bg-white/20 px-1.5 font-mono text-xs lg:inline">Enter</kbd>
@@ -1319,7 +1319,7 @@ function PayTile({
       aria-checked={active}
       onClick={onClick}
       className={`relative flex h-[72px] flex-col items-center justify-center gap-0.5 rounded-2xl transition ${
-        active ? `bg-gradient-to-br ${gradient} text-white shadow-lg` : 'bg-card text-foreground ring-1 ring-border hover:ring-slate-400'
+        active ? `${gradient} text-white shadow-lg` : 'bg-card text-foreground ring-1 ring-border hover:ring-slate-400'
       }`}
     >
       {active && (
@@ -1343,7 +1343,7 @@ function CustomerRow({ active, onClick, name, sub }: { active: boolean; onClick:
         active ? 'bg-fuchsia-50 ring-2 ring-fuchsia-500 dark:bg-fuchsia-950/40' : 'ring-1 ring-border hover:bg-muted'
       }`}
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-fuchsia-500 to-pink-500 text-sm font-bold text-white">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-fuchsia-600 text-sm font-bold text-white">
         {name.charAt(0).toUpperCase()}
       </span>
       <span className="min-w-0 flex-1">
@@ -1391,7 +1391,7 @@ function Sheet({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-card shadow-2xl animate-in slide-in-from-bottom-6 duration-200 sm:rounded-3xl">
-        <div className={`h-1.5 w-full bg-gradient-to-r ${accent}`} />
+        <div className={`h-1.5 w-full ${accent}`} />
         <div className="p-5">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="flex items-baseline gap-2 text-lg font-extrabold text-foreground">

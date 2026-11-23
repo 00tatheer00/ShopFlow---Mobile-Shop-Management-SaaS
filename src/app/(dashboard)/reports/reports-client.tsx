@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/kit';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +18,7 @@ import {
   Tag,
   AlertTriangle,
   Download,
+  BarChart3,
 } from 'lucide-react';
 import type { UserRole } from '@/lib/types';
 import { formatPKR } from '@/lib/types';
@@ -195,56 +197,56 @@ export function ReportsClient({
     <div className="space-y-6">
       {/* Interactive Controls & Header (Hidden during print) */}
       <div className="print:hidden space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">Reports & Analytics</h1>
-            <p className="text-sm text-muted-foreground">
-              Authoritative business intelligence, Profit & Loss, sales, inventory valuation, and expenses.
-            </p>
+        <PageHeader
+        title="Reports"
+        ur="حساب کتاب"
+        icon={BarChart3}
+        tone="violet"
+        description={<>Authoritative business intelligence, Profit & Loss, sales, inventory valuation, and expenses.</>}
+        actions={
+        <>
+          {/* Date Range Selector */}
+          <div className="flex rounded-lg border border-border bg-card p-1">
+            {[
+              { id: 'today', label: 'Today' },
+              { id: 'week', label: 'This Week' },
+              { id: 'month', label: 'This Month' },
+              { id: 'all', label: 'All Time' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => updateDateRange(tab.id)}
+                className={`rounded-md px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
+                  dateRange === tab.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Date Range Selector */}
-            <div className="flex rounded-lg border border-border bg-card p-1">
-              {[
-                { id: 'today', label: 'Today' },
-                { id: 'week', label: 'This Week' },
-                { id: 'month', label: 'This Month' },
-                { id: 'all', label: 'All Time' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => updateDateRange(tab.id)}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition cursor-pointer ${
-                    dateRange === tab.id
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            className="btn btn-outline"
+          >
+            <Download className="h-4 w-4 text-emerald-500" />
+            <span>Export CSV</span>
+          </button>
 
-            <button
-              type="button"
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold hover:bg-muted text-foreground transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Download className="h-4 w-4 text-emerald-500" />
-              <span>Export CSV</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <Printer className="h-4 w-4" />
-              <span>Print Report</span>
-            </button>
-          </div>
-        </div>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="btn btn-primary"
+          >
+            <Printer className="h-4 w-4" />
+            <span>Print Report</span>
+          </button>
+        </>
+      }
+      />
 
         {/* Report Module Navigation Tabs */}
         <div className="flex border-b border-border space-x-2 overflow-x-auto pb-1 text-sm font-medium">
@@ -283,7 +285,7 @@ export function ReportsClient({
               <div className="text-[10px] font-bold uppercase tracking-wider text-black border border-black px-1.5 py-0.5 rounded inline-block mb-1">
                 ShopFlow Certified Report
               </div>
-              <h1 className="text-xl font-black uppercase tracking-tight text-black">Financial & Operations Report</h1>
+              <h1 className="text-xl font-bold uppercase tracking-tight text-black">Financial & Operations Report</h1>
               <p className="text-xs text-gray-700 font-medium">Period: {dateRange.toUpperCase()} | Module: {currentTab.toUpperCase()}</p>
             </div>
             <div className="text-right text-xs text-gray-800 space-y-0.5">
@@ -300,7 +302,8 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <StatCard
-              title="Total Sale Income"
+              title="Total Sale"
+              ur="کل سیل"
               value={formatPKR(totalRevenue)}
               subtitle={`${salesCount} completed customer sales`}
               icon={DollarSign}
@@ -309,7 +312,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Item Purchase Cost (COGS)"
+              title="Item Cost"
+              ur="مال کی لاگت"
               value={formatPKR(cogs)}
               subtitle="Wholesale cost of goods sold"
               icon={ShoppingBag}
@@ -318,7 +322,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Sales Profit (Munafa)"
+              title="Sale Profit"
+              ur="سیل کا منافع"
               value={formatPKR(grossProfit)}
               subtitle={`Gross Margin: ${grossMarginPct}%`}
               icon={TrendingUp}
@@ -327,7 +332,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Shop Operating Expenses"
+              title="Shop Expenses"
+              ur="دکان کے خرچے"
               value={formatPKR(totalExpenses)}
               subtitle="Shop rent, utilities & overheads"
               icon={TrendingDown}
@@ -336,7 +342,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Net Profit (Asal Bachat)"
+              title="Real Profit"
+              ur="اصل بچت"
               value={formatPKR(netProfit)}
               subtitle={`Net Margin: ${netMarginPct}%`}
               icon={TrendingUp}
@@ -347,6 +354,7 @@ export function ReportsClient({
 
             <StatCard
               title="New Udhaar Given"
+              ur="نیا ادھار دیا"
               value={formatPKR(totalUdhaar)}
               subtitle="Amount added to customer Udhaar"
               icon={Wallet}
@@ -439,7 +447,8 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Total Sale Income"
+              title="Total Sale"
+              ur="کل سیل"
               value={formatPKR(totalRevenue)}
               subtitle={`${salesCount} completed sales`}
               icon={DollarSign}
@@ -448,7 +457,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Total Discount Given"
+              title="Discount Given"
+              ur="دی گئی رعایت"
               value={formatPKR(totalDiscounts)}
               subtitle="Total discount concessions"
               icon={Tag}
@@ -457,7 +467,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Cash / Digital Received"
+              title="Money Received"
+              ur="وصول شدہ رقم"
               value={formatPKR(totalCollected)}
               subtitle="Cash & digital collections"
               icon={Wallet}
@@ -466,7 +477,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Customer Udhaar (Khata)"
+              title="Customer Udhaar"
+              ur="گاہکوں کا ادھار"
               value={formatPKR(totalUdhaar)}
               subtitle="Unpaid balance on credit"
               icon={Receipt}
@@ -516,7 +528,7 @@ export function ReportsClient({
           </div>
 
           {/* Supplier Spend Table */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="panel overflow-hidden">
             <div className="p-4 border-b border-border font-bold text-sm flex items-center gap-2">
               <Truck className="h-4 w-4 text-primary" />
               Supplier Procurement Breakdown
@@ -578,7 +590,7 @@ export function ReportsClient({
                 {expenseCategories.map((c, idx) => (
                   <div key={idx} className="rounded-xl border border-border bg-card p-4 space-y-1">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Tag className="h-3.5 w-3.5" />
+                      <Tag className="h-4 w-4" />
                       <span>{c.name}</span>
                     </div>
                     <div className="text-lg font-bold text-foreground font-mono">{formatPKR(c.amount)}</div>
@@ -589,7 +601,7 @@ export function ReportsClient({
           </div>
 
           {/* Recent Expense Log */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="panel overflow-hidden">
             <div className="p-4 border-b border-border font-bold text-sm flex items-center gap-2">
               <Receipt className="h-4 w-4 text-primary" />
               Expense Details Log
@@ -635,7 +647,8 @@ export function ReportsClient({
         <div className="space-y-6 animate-in fade-in-50">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
-              title="Shop Stock Value (Cost)"
+              title="Stock Value (Cost)"
+              ur="مال کی قیمتِ خرید"
               value={formatPKR(totalInventoryCostValuation)}
               subtitle="Total investment at purchase cost"
               icon={Package}
@@ -644,7 +657,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Expected Sale Value (Retail)"
+              title="Stock Sale Value"
+              ur="مال کی فروخت قیمت"
               value={formatPKR(totalPotentialRetailValuation)}
               subtitle="Expected revenue at selling price"
               icon={DollarSign}
@@ -653,7 +667,8 @@ export function ReportsClient({
             />
 
             <StatCard
-              title="Total Items in Stock"
+              title="Items in Stock"
+              ur="اسٹاک میں مال"
               value={totalStockQuantity}
               subtitle={`Including ${inStockImeiCount} IMEI devices`}
               icon={ShoppingBag}
@@ -663,6 +678,7 @@ export function ReportsClient({
 
             <StatCard
               title="Stock Ending Soon"
+              ur="مال ختم ہو رہا ہے"
               value={lowStockCount}
               subtitle="Products at or below threshold"
               icon={AlertTriangle}
@@ -673,7 +689,7 @@ export function ReportsClient({
           </div>
 
           {/* Products Inventory Status Table */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="panel overflow-hidden">
             <div className="p-4 border-b border-border font-bold text-sm flex items-center gap-2">
               <Package className="h-4 w-4 text-primary" />
               Live Inventory Snapshot

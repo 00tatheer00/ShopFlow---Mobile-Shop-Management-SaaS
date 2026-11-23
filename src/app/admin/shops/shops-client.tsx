@@ -299,7 +299,7 @@ export function ShopsClient({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2.5 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="btn btn-outline"
           >
             <Download className="h-4 w-4 text-emerald-500" />
             <span>Export CSV</span>
@@ -307,7 +307,7 @@ export function ShopsClient({
 
           <Link
             href="/admin/shops/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-indigo-600 px-4 py-2.5 text-xs font-semibold text-primary-foreground shadow-md hover:shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="btn btn-primary"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Create Shop</span>
@@ -326,7 +326,7 @@ export function ShopsClient({
               placeholder="Search by ID, name, city, phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-border bg-background py-2 pl-9 pr-9 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="field pr-9 pl-10"
             />
             {search && (
               <button
@@ -411,7 +411,7 @@ export function ShopsClient({
                 <button
                   type="button"
                   onClick={() => router.push('/admin/shops')}
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer"
+                  className="btn btn-outline mt-4"
                 >
                   Reset Filters
                 </button>
@@ -424,7 +424,7 @@ export function ShopsClient({
                 </p>
                 <Link
                   href="/admin/shops/new"
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                  className="btn btn-primary mt-4"
                 >
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span>Create Shop</span>
@@ -434,7 +434,7 @@ export function ShopsClient({
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="sf-table">
               <thead>
                 <tr className="border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground">
                   <th className="py-3.5 px-6">Shop ID & Name</th>
@@ -569,7 +569,7 @@ export function ShopsClient({
                               type="button"
                               disabled={isOperating}
                               onClick={() => handleRestore(shop)}
-                              className="inline-flex items-center gap-1 rounded-xl bg-card border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+                              className="btn btn-outline"
                             >
                               {isOperating ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -598,7 +598,7 @@ export function ShopsClient({
                             {/* Manage Link */}
                             <Link
                               href={`/admin/shops/${shop.id}`}
-                              className="inline-flex items-center gap-1 rounded-xl bg-card border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
+                              className="btn btn-outline"
                               title="View and Edit Shop Details"
                             >
                               <span>Manage</span>
@@ -776,7 +776,7 @@ export function ShopsClient({
                 value={permConfirmName}
                 onChange={(e) => setPermConfirmName(e.target.value)}
                 placeholder={permDeleteModalShop.name}
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-destructive/30"
+                className="field"
               />
             </div>
 

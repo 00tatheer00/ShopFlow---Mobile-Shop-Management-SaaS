@@ -306,7 +306,7 @@ export function ProductsTable({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors hover:border-emerald-500/40"
+            className="btn btn-outline"
           >
             <Download className="h-3.5 w-3.5 text-emerald-500" />
             <span>Export CSV</span>
@@ -318,7 +318,7 @@ export function ProductsTable({
               setImeiResults(null);
               setImeiSearchQuery('');
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 transition-colors"
           >
             <Search className="h-3.5 w-3.5" />
             Search IMEI / Serial
@@ -327,9 +327,9 @@ export function ProductsTable({
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="panel overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="sf-table">
             <thead>
               <tr className="border-b border-border bg-muted/40">
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">Product</th>
@@ -405,10 +405,10 @@ export function ProductsTable({
                           <span
                             className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${
                               isOutOfStock
-                                ? 'bg-rose-100 border border-rose-300 text-rose-950 dark:bg-rose-950/70 dark:border-rose-700 dark:text-rose-200'
+                                ? 'bg-rose-100 text-rose-950 dark:bg-rose-950/70 dark:text-rose-200'
                                 : isLowStock
-                                ? 'bg-amber-100 border border-amber-300 text-amber-950 dark:bg-amber-950/70 dark:border-amber-700 dark:text-amber-200'
-                                : 'bg-primary/15 border border-primary/30 text-primary dark:text-primary-foreground'
+                                ? 'bg-amber-100 text-amber-950 dark:bg-amber-950/70 dark:text-amber-200'
+                                : 'bg-primary/15 text-primary dark:text-primary-foreground'
                             }`}
                           >
                             <Smartphone className="h-3 w-3" />
@@ -420,7 +420,7 @@ export function ProductsTable({
                               <AlertTriangle className="h-3.5 w-3.5 text-amber-600 flex-shrink-0" />
                             )}
                             <span
-                              className={`font-black ${
+                              className={`font-bold ${
                                 isOutOfStock
                                   ? 'text-rose-700 dark:text-rose-300'
                                   : isLowStock
@@ -437,9 +437,9 @@ export function ProductsTable({
                     </td>
                     <td className="px-4 py-3.5 text-center hidden sm:table-cell">
                       <span
-                        className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-black uppercase tracking-wider ${
+                        className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
                           product.is_active
-                            ? 'bg-emerald-100 border border-emerald-400 text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200'
+                            ? 'bg-emerald-100 text-emerald-950 dark:bg-emerald-950/70 dark:text-emerald-200'
                             : 'bg-muted border border-border text-slate-700 dark:text-slate-300'
                         }`}
                       >
@@ -660,7 +660,7 @@ export function ProductsTable({
                     setAdjustQty(val === '' ? '' : Number(val));
                   }}
                   placeholder="0"
-                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+                  className="field"
                 />
                 <p className="text-[11px] text-muted-foreground mt-1">
                   New stock after adjustment will be:{' '}
@@ -678,7 +678,7 @@ export function ProductsTable({
                   value={adjustReason}
                   onChange={(e) => setAdjustReason(e.target.value)}
                   placeholder="e.g. Physical stock count discrepancy, damaged item, etc."
-                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -736,7 +736,7 @@ export function ProductsTable({
                     value={imeiSearchQuery}
                     onChange={(e) => setImeiSearchQuery(e.target.value)}
                     placeholder="Enter 15-digit IMEI or partial serial..."
-                    className="h-10 w-full rounded-lg border border-border bg-background pl-10 pr-4 font-mono text-sm text-foreground focus:border-primary focus:outline-none"
+                    className="field pr-4 pl-10 font-mono"
                   />
                 </div>
                 <button

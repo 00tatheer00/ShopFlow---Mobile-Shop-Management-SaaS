@@ -1,10 +1,16 @@
 'use client';
 
-import { Ur } from '@/components/ui/urdu';
+import { SettingsTabs } from '../settings-tabs';
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { KeyRound, Plus, Shield, X } from 'lucide-react';
+import {
+  KeyRound,
+  Plus,
+  Shield,
+  X,
+  Users,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import type { ShopUser } from '@/lib/types';
 import { addStaffMember, updateStaffRole, toggleStaffStatus, resetStaffPassword } from '../actions';
@@ -77,51 +83,34 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
   return (
     <div className="max-w-4xl space-y-6">
       {/* Settings Navigation Tabs */}
-      <div className="flex gap-4 border-b border-border pb-1">
-        <Link
-          href="/settings"
-          className="border-b-2 border-transparent pb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Shop Profile
-        </Link>
-        <Link
-          href="/settings/preferences"
-          className="border-b-2 border-transparent pb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          POS & Invoice Preferences
-        </Link>
-        <Link
-          href="/settings/users"
-          className="border-b-2 border-primary pb-2 text-sm font-semibold text-primary"
-        >
-          Staff & Roles
-        </Link>
-      </div>
+      <SettingsTabs active="/settings/users" />
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Staff <Ur className="text-lg text-muted-foreground">ملازمین</Ur></h1>
-          <p className="text-xs text-muted-foreground">
-            Control employee roles (Manager, Cashier), manage permissions, and assign access.
-          </p>
-        </div>
-
-        <button
-          onClick={() => {
-            setFormError(null);
-            setIsAddOpen(true);
-          }}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add Staff Member
-        </button>
-      </div>
+      <PageHeader
+        title="Staff"
+        ur="ملازمین"
+        icon={Users}
+        tone="slate"
+        description={<>Control employee roles (Manager, Cashier), manage permissions, and assign access.</>}
+        actions={
+        <>
+          <button
+            onClick={() => {
+              setFormError(null);
+              setIsAddOpen(true);
+            }}
+            className="btn btn-primary"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Staff Member
+          </button>
+        </>
+      }
+      />
 
       {/* Staff Table */}
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="panel overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="sf-table">
             <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-semibold">Staff Member</th>
@@ -163,7 +152,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                             handleRoleChange(member.id, e.target.value as 'manager' | 'cashier')
                           }
                           disabled={isPending}
-                          className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs font-semibold text-foreground focus:border-primary focus:outline-none"
+                          className="field"
                         >
                           <option value="manager">Manager</option>
                           <option value="cashier">Cashier</option>
@@ -239,7 +228,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                   name="full_name"
                   required
                   placeholder="e.g. Bilal Ahmed"
-                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -251,7 +240,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                   required
                   autoComplete="off"
                   placeholder="e.g. bilal.shop@gmail.com"
-                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -264,7 +253,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                   minLength={8}
                   autoComplete="new-password"
                   placeholder="At least 8 characters"
-                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm font-mono focus:border-primary focus:outline-none"
+                  className="field font-mono"
                 />
                 <p className="text-xs text-muted-foreground mt-1">
                   Write this down and give it to the staff member. They log in with this email and password.
@@ -277,7 +266,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                   type="tel"
                   name="phone"
                   placeholder="03001234567"
-                  className="w-full rounded-lg border border-border bg-background p-2.5 text-sm focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -286,7 +275,7 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
                 <select
                   name="role"
                   defaultValue="cashier"
-                  className="w-full rounded border border-border bg-background p-2 focus:border-primary focus:outline-none"
+                  className="field"
                 >
                   <option value="cashier">Cashier (POS & Sales only)</option>
                   <option value="manager">Manager (Inventory, Purchases, Reports)</option>

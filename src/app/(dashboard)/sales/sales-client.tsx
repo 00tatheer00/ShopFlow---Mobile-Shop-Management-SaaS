@@ -1,5 +1,6 @@
 'use client';
 
+import { Badge, PageHeader, Segmented } from '@/components/ui/kit';
 import { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -194,38 +195,39 @@ export function SalesClient({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Sales History</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Completed transactions, receipts, customer invoices, and POS history — {totalCount} total record{totalCount !== 1 ? 's' : ''}.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Sales Record"
+        ur="سیل کا ریکارڈ"
+        icon={Receipt}
+        tone="emerald"
+        description={<>Completed transactions, receipts, customer invoices, and POS history — {totalCount} total record{totalCount !== 1 ? 's' : ''}.</>}
+        actions={
+        <>
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
+            className="btn btn-outline"
           >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            <Download className="h-4 w-4 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
           <Link
             href="/sales/new"
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition-colors"
+            className="btn btn-primary"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             <span>New Sale (POS)</span>
           </Link>
-        </div>
-      </div>
+        </>
+      }
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard
-          title="Total Sales Revenue"
+          title="Total Sale"
+          ur="کل سیل"
           value={formatPKR(totalRevenue)}
           subtitle="Gross completed sales volume"
           icon={DollarSign}
@@ -234,7 +236,8 @@ export function SalesClient({
         />
 
         <StatCard
-          title="Today's Invoices"
+          title="Today's Bills"
+          ur="آج کے بل"
           value={todaySalesCount}
           subtitle="Transactions created today"
           icon={TrendingUp}
@@ -243,7 +246,8 @@ export function SalesClient({
         />
 
         <StatCard
-          title="Sales on Credit (Udhaar)"
+          title="Udhaar to Collect"
+          ur="وصول کرنا باقی"
           value={formatPKR(totalUdhaarDue)}
           subtitle="Unpaid balances from credit invoices"
           icon={Receipt}
@@ -261,25 +265,19 @@ export function SalesClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by invoice number or customer name..."
-            className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="field pr-4 pl-10"
           />
         </form>
 
-        <div className="flex gap-2">
-          {['', 'completed', 'cancelled'].map((st) => (
-            <button
-              key={st}
-              onClick={() => handleFilterStatus(st)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold capitalize transition cursor-pointer ${
-                currentStatus === st
-                  ? 'bg-primary text-primary-foreground'
-                  : 'border border-border bg-card text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {st || 'All Statuses'}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          value={currentStatus}
+          onChange={handleFilterStatus}
+          options={[
+            { value: '', label: 'All' },
+            { value: 'completed', label: 'Completed' },
+            { value: 'cancelled', label: 'Cancelled' },
+          ]}
+        />
       </div>
 
       {/* Sales Table */}
@@ -295,7 +293,7 @@ export function SalesClient({
           {!search && !currentStatus && (
             <Link
               href="/sales/new"
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              className="btn btn-primary mt-4"
             >
               <Plus className="h-4 w-4" />
               Open POS
@@ -303,9 +301,45 @@ export function SalesClient({
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+        <div className="panel overflow-hidden">
+          {/* Phone: card list */}
+          <ul className="divide-y divide-border sm:hidden">
+            {displayedSales.map((sale) => {
+              const isCancelled = sale.status === 'cancelled';
+              return (
+                <li key={sale.id} className={`flex items-start justify-between gap-3 p-4 ${isCancelled ? 'opacity-60' : ''}`}>
+                  <button type="button" onClick={() => openReceipt(sale)} className="min-w-0 flex-1 text-left">
+                    <p className="truncate font-semibold text-foreground">{sale.customer?.name || 'Walk-in customer'}</p>
+                    <p className="font-mono text-xs text-muted-foreground">
+                      {sale.invoice_number} ·{' '}
+                      {new Date(sale.created_at).toLocaleString('en-PK', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Asia/Karachi' })}
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                      <Badge tone={isCancelled ? 'rose' : 'emerald'} dot>{isCancelled ? 'Cancelled' : 'Completed'}</Badge>
+                      <Badge tone="slate">{sale.payment_method.replace('_', ' ')}</Badge>
+                      {sale.amount_due > 0 && !isCancelled && <Badge tone="amber">Udhaar {formatPKR(sale.amount_due)}</Badge>}
+                    </div>
+                  </button>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="font-mono text-base font-bold text-foreground">{formatPKR(sale.total_amount)}</span>
+                    <div className="flex">
+                      <button onClick={() => openReceipt(sale)} className="icon-btn" aria-label="View receipt">
+                        <Eye className="h-4 w-4" />
+                      </button>
+                      {canCancel && !isCancelled && (
+                        <button onClick={() => setSaleToCancel(sale)} className="icon-btn hover:!text-rose-600" aria-label="Cancel sale">
+                          <Ban className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-x-auto sm:block">
+            <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Invoice #</th>
@@ -367,15 +401,9 @@ export function SalesClient({
                         )}
                       </td>
                       <td className="px-4 py-3.5 text-center">
-                        <span
-                          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-black uppercase tracking-wider ${
-                            isCancelled
-                              ? 'bg-rose-100 border border-rose-400 text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200'
-                              : 'bg-emerald-100 border border-emerald-400 text-emerald-950 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200'
-                          }`}
-                        >
-                          {sale.status}
-                        </span>
+                        <Badge tone={isCancelled ? 'rose' : 'emerald'} dot>
+                          {isCancelled ? 'Cancelled' : 'Completed'}
+                        </Badge>
                       </td>
                       <td className="px-4 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
@@ -416,14 +444,14 @@ export function SalesClient({
                   onClick={() => handlePageChange(currentPage - 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                  <ChevronLeft className="h-4 w-4" /> Previous
                 </button>
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>

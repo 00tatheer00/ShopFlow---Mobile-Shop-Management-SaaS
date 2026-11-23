@@ -113,7 +113,7 @@ export default async function AdminSettingsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="sf-table">
               <thead>
                 <tr className="border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground">
                   <th className="py-3 px-5">Timestamp</th>

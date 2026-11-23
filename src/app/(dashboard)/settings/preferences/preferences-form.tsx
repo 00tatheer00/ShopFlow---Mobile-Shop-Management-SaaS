@@ -1,10 +1,14 @@
 'use client';
 
-import { Ur } from '@/components/ui/urdu';
+import { SettingsTabs } from '../settings-tabs';
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Printer,
+} from 'lucide-react';
 import type { ShopSettings } from '@/lib/types';
 import { updateShopPreferences } from '../actions';
 import { CheckForUpdatesButton } from '@/components/ui/app-update-notifier';
@@ -38,33 +42,15 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
   return (
     <div className="max-w-3xl space-y-6">
       {/* Settings Navigation Tabs */}
-      <div className="flex gap-4 border-b border-border pb-1">
-        <Link
-          href="/settings"
-          className="border-b-2 border-transparent pb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Shop Profile
-        </Link>
-        <Link
-          href="/settings/preferences"
-          className="border-b-2 border-primary pb-2 text-sm font-semibold text-primary"
-        >
-          POS & Invoice Preferences
-        </Link>
-        <Link
-          href="/settings/users"
-          className="border-b-2 border-transparent pb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Staff & Roles
-        </Link>
-      </div>
+      <SettingsTabs active="/settings/preferences" />
 
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">Bill & Printing <Ur className="text-lg text-muted-foreground">بل کی سیٹنگ</Ur></h1>
-        <p className="text-xs text-muted-foreground">
-          Customize receipt notes, low stock alerts, and invoice numbering.
-        </p>
-      </div>
+      <PageHeader
+        title="Bill & Printing"
+        ur="بل کی سیٹنگ"
+        icon={Printer}
+        tone="slate"
+        description={<>Customize receipt notes, low stock alerts, and invoice numbering.</>}
+      />
 
       {feedback && (
         <div
@@ -94,7 +80,7 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
               name="invoice_prefix"
               defaultValue={settings?.invoice_prefix || 'INV'}
               placeholder="e.g. INV, SF, SHOP"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none uppercase font-mono"
+              className="field uppercase font-mono"
             />
           </div>
 
@@ -105,7 +91,7 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
             <select
               name="default_payment_method"
               defaultValue={settings?.default_payment_method || 'cash'}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="field"
             >
               <option value="cash">Cash</option>
               <option value="easypaisa">EasyPaisa</option>
@@ -124,7 +110,7 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
             name="low_stock_threshold"
             min="0"
             defaultValue={settings?.low_stock_threshold ?? 5}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           />
           <p className="text-[11px] text-muted-foreground mt-1">
             Products will trigger low stock warnings when stock drops to or below this amount.
@@ -140,7 +126,7 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
             name="receipt_header"
             defaultValue={settings?.receipt_header || ''}
             placeholder="e.g. Welcome to Star Mobile Centre! All types of mobile phones & accessories."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           />
         </div>
 
@@ -153,7 +139,7 @@ export function PreferencesForm({ settings }: PreferencesFormProps) {
             rows={3}
             defaultValue={settings?.receipt_footer || ''}
             placeholder="e.g. 7-day checking warranty. Goods once sold will not be returned without original invoice."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           />
         </div>
 

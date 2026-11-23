@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -147,21 +148,20 @@ export function SuppliersClient({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Suppliers</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Manage your vendors, wholesale distributors, and supplier contacts ({totalCount} total).
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Suppliers"
+        ur="سپلائر / ڈیلر"
+        icon={Truck}
+        tone="teal"
+        description={<>Manage your vendors, wholesale distributors, and supplier contacts ({totalCount} total).</>}
+        actions={
+        <>
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
+            className="btn btn-outline"
           >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            <Download className="h-4 w-4 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
@@ -171,14 +171,15 @@ export function SuppliersClient({
                 setFormError(null);
                 setIsAddModalOpen(true);
               }}
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition-colors cursor-pointer"
+              className="btn btn-primary"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               <span>Add Supplier</span>
             </button>
           )}
-        </div>
-      </div>
+        </>
+      }
+      />
 
       {/* Filter & Search Bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -189,7 +190,7 @@ export function SuppliersClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by supplier name, company, or phone..."
-            className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="field pr-4 pl-10"
           />
         </form>
         {search && (
@@ -201,7 +202,7 @@ export function SuppliersClient({
             }}
             className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
-            <X className="h-3.5 w-3.5" /> Clear search
+            <X className="h-4 w-4" /> Clear search
           </button>
         )}
       </div>
@@ -219,7 +220,7 @@ export function SuppliersClient({
           {canCreate && !search && (
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              className="btn btn-primary mt-4"
             >
               <Plus className="h-4 w-4" />
               Add First Supplier
@@ -227,9 +228,9 @@ export function SuppliersClient({
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Supplier Name</th>
@@ -254,7 +255,7 @@ export function SuppliersClient({
                     <td className="px-4 py-3.5">
                       {supplier.company ? (
                         <div className="flex items-center gap-1.5 text-xs text-foreground font-medium">
-                          <Building className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Building className="h-4 w-4 text-muted-foreground" />
                           {supplier.company}
                         </div>
                       ) : (
@@ -272,7 +273,7 @@ export function SuppliersClient({
                             className="inline-flex items-center justify-center rounded p-1 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
                             title="Chat on WhatsApp"
                           >
-                            <MessageCircle className="h-3.5 w-3.5" />
+                            <MessageCircle className="h-4 w-4" />
                           </a>
                         </div>
                       ) : (
@@ -288,7 +289,7 @@ export function SuppliersClient({
                     <td className="px-4 py-3.5 hidden md:table-cell text-xs text-muted-foreground">
                       {supplier.address ? (
                         <div className="flex items-center gap-1">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+                          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground/70" />
                           <span className="line-clamp-1">{supplier.address}</span>
                         </div>
                       ) : (
@@ -338,14 +339,14 @@ export function SuppliersClient({
                   onClick={() => handlePageChange(currentPage - 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                  <ChevronLeft className="h-4 w-4" /> Previous
                 </button>
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -383,7 +384,7 @@ export function SuppliersClient({
                   name="name"
                   required
                   placeholder="e.g. Tariq Mehmood"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -395,7 +396,7 @@ export function SuppliersClient({
                   type="text"
                   name="company"
                   placeholder="e.g. Star Mobile Traders"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -407,7 +408,7 @@ export function SuppliersClient({
                   type="text"
                   name="phone"
                   placeholder="e.g. 03009876543"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -419,7 +420,7 @@ export function SuppliersClient({
                   type="email"
                   name="email"
                   placeholder="e.g. contact@starmobile.com"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -431,7 +432,7 @@ export function SuppliersClient({
                   type="text"
                   name="address"
                   placeholder="e.g. Hall Road, Lahore"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -443,7 +444,7 @@ export function SuppliersClient({
                   name="notes"
                   rows={2}
                   placeholder="Payment terms, bank details, delivery notes..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -498,7 +499,7 @@ export function SuppliersClient({
                   name="name"
                   required
                   defaultValue={editingSupplier.name}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -510,7 +511,7 @@ export function SuppliersClient({
                   type="text"
                   name="company"
                   defaultValue={editingSupplier.company || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -522,7 +523,7 @@ export function SuppliersClient({
                   type="text"
                   name="phone"
                   defaultValue={editingSupplier.phone || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -534,7 +535,7 @@ export function SuppliersClient({
                   type="email"
                   name="email"
                   defaultValue={editingSupplier.email || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -546,7 +547,7 @@ export function SuppliersClient({
                   type="text"
                   name="address"
                   defaultValue={editingSupplier.address || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -558,7 +559,7 @@ export function SuppliersClient({
                   name="notes"
                   rows={2}
                   defaultValue={editingSupplier.notes || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -160,21 +161,20 @@ export function ExpensesClient({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Shop Expenses</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Track day-to-day shop operating costs, rent, utilities, food, and staff allowances.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Shop Expenses"
+        ur="دکان کے خرچے"
+        icon={CreditCard}
+        tone="rose"
+        description={<>Track day-to-day shop operating costs, rent, utilities, food, and staff allowances.</>}
+        actions={
+        <>
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
+            className="btn btn-outline"
           >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            <Download className="h-4 w-4 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
@@ -182,9 +182,9 @@ export function ExpensesClient({
             <>
               <button
                 onClick={() => setIsAddCatModalOpen(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer"
+                className="btn btn-outline"
               >
-                <Tag className="h-3.5 w-3.5" />
+                <Tag className="h-4 w-4" />
                 New Category
               </button>
               <button
@@ -192,20 +192,22 @@ export function ExpensesClient({
                   setFormError(null);
                   setIsAddModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition cursor-pointer"
+                className="btn btn-primary"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
                 Record Expense
               </button>
             </>
           )}
-        </div>
-      </div>
+        </>
+      }
+      />
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard
           title="Today's Expenses"
+          ur="آج کے خرچے"
           value={formatPKR(todayTotal)}
           subtitle="Outflow recorded today"
           icon={Calendar}
@@ -214,7 +216,8 @@ export function ExpensesClient({
         />
 
         <StatCard
-          title="This Month's Expense"
+          title="This Month's Expenses"
+          ur="اس مہینے کے خرچے"
           value={formatPKR(monthTotal)}
           subtitle="Total overhead for current month"
           icon={TrendingDown}
@@ -223,7 +226,8 @@ export function ExpensesClient({
         />
 
         <StatCard
-          title="Total Expense Slips"
+          title="Expense Entries"
+          ur="خرچوں کی تعداد"
           value={totalCount}
           subtitle="Logged expense records"
           icon={Receipt}
@@ -239,7 +243,7 @@ export function ExpensesClient({
           className={`rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
             !selectedCategory
               ? 'bg-primary text-primary-foreground shadow-xs'
-              : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
+              : 'border border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
           }`}
         >
           All Categories
@@ -251,7 +255,7 @@ export function ExpensesClient({
             className={`rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
               selectedCategory === cat.id
                 ? 'bg-primary text-primary-foreground shadow-xs'
-                : 'border-2 border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
+                : 'border border-border bg-card text-slate-800 dark:text-slate-200 hover:border-primary/50'
             }`}
           >
             {cat.name}
@@ -275,7 +279,7 @@ export function ExpensesClient({
                 setFormError(null);
                 setIsAddModalOpen(true);
               }}
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              className="btn btn-primary mt-4"
             >
               <Plus className="h-4 w-4" />
               Record First Expense
@@ -283,9 +287,9 @@ export function ExpensesClient({
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Date</th>
@@ -311,7 +315,7 @@ export function ExpensesClient({
                       <div className="space-y-0.5">
                         {expense.description ? (
                           <div className="flex items-center gap-1.5 font-medium">
-                            <FileText className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                             <span>{expense.description}</span>
                           </div>
                         ) : (
@@ -374,14 +378,14 @@ export function ExpensesClient({
                   onClick={() => handlePageChange(currentPage - 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                  <ChevronLeft className="h-4 w-4" /> Previous
                 </button>
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -421,7 +425,7 @@ export function ExpensesClient({
                   step="any"
                   required
                   placeholder="e.g. 1500"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                  className="field font-mono"
                 />
               </div>
 
@@ -431,7 +435,7 @@ export function ExpensesClient({
                 </label>
                 <select
                   name="category_id"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 >
                   <option value="">General / Uncategorized</option>
                   {categories.map((c) => (
@@ -452,7 +456,7 @@ export function ExpensesClient({
                     name="expense_date"
                     required
                     defaultValue={new Date().toISOString().split('T')[0]}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field"
                   />
                 </div>
 
@@ -463,7 +467,7 @@ export function ExpensesClient({
                   <select
                     name="payment_method"
                     defaultValue="cash"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field"
                   >
                     <option value="cash">Cash</option>
                     <option value="easypaisa">EasyPaisa</option>
@@ -482,7 +486,7 @@ export function ExpensesClient({
                   type="text"
                   name="description"
                   placeholder="e.g. Tea & snacks, Electricity bill, Cleaning..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -494,7 +498,7 @@ export function ExpensesClient({
                   name="notes"
                   rows={2}
                   placeholder="e.g. Bill reference # 491823, paid to landlord..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -553,7 +557,7 @@ export function ExpensesClient({
                   step="any"
                   required
                   defaultValue={toRupees(expenseToEdit.amount)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+                  className="field font-mono"
                 />
               </div>
 
@@ -564,7 +568,7 @@ export function ExpensesClient({
                 <select
                   name="category_id"
                   defaultValue={expenseToEdit.category_id || ''}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 >
                   <option value="">General / Uncategorized</option>
                   {categories.map((c) => (
@@ -585,7 +589,7 @@ export function ExpensesClient({
                     name="expense_date"
                     required
                     defaultValue={expenseToEdit.expense_date}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field"
                   />
                 </div>
 
@@ -596,7 +600,7 @@ export function ExpensesClient({
                   <select
                     name="payment_method"
                     defaultValue={expenseToEdit.payment_method || 'cash'}
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field"
                   >
                     <option value="cash">Cash</option>
                     <option value="easypaisa">EasyPaisa</option>
@@ -616,7 +620,7 @@ export function ExpensesClient({
                   name="description"
                   defaultValue={expenseToEdit.description || ''}
                   placeholder="e.g. Tea & snacks, Electricity bill..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -629,7 +633,7 @@ export function ExpensesClient({
                   rows={2}
                   defaultValue={expenseToEdit.notes || ''}
                   placeholder="e.g. Additional remarks or receipt voucher..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -679,7 +683,7 @@ export function ExpensesClient({
                   onChange={(e) => setNewCatName(e.target.value)}
                   required
                   placeholder="e.g. Utilities, Tea & Food, Rent"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 

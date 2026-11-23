@@ -43,17 +43,31 @@ type Area = 'all' | 'manage';
 
 /** Signature colour per module — used for icons everywhere so screens are recognisable at a glance. */
 export const MODULE_COLORS = {
-  home: 'from-violet-500 to-indigo-500',
-  sales: 'from-emerald-500 to-teal-500',
-  udhaar: 'from-amber-400 to-orange-500',
-  customers: 'from-fuchsia-500 to-pink-500',
-  products: 'from-sky-500 to-blue-500',
-  purchases: 'from-cyan-500 to-sky-600',
-  suppliers: 'from-teal-500 to-cyan-600',
-  expenses: 'from-rose-500 to-red-500',
-  reports: 'from-violet-500 to-purple-600',
-  settings: 'from-slate-400 to-slate-600',
+  home: 'text-violet-300',
+  sales: 'text-emerald-300',
+  udhaar: 'text-amber-300',
+  customers: 'text-pink-300',
+  products: 'text-sky-300',
+  purchases: 'text-cyan-300',
+  suppliers: 'text-teal-300',
+  expenses: 'text-rose-300',
+  reports: 'text-violet-300',
+  settings: 'text-slate-300',
 } as const;
+
+/** Light-background chip for the same module (page header on white). */
+const HEADER_CHIP: Record<string, string> = {
+  '/dashboard': 'bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300',
+  '/sales': 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/70 dark:text-emerald-300',
+  '/udhaar': 'bg-amber-100 text-amber-700 dark:bg-amber-950/70 dark:text-amber-300',
+  '/customers': 'bg-pink-100 text-pink-700 dark:bg-pink-950/70 dark:text-pink-300',
+  '/products': 'bg-sky-100 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300',
+  '/purchases': 'bg-cyan-100 text-cyan-700 dark:bg-cyan-950/70 dark:text-cyan-300',
+  '/suppliers': 'bg-teal-100 text-teal-700 dark:bg-teal-950/70 dark:text-teal-300',
+  '/expenses': 'bg-rose-100 text-rose-700 dark:bg-rose-950/70 dark:text-rose-300',
+  '/reports': 'bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300',
+  '/settings': 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+};
 
 interface NavItem {
   label: string;
@@ -241,7 +255,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
         {/* Brand */}
         <div className="flex h-16 shrink-0 items-center justify-between gap-2 px-4">
           <Link href="/dashboard" className="flex min-w-0 items-center gap-3" onClick={() => setSidebarOpen(false)}>
-            <div className="bg-brand flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white shadow-lg shadow-violet-900/40">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
               <Store className="h-5 w-5" />
             </div>
             <div className="min-w-0">
@@ -263,9 +277,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
           <Link
             href="/sales/new"
             onClick={() => setSidebarOpen(false)}
-            className="group flex h-14 items-center gap-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-white shadow-lg shadow-emerald-950/40 transition hover:brightness-110 active:scale-[0.98]"
+            className="group flex h-14 items-center gap-3 rounded-xl bg-emerald-600 px-4 text-white transition hover:bg-emerald-500 active:scale-[0.98]"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15">
               <ShoppingCart className="h-5 w-5" />
             </span>
             <span className="flex flex-col leading-tight">
@@ -302,9 +316,9 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                           }`}
                         >
                           <span
-                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br ${item.color} text-white shadow-md transition ${
-                              active ? 'scale-105' : 'opacity-85 group-hover:opacity-100'
-                            }`}
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition ${
+                              active ? 'bg-white/15' : 'bg-white/[0.06] group-hover:bg-white/10'
+                            } ${item.color}`}
                           >
                             <Icon className="h-[18px] w-[18px]" />
                           </span>
@@ -314,7 +328,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                             </span>
                             <Ur className="shrink-0 text-[13px] text-white/45">{item.ur}</Ur>
                           </span>
-                          {active && <span className="h-6 w-1 rounded-full bg-white" aria-hidden="true" />}
+                          {active && <span className="h-5 w-1 rounded-full bg-sidebar-primary" aria-hidden="true" />}
                         </Link>
                         {active && children.length > 1 && (
                           <ul className="ml-[30px] mt-1 space-y-0.5 border-l border-white/15 pl-3">
@@ -364,7 +378,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
             {page && (
               <div className="flex min-w-0 items-center gap-3">
                 <span
-                  className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${page.color} text-white shadow-sm sm:flex`}
+                  className={`hidden h-9 w-9 shrink-0 items-center justify-center rounded-xl sm:flex ${HEADER_CHIP[page.href] || HEADER_CHIP['/dashboard']}`}
                 >
                   <page.icon className="h-[18px] w-[18px]" />
                 </span>
@@ -379,7 +393,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               <PwaInstallButton className="hidden sm:inline-flex" />
               <Link
                 href="/sales/new"
-                className="hidden h-11 items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 text-sm font-bold text-white shadow-md shadow-emerald-600/25 transition hover:brightness-110 lg:inline-flex"
+                className="btn btn-success hidden lg:inline-flex"
               >
                 <Plus className="h-4 w-4" />
                 New Sale
@@ -395,7 +409,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                   aria-haspopup="menu"
                   aria-expanded={menuOpen}
                 >
-                  <span className="bg-brand flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
                     {initials}
                   </span>
                   <span className="hidden text-left leading-tight md:block">
@@ -410,10 +424,10 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
                     role="menu"
                     className="absolute right-0 top-[calc(100%+8px)] w-64 overflow-hidden rounded-2xl border border-border bg-popover shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150"
                   >
-                    <div className="bg-brand px-4 py-3 text-white">
-                      <p className="truncate font-bold">{user.full_name}</p>
-                      <p className="truncate text-sm text-white/80">{user.email}</p>
-                      <p className="mt-1 text-xs text-white/80">
+                    <div className="border-b border-border px-4 py-3">
+                      <p className="truncate font-bold text-foreground">{user.full_name}</p>
+                      <p className="truncate text-sm text-muted-foreground">{user.email}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
                         {role.en} · <Ur>{role.ur}</Ur>
                       </p>
                     </div>
@@ -464,7 +478,7 @@ export function DashboardShell({ user, children }: DashboardShellProps) {
               <div className="flex justify-center">
                 <Link
                   href="/sales/new"
-                  className="-mt-7 flex h-[70px] w-[70px] flex-col items-center justify-center rounded-full border-4 border-background bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-xl shadow-emerald-600/30 active:scale-95"
+                  className="-mt-7 flex h-[68px] w-[68px] flex-col items-center justify-center rounded-full border-4 border-background bg-emerald-600 text-white shadow-lg active:scale-95"
                   aria-label="New Sale"
                 >
                   <ShoppingCart className="h-6 w-6" />

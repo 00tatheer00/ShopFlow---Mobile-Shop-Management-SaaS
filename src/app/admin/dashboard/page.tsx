@@ -141,7 +141,7 @@ export default async function AdminDashboardPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/admin/shops/new"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
+            className="btn btn-primary"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Create Shop</span>
@@ -213,7 +213,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Monthly Subscription & Billing Status Card */}
-      <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-500/10 via-purple-500/5 to-card p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+      <div className="panel p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
@@ -246,7 +246,7 @@ export default async function AdminDashboardPage() {
 
           <Link
             href="/admin/subscriptions"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-sm hover:bg-primary/90 transition"
+            className="btn btn-primary"
           >
             <span>Manage Subscriptions</span>
             <ArrowRight className="h-3.5 w-3.5" />
@@ -282,14 +282,14 @@ export default async function AdminDashboardPage() {
                 </p>
                 <Link
                   href="/admin/shops/new"
-                  className="mt-4 inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                  className="btn btn-primary mt-4"
                 >
                   <PlusCircle className="h-3.5 w-3.5" />
                   <span>Create Shop</span>
                 </Link>
               </div>
             ) : (
-              <table className="w-full text-left text-sm">
+              <table className="sf-table">
                 <thead>
                   <tr className="border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground">
                     <th className="py-3 px-5">Shop ID</th>

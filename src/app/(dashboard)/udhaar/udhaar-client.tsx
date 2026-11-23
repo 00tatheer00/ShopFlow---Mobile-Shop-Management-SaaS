@@ -1,6 +1,6 @@
 'use client';
 
-import { Ur } from '@/components/ui/urdu';
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
@@ -165,21 +165,20 @@ export function UdhaarClient({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Udhaar Khata <Ur className="text-xl text-muted-foreground">ادھار کھاتہ</Ur></h1>
-          <p className="text-sm text-muted-foreground">
-            Manage customer credit, record recoveries (Vasooli), and send WhatsApp balance reminders.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Udhaar Khata"
+        ur="ادھار کھاتہ"
+        icon={Wallet}
+        tone="amber"
+        description={<>Manage customer credit, record recoveries (Vasooli), and send WhatsApp balance reminders.</>}
+        actions={
+        <>
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
+            className="btn btn-outline"
           >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            <Download className="h-4 w-4 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
@@ -191,9 +190,9 @@ export function UdhaarClient({
                   setFormError(null);
                   setIsCreditModalOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer"
+                className="btn btn-outline"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
                 Add Udhaar
               </button>
               )}
@@ -205,20 +204,22 @@ export function UdhaarClient({
                   setAmountInput('');
                   setIsReceivePaymentOpen(true);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
+                className="btn btn-success"
               >
-                <ArrowDownLeft className="h-3.5 w-3.5" />
+                <ArrowDownLeft className="h-4 w-4" />
                 Receive Payment (Vasooli)
               </button>
             </>
           )}
-        </div>
-      </div>
+        </>
+      }
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard
-          title="Total Udhaar to Collect"
+          title="Udhaar to Collect"
+          ur="وصول کرنا باقی"
           value={formatPKR(totalUdhaar)}
           subtitle="Market credit pending collection"
           icon={Wallet}
@@ -227,7 +228,8 @@ export function UdhaarClient({
         />
 
         <StatCard
-          title="Customers with Balance"
+          title="Customers with Udhaar"
+          ur="ادھار والے گاہک"
           value={debtorsCount}
           subtitle="Customers who owe balance"
           icon={Building}
@@ -236,7 +238,8 @@ export function UdhaarClient({
         />
 
         <StatCard
-          title="Total Khata Entries"
+          title="Khata Entries"
+          ur="کھاتے کی تعداد"
           value={recentLedger.length}
           subtitle="Recent credits & wasooli entries"
           icon={History}
@@ -283,7 +286,7 @@ export function UdhaarClient({
               placeholder="Search by customer name or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-10 w-full rounded-lg border border-input bg-card pl-10 pr-4 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              className="field pr-4 pl-10"
             />
           </div>
 
@@ -296,9 +299,45 @@ export function UdhaarClient({
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-xl border border-border bg-card">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
+            <div className="panel overflow-hidden">
+              {/* Phone: card list */}
+              <ul className="divide-y divide-border sm:hidden">
+                {filteredDebtors.map((customer) => (
+                  <li key={customer.id} className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-foreground">{customer.name}</p>
+                        <p className="font-mono text-sm text-muted-foreground">{customer.phone}</p>
+                      </div>
+                      <span className="shrink-0 font-mono text-lg font-bold text-amber-700 dark:text-amber-400">
+                        {formatPKR(customer.udhaar_balance)}
+                      </span>
+                    </div>
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {canManage && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormError(null);
+                            setSelectedDebtorId(customer.id);
+                            setAmountInput('');
+                            setIsReceivePaymentOpen(true);
+                          }}
+                          className="btn btn-success"
+                        >
+                          <ArrowDownLeft className="h-4 w-4" /> Receive
+                        </button>
+                      )}
+                      <a href={getWhatsAppReminderUrl(customer)} target="_blank" rel="noopener noreferrer" className="btn btn-outline">
+                        <MessageCircle className="h-4 w-4 text-emerald-600" /> Reminder
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="hidden overflow-x-auto sm:block">
+                <table className="sf-table">
                   <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Customer</th>
@@ -322,7 +361,7 @@ export function UdhaarClient({
                           {customer.phone}
                         </td>
                         <td className="px-4 py-3.5 text-right">
-                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 border border-rose-400 px-2.5 py-0.5 text-sm font-black text-rose-950 dark:bg-rose-950/70 dark:border-rose-600 dark:text-rose-200">
+                          <span className="font-mono text-base font-bold text-amber-700 dark:text-amber-400">
                             {formatPKR(customer.udhaar_balance)}
                           </span>
                         </td>
@@ -332,10 +371,10 @@ export function UdhaarClient({
                               href={getWhatsAppReminderUrl(customer)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-lg border-2 border-emerald-400 bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-950 hover:bg-emerald-200 dark:bg-emerald-950/70 dark:border-emerald-600 dark:text-emerald-200 shadow-2xs transition-colors"
+                              className="btn btn-sm btn-outline"
                               title="Send WhatsApp Payment Reminder"
                             >
-                              <MessageCircle className="h-3.5 w-3.5 text-emerald-700" />
+                              <MessageCircle className="h-4 w-4 text-emerald-600" />
                               Reminder
                             </a>
                             {canManage && (
@@ -348,10 +387,10 @@ export function UdhaarClient({
                                     setAmountInput(String(Math.round(customer.udhaar_balance / 100)));
                                     setIsReceivePaymentOpen(true);
                                   }}
-                                  className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-xs font-semibold text-white shadow-xs transition-colors cursor-pointer"
+                                  className="btn btn-success"
                                   title="Clear entire outstanding balance"
                                 >
-                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  <CheckCircle2 className="h-4 w-4" />
                                   Clear
                                 </button>
                                 <button
@@ -362,10 +401,10 @@ export function UdhaarClient({
                                     setAmountInput('');
                                     setIsReceivePaymentOpen(true);
                                   }}
-                                  className="inline-flex items-center gap-1 rounded-lg border border-border bg-card hover:bg-muted px-2.5 py-1 text-xs font-semibold text-foreground shadow-2xs transition-colors cursor-pointer"
+                                  className="btn btn-outline"
                                   title="Record partial or custom payment"
                                 >
-                                  <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-600" />
+                                  <ArrowDownLeft className="h-4 w-4 text-emerald-600" />
                                   Receive
                                 </button>
                               </>
@@ -384,9 +423,9 @@ export function UdhaarClient({
 
       {/* Tab 2: Ledger History */}
       {activeTab === 'history' && (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Date & Time</th>
@@ -523,7 +562,7 @@ export function UdhaarClient({
                       setFormError(null);
                     }}
                     required
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    className="field cursor-pointer"
                   >
                     <option value="">-- Choose Customer --</option>
                     {customersWithBalance.map((c) => (
@@ -581,7 +620,7 @@ export function UdhaarClient({
                           ? `Max ${Math.round(currentSelectedCustomer.udhaar_balance / 100).toLocaleString()}`
                           : 'Enter amount'
                       }
-                      className="w-full rounded-lg border border-border bg-background pl-9 pr-3 py-2 text-sm font-semibold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="field pr-3 pl-10"
                     />
                   </div>
 
@@ -591,7 +630,7 @@ export function UdhaarClient({
                       <button
                         type="button"
                         onClick={() => setAmountInput(String(Math.round(currentSelectedCustomer.udhaar_balance / 100)))}
-                        className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer"
+                        className="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 hover:bg-emerald-100 transition cursor-pointer"
                       >
                         Full (Rs {Math.round(currentSelectedCustomer.udhaar_balance / 100).toLocaleString()})
                       </button>
@@ -630,7 +669,7 @@ export function UdhaarClient({
                   <select
                     name="payment_method"
                     defaultValue="cash"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    className="field cursor-pointer"
                   >
                     <option value="cash">Cash (نقد)</option>
                     <option value="easypaisa">EasyPaisa (ایزی پیسہ)</option>
@@ -649,7 +688,7 @@ export function UdhaarClient({
                     type="text"
                     name="reference"
                     placeholder="e.g. TRX12345678 or Receipt #"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field"
                   />
                 </div>
 
@@ -662,7 +701,7 @@ export function UdhaarClient({
                     type="text"
                     name="notes"
                     placeholder="e.g. Received via brother at shop"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="field"
                   />
                 </div>
 
@@ -720,7 +759,7 @@ export function UdhaarClient({
                 <select
                   name="customer_id"
                   required
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 >
                   <option value="">-- Choose Customer --</option>
                   {allCustomers.map((c) => (
@@ -742,7 +781,7 @@ export function UdhaarClient({
                   step="any"
                   required
                   placeholder="e.g. 5000"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 
@@ -755,7 +794,7 @@ export function UdhaarClient({
                   name="description"
                   required
                   placeholder="e.g. Mobile repair charges credit, charger purchase"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  className="field"
                 />
               </div>
 

@@ -1,9 +1,17 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Smartphone, AlertCircle, Plus, X, Loader2 } from 'lucide-react';
+import {
+  Smartphone,
+  AlertCircle,
+  Plus,
+  X,
+  Loader2,
+  PackagePlus,
+} from 'lucide-react';
 import type { Product, ProductCategory, Brand } from '@/lib/types';
 import { toRupees } from '@/lib/types';
 import { createProduct, updateProduct, createCategory, createBrand } from '../actions';
@@ -126,24 +134,14 @@ export function ProductForm({
   return (
     <div className="max-w-2xl space-y-6">
       {/* Top Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/products"
-          className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            {isEdit ? 'Edit Product' : 'Add New Product'}
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            {isEdit
-              ? 'Update product details, pricing, and category assignments.'
-              : 'Create an inventory item, set pricing, and configure IMEI tracking.'}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={isEdit ? 'Edit Product' : 'Add New Product'}
+        ur={isEdit ? 'مال میں تبدیلی' : 'نیا مال شامل کریں'}
+        icon={PackagePlus}
+        tone="sky"
+        backHref="/products"
+        description={isEdit ? 'Update product details, pricing, and category.' : 'Create an item, set its price, and choose IMEI tracking for phones.'}
+      />
 
       {errorMessage && (
         <div className="flex items-center gap-2 rounded-xl bg-rose-50 p-4 text-sm font-medium text-rose-700 dark:bg-rose-950/40 dark:text-rose-400">
@@ -166,7 +164,7 @@ export function ProductForm({
               required
               defaultValue={initialProduct?.name}
               placeholder="e.g. Samsung Galaxy A54 5G"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-normal"
+              className="field"
             />
           </div>
 
@@ -188,7 +186,7 @@ export function ProductForm({
                 name="category_id"
                 value={selectedCategoryId}
                 onChange={(e) => setSelectedCategoryId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-normal"
+                className="field"
               >
                 <option value="">-- Choose Category --</option>
                 {localCategories.map((c) => (
@@ -216,7 +214,7 @@ export function ProductForm({
                 name="brand_id"
                 value={selectedBrandId}
                 onChange={(e) => setSelectedBrandId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-normal"
+                className="field"
               >
                 <option value="">-- Choose Brand --</option>
                 {localBrands.map((b) => (
@@ -237,7 +235,7 @@ export function ProductForm({
               name="model"
               defaultValue={initialProduct?.model || ''}
               placeholder="e.g. 8GB / 128GB Awesome Graphite"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-normal"
+              className="field"
             />
           </div>
 
@@ -281,7 +279,7 @@ export function ProductForm({
                 required
                 defaultValue={initialProduct ? toRupees(initialProduct.sale_price) : undefined}
                 placeholder="e.g. 85000"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-medium"
+                className="field"
               />
             </div>
 
@@ -296,7 +294,7 @@ export function ProductForm({
                 step="any"
                 defaultValue={initialProduct ? toRupees(initialProduct.purchase_price) : undefined}
                 placeholder="e.g. 78000"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-medium"
+                className="field"
               />
             </div>
           </div>
@@ -312,7 +310,7 @@ export function ProductForm({
                 min="0"
                 defaultValue={initialProduct ? initialProduct.stock_quantity : 0}
                 disabled={isEdit || isImeiTracked}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none disabled:opacity-50 font-normal"
+                className="field"
               />
               {isImeiTracked ? (
                 <p className="text-[11px] text-muted-foreground mt-1 font-normal">
@@ -334,7 +332,7 @@ export function ProductForm({
                 name="low_stock_threshold"
                 min="0"
                 defaultValue={initialProduct ? initialProduct.low_stock_threshold : 5}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none font-normal"
+                className="field"
               />
             </div>
           </div>
@@ -374,7 +372,7 @@ export function ProductForm({
                 disabled={categoryPending}
                 className="p-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -390,7 +388,7 @@ export function ProductForm({
                   placeholder="e.g. Smart Phones"
                   value={categoryName}
                   onChange={(e) => setCategoryName(e.target.value)}
-                  className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-normal text-foreground focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -403,7 +401,7 @@ export function ProductForm({
                   placeholder="e.g. Touchscreen Android and iOS devices"
                   value={categoryDesc}
                   onChange={(e) => setCategoryDesc(e.target.value)}
-                  className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-normal text-foreground focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -419,11 +417,11 @@ export function ProductForm({
                 <button
                   type="submit"
                   disabled={categoryPending || !categoryName.trim()}
-                  className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5"
+                  className="btn btn-primary"
                 >
                   {categoryPending ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Saving...</span>
                     </>
                   ) : (
@@ -453,7 +451,7 @@ export function ProductForm({
                 disabled={brandPending}
                 className="p-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer disabled:opacity-40"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -469,7 +467,7 @@ export function ProductForm({
                   placeholder="e.g. Infinix, Samsung, Apple"
                   value={brandName}
                   onChange={(e) => setBrandName(e.target.value)}
-                  className="h-8.5 w-full rounded-lg border border-border bg-background px-2.5 text-xs font-normal text-foreground focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -485,11 +483,11 @@ export function ProductForm({
                 <button
                   type="submit"
                   disabled={brandPending || !brandName.trim()}
-                  className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none flex items-center gap-1.5"
+                  className="btn btn-primary"
                 >
                   {brandPending ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Saving...</span>
                     </>
                   ) : (

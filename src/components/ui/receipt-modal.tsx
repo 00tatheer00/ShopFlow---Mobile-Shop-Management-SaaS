@@ -163,7 +163,7 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
             <div className="inline-flex items-center justify-center gap-1.5 px-2 py-0.5 border border-black rounded text-[10px] font-bold uppercase tracking-wider font-sans mb-1">
               <span>★ FBR POS INTEGRATED INVOICE ★</span>
             </div>
-            <h1 className="text-base sm:text-lg font-black uppercase tracking-wider font-sans leading-tight">
+            <h1 className="text-base sm:text-lg font-bold uppercase tracking-wider font-sans leading-tight">
               {data.shopName}
             </h1>
             {data.shopAddress && (
@@ -268,7 +268,7 @@ export function ReceiptModal({ open, onClose, data }: ReceiptModalProps) {
                 <span className="font-mono">- Rs. {Math.round(data.discount / 100).toLocaleString('en-PK')}</span>
               </div>
             )}
-            <div className="flex justify-between font-black text-sm pt-1 border-t border-black">
+            <div className="flex justify-between font-bold text-sm pt-1 border-t border-black">
               <span>NET PAYABLE:</span>
               <span className="font-mono">Rs. {totalRupees.toLocaleString('en-PK')}</span>
             </div>

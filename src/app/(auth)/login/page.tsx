@@ -71,7 +71,7 @@ export default function LoginPage() {
                 required
                 placeholder="you@example.com"
                 disabled={isPending}
-                className="h-12 w-full rounded-xl border-2 border-input bg-background pl-10 pr-4 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-4 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>
@@ -102,7 +102,7 @@ export default function LoginPage() {
                 required
                 placeholder="Enter your password"
                 disabled={isPending}
-                className="h-12 w-full rounded-xl border-2 border-input bg-background pl-10 pr-12 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-12 w-full rounded-xl border border-input bg-background pl-10 pr-12 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-150 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50"
               />
               <button
                 type="button"

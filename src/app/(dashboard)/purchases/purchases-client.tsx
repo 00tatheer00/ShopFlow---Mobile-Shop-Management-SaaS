@@ -1,5 +1,6 @@
 'use client';
 
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -132,40 +133,41 @@ export function PurchasesClient({
   return (
     <div className="space-y-4 sm:space-y-5">
       {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">Purchase History</h1>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Track inventory shipments, wholesale procurement, and vendor cost history — {totalCount} total record{totalCount !== 1 ? 's' : ''}.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      <PageHeader
+        title="Purchases"
+        ur="مال کی خریداری"
+        icon={Package}
+        tone="cyan"
+        description={<>Track inventory shipments, wholesale procurement, and vendor cost history — {totalCount} total record{totalCount !== 1 ? 's' : ''}.</>}
+        actions={
+        <>
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-xs hover:bg-muted transition-colors cursor-pointer"
+            className="btn btn-outline"
           >
-            <Download className="h-3.5 w-3.5 text-emerald-600" />
+            <Download className="h-4 w-4 text-emerald-600" />
             <span>Export CSV</span>
           </button>
 
           {canCreate && (
             <Link
               href="/purchases/new"
-              className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary px-3.5 py-1.5 text-xs font-semibold text-primary-foreground shadow-xs hover:bg-primary/95 transition-colors"
+              className="btn btn-primary"
             >
-              <Plus className="h-3.5 w-3.5" />
+              <Plus className="h-4 w-4" />
               <span>New Purchase (Add Stock)</span>
             </Link>
           )}
-        </div>
-      </div>
+        </>
+      }
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatCard
-          title="Total Inventory Spend"
+          title="Total Purchase Spend"
+          ur="کل خریداری"
           value={formatPKR(totalSpend)}
           subtitle="Total purchase procurement costs"
           icon={TrendingDown}
@@ -174,7 +176,8 @@ export function PurchasesClient({
         />
 
         <StatCard
-          title="Purchase Orders"
+          title="Purchases"
+          ur="خریداری کے بل"
           value={totalCount}
           subtitle="Shipments logged from suppliers"
           icon={Package}
@@ -184,6 +187,7 @@ export function PurchasesClient({
 
         <StatCard
           title="Active Suppliers"
+          ur="فعال سپلائر"
           value={suppliers.length}
           subtitle="Registered vendor distributors"
           icon={Truck}
@@ -201,7 +205,7 @@ export function PurchasesClient({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by notes or purchase date..."
-            className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            className="field pr-4 pl-10"
           />
         </form>
 
@@ -209,7 +213,7 @@ export function PurchasesClient({
           <select
             value={selectedSupplier}
             onChange={(e) => handleFilterSupplier(e.target.value)}
-            className="h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           >
             <option value="">All Suppliers</option>
             {suppliers.map((s) => (
@@ -236,7 +240,7 @@ export function PurchasesClient({
           {canCreate && !search && !selectedSupplier && (
             <Link
               href="/purchases/new"
-              className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+              className="btn btn-primary mt-4"
             >
               <Plus className="h-4 w-4" />
               New Purchase
@@ -244,9 +248,9 @@ export function PurchasesClient({
           )}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="panel overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Purchase Date</th>
@@ -323,14 +327,14 @@ export function PurchasesClient({
                   onClick={() => handlePageChange(currentPage - 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                  <ChevronLeft className="h-4 w-4" /> Previous
                 </button>
                 <button
                   disabled={currentPage >= totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
                   className="inline-flex items-center gap-1 rounded border border-border px-2.5 py-1 font-medium hover:bg-muted disabled:opacity-40"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
+                  Next <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>

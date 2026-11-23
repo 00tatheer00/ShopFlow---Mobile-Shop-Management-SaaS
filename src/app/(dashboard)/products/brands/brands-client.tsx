@@ -1,10 +1,17 @@
 'use client';
 
-import { Ur } from '@/components/ui/urdu';
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Pencil, Trash2, ArrowLeft, Tag, X } from 'lucide-react';
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  Tag,
+  X,
+  Award,
+} from 'lucide-react';
 import type { Brand, UserRole } from '@/lib/types';
 import { createBrand, updateBrand, deleteBrand } from '../actions';
 import { hasPermission } from '@/lib/permissions';
@@ -74,35 +81,30 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
   return (
     <div className="max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/products"
-            className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Brands <Ur className="text-lg text-muted-foreground">کمپنیاں</Ur></h1>
-            <p className="text-xs text-muted-foreground">
-              Manage mobile manufacturers and brands (Apple, Samsung, Xiaomi, Infinix, Realme, Oppo)
-            </p>
-          </div>
-        </div>
-
-        {canManage && (
-          <button
-            onClick={() => {
-              setFormError(null);
-              setIsAddOpen(true);
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add Brand
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title="Brands"
+        ur="کمپنیاں"
+        icon={Award}
+        tone="sky"
+        backHref="/products"
+        description={<>Manage mobile manufacturers and brands (Apple, Samsung, Xiaomi, Infinix, Realme, Oppo)</>}
+        actions={
+        <>
+          {canManage && (
+            <button
+              onClick={() => {
+                setFormError(null);
+                setIsAddOpen(true);
+              }}
+              className="btn btn-primary"
+            >
+              <Plus className="h-4 w-4" />
+              Add Brand
+            </button>
+          )}
+        </>
+      }
+      />
 
       {/* Brands Grid */}
       {brands.length === 0 ? (
@@ -129,14 +131,14 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
                         }}
                         className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
                       >
-                        <Pencil className="h-3.5 w-3.5" />
+                        <Pencil className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => setBrandToDelete(brand)}
                         className="rounded p-1 text-muted-foreground hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/30 transition-colors"
                         title="Delete Brand"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   )}
@@ -182,7 +184,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
                   name="name"
                   required
                   placeholder="e.g. Apple, Samsung, Xiaomi"
-                  className="w-full rounded border border-border bg-background p-2 focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -232,7 +234,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
                   name="name"
                   required
                   defaultValue={editingBrand.name}
-                  className="w-full rounded border border-border bg-background p-2 focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 

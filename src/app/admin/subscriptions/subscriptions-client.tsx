@@ -263,7 +263,7 @@ export function SubscriptionsClient({
           <button
             type="button"
             onClick={handleExportCSV}
-            className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-muted hover:border-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            className="btn btn-outline"
           >
             <Download className="h-4 w-4 text-emerald-500" />
             <span>Export CSV</span>
@@ -282,7 +282,7 @@ export function SubscriptionsClient({
 
           <button
             onClick={() => setGenerateBillsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 transition cursor-pointer"
+            className="btn btn-primary"
           >
             <PlusCircle className="h-4 w-4" />
             <span>Generate Monthly Bills</span>
@@ -379,7 +379,7 @@ export function SubscriptionsClient({
             <select
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 cursor-pointer"
+              className="field cursor-pointer"
             >
               <option value="all">All Months</option>
               {availableMonths.map((m) => (
@@ -416,7 +416,7 @@ export function SubscriptionsClient({
             placeholder="Search shop, code, city, phone..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background pl-9 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="field pr-3 pl-10"
           />
         </div>
       </div>
@@ -529,7 +529,7 @@ export function SubscriptionsClient({
                               <button
                                 onClick={() => handleOpenApprove(sub)}
                                 disabled={isPending}
-                                className="inline-flex items-center gap-1 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold shadow-sm transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="btn btn-success"
                               >
                                 <Check className="h-3.5 w-3.5" />
                                 <span>Approve (Mark Paid)</span>
@@ -602,7 +602,7 @@ export function SubscriptionsClient({
                     value={payAmount}
                     onChange={(e) => setPayAmount(e.target.value)}
                     required
-                    className="w-full rounded-xl border border-border bg-background pl-10 pr-3 py-2 text-sm font-bold text-foreground focus:ring-2 focus:ring-emerald-500/50"
+                    className="field pr-3 pl-10"
                   />
                 </div>
               </div>

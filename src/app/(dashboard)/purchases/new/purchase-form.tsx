@@ -1,11 +1,10 @@
 'use client';
 
-import { Ur } from '@/components/ui/urdu';
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft,
   Plus,
   Trash2,
   Smartphone,
@@ -13,6 +12,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   X,
+  PackagePlus,
 } from 'lucide-react';
 import type { Product, Supplier } from '@/lib/types';
 import { formatPKR, toRupees } from '@/lib/types';
@@ -178,20 +178,14 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
   return (
     <div className="max-w-4xl space-y-6">
       {/* Top Header */}
-      <div className="flex items-center gap-3">
-        <Link
-          href="/purchases"
-          className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Stock In (Purchase) <Ur className="text-lg text-muted-foreground">مال آیا</Ur></h1>
-          <p className="text-xs text-muted-foreground">
-            Add incoming stock, assign serial numbers / IMEIs, and update inventory cost.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Stock In (New Purchase)"
+        ur="مال آیا"
+        icon={PackagePlus}
+        tone="cyan"
+        backHref="/purchases"
+        description={<>Add incoming stock, assign serial numbers / IMEIs, and update inventory cost.</>}
+      />
 
       {errorMessage && (
         <div className="flex items-center gap-2 rounded-xl bg-rose-50 p-4 text-sm font-medium text-rose-700 dark:bg-rose-950/40 dark:text-rose-400">
@@ -224,7 +218,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                 value={supplierId}
                 onChange={(e) => setSupplierId(e.target.value)}
                 required
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                className="field"
               >
                 <option value="">-- Select Vendor / Supplier --</option>
                 {suppliers.map((s) => (
@@ -244,7 +238,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                 value={purchaseDate}
                 onChange={(e) => setPurchaseDate(e.target.value)}
                 required
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                className="field"
               />
             </div>
           </div>
@@ -258,7 +252,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Shipment from Hall Road, Bilty # 98452"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="field"
             />
           </div>
         </div>
@@ -272,7 +266,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
               onClick={addItem}
               className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
             >
-              <Plus className="h-3.5 w-3.5" /> Add Another Product
+              <Plus className="h-4 w-4" /> Add Another Product
             </button>
           </div>
 
@@ -292,7 +286,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                       <select
                         value={item.productId}
                         onChange={(e) => updateItem(idx, { productId: e.target.value })}
-                        className="w-full rounded border border-border bg-background p-2 text-xs text-foreground focus:border-primary focus:outline-none"
+                        className="field"
                       >
                         {products.map((p) => (
                           <option key={p.id} value={p.id}>
@@ -311,7 +305,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                         onChange={(e) =>
                           updateItem(idx, { quantity: Math.max(1, Number(e.target.value)) })
                         }
-                        className="w-full rounded border border-border bg-background p-2 text-xs text-foreground focus:border-primary focus:outline-none"
+                        className="field"
                       />
                     </div>
 
@@ -325,7 +319,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                         onChange={(e) =>
                           updateItem(idx, { unitPrice: Math.max(0, Number(e.target.value)) })
                         }
-                        className="w-full rounded border border-border bg-background p-2 text-xs text-foreground focus:border-primary focus:outline-none"
+                        className="field"
                       />
                     </div>
 
@@ -372,7 +366,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                           value={item.imeiText}
                           onChange={(e) => updateItem(idx, { imeiText: e.target.value })}
                           placeholder={`Enter 15-digit IMEIs (one per line):\n352481098234123\n352481098234124`}
-                          className="w-full rounded border border-border bg-background p-2.5 font-mono text-xs focus:border-primary focus:outline-none"
+                          className="field font-mono"
                         />
 
                         {/* Live IMEI Feedback Summary Bar */}
@@ -483,7 +477,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                   name="name"
                   required
                   placeholder="e.g. Tariq Mehmood"
-                  className="w-full rounded border border-border p-2 bg-background focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -493,7 +487,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                   type="text"
                   name="company"
                   placeholder="e.g. Star Mobile Traders"
-                  className="w-full rounded border border-border p-2 bg-background focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 
@@ -503,7 +497,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
                   type="text"
                   name="phone"
                   placeholder="e.g. 03001234567"
-                  className="w-full rounded border border-border p-2 bg-background focus:border-primary focus:outline-none"
+                  className="field"
                 />
               </div>
 

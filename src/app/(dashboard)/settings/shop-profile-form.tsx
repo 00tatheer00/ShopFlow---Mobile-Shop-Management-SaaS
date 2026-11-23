@@ -1,10 +1,14 @@
 'use client';
 
-import { Ur } from '@/components/ui/urdu';
+import { SettingsTabs } from './settings-tabs';
+import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, AlertCircle } from 'lucide-react';
+import {
+  CheckCircle2,
+  AlertCircle,
+  Store,
+} from 'lucide-react';
 import type { Shop } from '@/lib/types';
 import { updateShopProfile } from './actions';
 
@@ -36,33 +40,15 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
   return (
     <div className="max-w-3xl space-y-6">
       {/* Settings Navigation Tabs */}
-      <div className="flex gap-4 border-b border-border pb-1">
-        <Link
-          href="/settings"
-          className="border-b-2 border-primary pb-2 text-sm font-semibold text-primary"
-        >
-          Shop Profile
-        </Link>
-        <Link
-          href="/settings/preferences"
-          className="border-b-2 border-transparent pb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          POS & Invoice Preferences
-        </Link>
-        <Link
-          href="/settings/users"
-          className="border-b-2 border-transparent pb-2 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          Staff & Roles
-        </Link>
-      </div>
+      <SettingsTabs active="/settings" />
 
-      <div>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">Shop Profile <Ur className="text-lg text-muted-foreground">دکان کی معلومات</Ur></h1>
-        <p className="text-xs text-muted-foreground">
-          Update your store&apos;s business details, city, and customer contact information.
-        </p>
-      </div>
+      <PageHeader
+        title="Shop Profile"
+        ur="دکان کی معلومات"
+        icon={Store}
+        tone="slate"
+        description={<>Update your store&apos;s business details, city, and customer contact information.</>}
+      />
 
       {feedback && (
         <div
@@ -91,7 +77,7 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
             name="name"
             required
             defaultValue={shop.name}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           />
         </div>
 
@@ -106,7 +92,7 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
               required
               defaultValue={shop.city}
               placeholder="e.g. Lahore, Karachi, Rawalpindi"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="field"
             />
           </div>
 
@@ -119,7 +105,7 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
               name="phone"
               defaultValue={shop.phone || ''}
               placeholder="e.g. 03001234567"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+              className="field"
             />
           </div>
         </div>
@@ -133,7 +119,7 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
             name="email"
             defaultValue={shop.email || ''}
             placeholder="e.g. info@shopflow.pk"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           />
         </div>
 
@@ -146,7 +132,7 @@ export function ShopProfileForm({ shop }: ShopProfileFormProps) {
             name="address"
             defaultValue={shop.address || ''}
             placeholder="e.g. Shop # 14, 2nd Floor, Hafeez Centre, Main Boulevard Gulberg, Lahore"
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+            className="field"
           />
         </div>
 

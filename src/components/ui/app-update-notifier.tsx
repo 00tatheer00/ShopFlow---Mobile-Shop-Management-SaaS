@@ -197,7 +197,7 @@ export function AppUpdateNotifier() {
           className="fixed top-4 right-4 z-50 w-[calc(100vw-2rem)] sm:w-96 rounded-2xl border border-emerald-500/30 bg-card/95 backdrop-blur-md shadow-2xl p-5 text-foreground animate-in slide-in-from-top-4 fade-in duration-300 ring-1 ring-emerald-500/20"
         >
           {/* Top Gradient Bar */}
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-indigo-500 rounded-t-2xl" />
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-emerald-600 rounded-t-2xl" />
 
           {/* Header Row */}
           <div className="flex items-start justify-between gap-3">
@@ -207,7 +207,7 @@ export function AppUpdateNotifier() {
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
                     New Update
                   </span>
                   <span className="text-xs font-bold font-mono text-muted-foreground">
@@ -284,7 +284,7 @@ export function AppUpdateNotifier() {
               type="button"
               onClick={handleApplyUpdate}
               disabled={isUpdating}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 text-xs font-bold shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-2 text-xs font-bold shadow-sm hover:shadow-emerald-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 cursor-pointer"
             >
               {isUpdating ? (
                 <>

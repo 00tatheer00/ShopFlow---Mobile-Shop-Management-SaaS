@@ -79,7 +79,7 @@ export function FinancialOverviewChart({
     <div className="flex h-full flex-col justify-between rounded-3xl border border-border bg-card p-4 shadow-sm sm:p-5">
       <div className="flex items-center justify-between pb-3 border-b border-border/60 gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 text-white">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-950/70 dark:text-violet-300">
             <BarChart3 className="h-4 w-4" />
           </div>
           <div>
