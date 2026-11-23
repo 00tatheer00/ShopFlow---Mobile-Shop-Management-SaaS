@@ -540,24 +540,14 @@ export async function searchImei(imeiQuery: string): Promise<{
 
   const supabase = await createClient();
 
-  // Tenant-scoped IMEI search
+  // Tenant-scoped IMEI search.
+  // imei_records.purchase_item_id / sale_item_id have no foreign keys, so the
+  // purchase and sale details are loaded with two follow-up queries by id.
   const { data: records, error } = await supabase
     .from('imei_records')
     .select(`
-      id,
-      imei_number,
-      status,
-      created_at,
-      updated_at,
-      product:products (id, name, model, brand:brands(name)),
-      purchase_item:purchase_items (
-        id,
-        purchase:purchases (id, purchase_date, supplier:suppliers(name))
-      ),
-      sale_item:sale_items (
-        id,
-        sale:sales (id, invoice_number, created_at, customer:customers(name, phone))
-      )
+      id, imei_number, status, created_at, updated_at, purchase_item_id, sale_item_id,
+      product:products (id, name, model, brand:brands(name))
     `)
     .eq('shop_id', user.shop_id!)
     .ilike('imei_number', `%${trimmed}%`)
@@ -575,15 +565,39 @@ export async function searchImei(imeiQuery: string): Promise<{
     status: string;
     created_at: string;
     updated_at: string;
+    purchase_item_id: string | null;
+    sale_item_id: string | null;
     product?: { id?: string; name?: string; model?: string | null; brand?: { name?: string } | null } | null;
-    purchase_item?: { purchase?: { id: string; purchase_date: string; supplier?: { name?: string } | null } | null } | null;
-    sale_item?: { sale?: { id: string; invoice_number: string; created_at: string; customer?: { name?: string; phone?: string } | null } | null } | null;
   }
+  const rows = (records as unknown as RawImeiRecord[]) || [];
 
-  const results: ImeiSearchResult[] = ((records as unknown as RawImeiRecord[]) || []).map((r) => {
+  const purchaseItemIds = rows.map((r) => r.purchase_item_id).filter((x): x is string => Boolean(x));
+  const saleItemIds = rows.map((r) => r.sale_item_id).filter((x): x is string => Boolean(x));
+
+  const [{ data: purchaseItems }, { data: saleItems }] = await Promise.all([
+    purchaseItemIds.length
+      ? supabase
+          .from('purchase_items')
+          .select('id, purchase:purchases(id, purchase_date, shop_id, supplier:suppliers(name))')
+          .in('id', purchaseItemIds)
+      : Promise.resolve({ data: [] as unknown[] }),
+    saleItemIds.length
+      ? supabase
+          .from('sale_items')
+          .select('id, sale:sales(id, invoice_number, created_at, shop_id, customer:customers(name, phone))')
+          .in('id', saleItemIds)
+      : Promise.resolve({ data: [] as unknown[] }),
+  ]);
+
+  type PurchaseLink = { id: string; purchase?: { id: string; purchase_date: string; shop_id: string; supplier?: { name?: string } | null } | null };
+  type SaleLink = { id: string; sale?: { id: string; invoice_number: string; created_at: string; shop_id: string; customer?: { name?: string; phone?: string } | null } | null };
+  const purchaseById = new Map(((purchaseItems || []) as PurchaseLink[]).map((p) => [p.id, p.purchase]));
+  const saleById = new Map(((saleItems || []) as SaleLink[]).map((x) => [x.id, x.sale]));
+
+  const results: ImeiSearchResult[] = rows.map((r) => {
     const prod = r.product;
-    const purItem = r.purchase_item;
-    const sItem = r.sale_item;
+    const purchase = r.purchase_item_id ? purchaseById.get(r.purchase_item_id) : null;
+    const sale = r.sale_item_id ? saleById.get(r.sale_item_id) : null;
 
     return {
       id: r.id,
@@ -597,22 +611,20 @@ export async function searchImei(imeiQuery: string): Promise<{
         model: prod?.model || null,
         brand_name: prod?.brand?.name || null,
       },
-      purchase: purItem?.purchase
-        ? {
-            id: purItem.purchase.id,
-            purchase_date: purItem.purchase.purchase_date,
-            supplier_name: purItem.purchase.supplier?.name || null,
-          }
-        : null,
-      sale: sItem?.sale
-        ? {
-            id: sItem.sale.id,
-            invoice_number: sItem.sale.invoice_number,
-            created_at: sItem.sale.created_at,
-            customer_name: sItem.sale.customer?.name || null,
-            customer_phone: sItem.sale.customer?.phone || null,
-          }
-        : null,
+      purchase:
+        purchase && purchase.shop_id === user.shop_id
+          ? { id: purchase.id, purchase_date: purchase.purchase_date, supplier_name: purchase.supplier?.name || null }
+          : null,
+      sale:
+        sale && sale.shop_id === user.shop_id
+          ? {
+              id: sale.id,
+              invoice_number: sale.invoice_number,
+              created_at: sale.created_at,
+              customer_name: sale.customer?.name || null,
+              customer_phone: sale.customer?.phone || null,
+            }
+          : null,
     };
   });
 

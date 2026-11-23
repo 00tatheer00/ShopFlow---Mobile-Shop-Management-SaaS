@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { attachProfiles } from '@/lib/supabase/queries';
 import { getAdminClient } from '@/lib/supabase/admin';
 import {
   ShieldCheck,
@@ -22,15 +23,16 @@ export default async function AdminSettingsPage() {
   const db = adminClient || supabase;
 
   // Fetch recent platform audit logs
-  const { data: rawLogs } = await db
+  const { data: rawLogsBase } = await db
     .from('audit_logs')
     .select(`
       id, shop_id, user_id, action, entity_type, entity_id, metadata, ip_address, created_at,
-      shops(name, display_shop_id),
-      profiles:user_id(full_name, email)
+      shops(name, display_shop_id)
     `)
     .order('created_at', { ascending: false })
     .limit(30);
+  // audit_logs -> profiles has no FK: attach the acting user's profile separately
+  const rawLogs = await attachProfiles(db, (rawLogsBase || []) as { user_id: string }[]);
 
   interface RawAuditLog {
     id: string;

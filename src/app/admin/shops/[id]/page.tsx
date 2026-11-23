@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { attachProfiles } from '@/lib/supabase/queries';
 import { getAdminClient } from '@/lib/supabase/admin';
 import { ShopDetailsClient } from './shop-details-client';
 import type { Shop, Plan } from '@/lib/types';
@@ -35,15 +36,16 @@ export default async function AdminShopDetailPage(props: {
   }
 
   // 2. Fetch Owner
-  const { data: ownerUser } = await db
+  const { data: ownerRow } = await db
     .from('shop_users')
-    .select(`
-      id, user_id, role, is_active,
-      profiles(full_name, email, phone)
-    `)
+    .select('id, user_id, role, is_active')
     .eq('shop_id', id)
     .eq('role', 'shop_owner')
+    .order('created_at', { ascending: true })
+    .limit(1)
     .maybeSingle();
+  // shop_users -> profiles has no FK: load the owner's profile separately
+  const ownerUser = ownerRow ? (await attachProfiles(db, [ownerRow]))[0] : null;
 
   // 3. Fetch Plans
   const { data: plans } = await db

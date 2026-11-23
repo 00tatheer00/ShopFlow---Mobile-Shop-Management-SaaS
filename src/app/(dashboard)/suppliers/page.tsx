@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { sanitizeSearch } from '@/lib/supabase/queries';
 import { SuppliersClient } from './suppliers-client';
 
 export const metadata: Metadata = { title: 'Suppliers' };
@@ -12,7 +13,7 @@ export default async function SuppliersPage(props: {
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
-  const search = searchParams.search || '';
+  const search = sanitizeSearch(searchParams.search);
   const page = Number(searchParams.page) || 1;
   const perPage = 20;
 

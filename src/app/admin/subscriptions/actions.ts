@@ -283,7 +283,7 @@ export async function sendSubscriptionReminder(subscriptionId: string, customNot
   });
 
   if (!res.success) {
-    return { error: 'Failed to send reminder email.' };
+    return { error: res.error || 'Failed to send reminder email.' };
   }
 
   revalidatePath('/admin/subscriptions');

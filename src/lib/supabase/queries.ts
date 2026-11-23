@@ -126,3 +126,47 @@ export async function getCustomerBalance(
     .maybeSingle();
   return data?.balance_after || 0;
 }
+
+export interface ProfileLite {
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+/**
+ * Attach `profiles` to rows that carry a `user_id`.
+ *
+ * shop_users.user_id and audit_logs.user_id reference auth.users, NOT
+ * public.profiles, so PostgREST cannot embed `profiles(...)` from them
+ * (it fails with PGRST200 and the WHOLE query returns nothing). Load the
+ * profiles with one extra query instead and attach them in memory.
+ */
+export async function attachProfiles<T extends { user_id: string | null }>(
+  db: { from: (table: string) => any }, // eslint-disable-line @typescript-eslint/no-explicit-any
+  rows: T[]
+): Promise<(T & { profiles: ProfileLite | null })[]> {
+  const ids = Array.from(new Set(rows.map((r) => r.user_id).filter((id): id is string => Boolean(id))));
+  const map = new Map<string, ProfileLite>();
+  if (ids.length > 0) {
+    const { data } = await db.from('profiles').select('id, full_name, email, phone').in('id', ids);
+    for (const p of (data || []) as (ProfileLite & { id: string })[]) {
+      map.set(p.id, { full_name: p.full_name, email: p.email, phone: p.phone });
+    }
+  }
+  return rows.map((r) => ({ ...r, profiles: (r.user_id && map.get(r.user_id)) || null }));
+}
+
+/** Same as attachProfiles, for rows nested under a parent (e.g. shops[].shop_users[]). */
+export async function attachNestedProfiles<P extends Record<string, unknown>>(
+  db: { from: (table: string) => any }, // eslint-disable-line @typescript-eslint/no-explicit-any
+  parents: P[],
+  key: string
+): Promise<P[]> {
+  const flat = parents.flatMap((p) => ((p[key] as { user_id: string | null }[] | null) || []));
+  const enriched = await attachProfiles(db, flat);
+  let i = 0;
+  return parents.map((p) => {
+    const kids = ((p[key] as unknown[] | null) || []).map(() => enriched[i++]);
+    return { ...p, [key]: kids };
+  });
+}

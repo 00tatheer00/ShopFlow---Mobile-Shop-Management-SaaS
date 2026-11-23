@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { sanitizeSearch } from '@/lib/supabase/queries';
+import { attachNestedProfiles } from '@/lib/supabase/queries';
 import { getAdminClient } from '@/lib/supabase/admin';
 import { ShopsClient, type ShopListItem } from './shops-client';
 import { lazyPurgeExpiredShopsAction } from '@/app/admin/actions';
@@ -18,7 +20,7 @@ export default async function AdminShopsPage(props: {
   const db = adminClient || supabase;
   const searchParams = await props.searchParams;
 
-  const search = searchParams.search || '';
+  const search = sanitizeSearch(searchParams.search);
   const status = searchParams.status || 'all';
   const page = Number(searchParams.page) || 1;
   const perPage = 15;
@@ -53,7 +55,7 @@ export default async function AdminShopsPage(props: {
       plans(name),
       shop_users(
         role,
-        profiles(full_name, email, phone)
+        user_id
       ),
       shop_subscriptions(
         due_date,
@@ -84,7 +86,9 @@ export default async function AdminShopsPage(props: {
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
-  const { data: rawShops, count, error: queryError } = await query;
+  const { data: rawShopsBase, count, error: queryError } = await query;
+  // shop_users -> profiles has no FK: attach owner profiles with a second query
+  const rawShops = await attachNestedProfiles(db, (rawShopsBase || []) as Record<string, unknown>[], 'shop_users');
   if (queryError) {
     console.error('Admin shops query error:', queryError);
   }

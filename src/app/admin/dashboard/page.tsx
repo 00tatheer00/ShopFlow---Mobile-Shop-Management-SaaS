@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { requireSuperAdmin } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { attachNestedProfiles } from '@/lib/supabase/queries';
 import { getAdminClient } from '@/lib/supabase/admin';
 import {
   Store,
@@ -53,12 +54,14 @@ export default async function AdminDashboardPage() {
       plans(name),
       shop_users(
         role,
-        profiles(full_name, email)
+        user_id
       )
     `)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(5);
+  // shop_users -> profiles has no FK: attach owner profiles with a second query
+  const recentShopsWithOwners = await attachNestedProfiles(db, (rawRecentShops || []) as Record<string, unknown>[], 'shop_users');
 
   // 3. Fetch recent platform audit logs
   const { data: recentLogs } = await db
@@ -107,7 +110,7 @@ export default async function AdminDashboardPage() {
     owner?: OwnerInfo;
   }
 
-  const recentShops: RecentShopItem[] = ((rawRecentShops || []) as unknown as RawRecentShop[]).map((s) => {
+  const recentShops: RecentShopItem[] = (recentShopsWithOwners as unknown as RawRecentShop[]).map((s) => {
     const ownerMember = s.shop_users?.find((u) => u.role === 'shop_owner');
     return {
       id: s.id,

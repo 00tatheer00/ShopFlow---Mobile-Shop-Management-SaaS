@@ -16,6 +16,7 @@ import {
 import { createShopAction, checkShopEmailAvailabilityAction } from '@/app/admin/actions';
 import type { Plan } from '@/lib/types';
 import { toast } from 'sonner';
+import { ShopCreatedPanel, type CreatedShopInfo } from './shop-created-panel';
 
 interface NewShopFormProps {
   plans: Plan[];
@@ -25,6 +26,7 @@ interface NewShopFormProps {
 export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [created, setCreated] = useState<CreatedShopInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -107,8 +109,22 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
         }
         setLoading(false);
       } else if (result?.shopId) {
-        toast.success(`Shop "${result.displayShopId || ''}" provisioned successfully!`);
-        router.push('/admin/shops');
+        toast.success(`Shop "${result.displayShopId || ''}" created`, {
+          description: result.emailStatus === 'sent' ? 'Welcome email sent to the owner' : 'Share the login details with the owner',
+        });
+        setCreated({
+          shopId: result.shopId,
+          displayShopId: result.displayShopId || '',
+          shopName: result.shopName || '',
+          ownerName: result.ownerName || '',
+          ownerEmail: result.ownerEmail || '',
+          ownerPhone: (formData.get('owner_phone') as string) || '',
+          password: (formData.get('owner_password') as string) || '',
+          loginUrl: result.loginUrl || '',
+          emailStatus: result.emailStatus || 'queued',
+          emailError: result.emailError,
+        });
+        setLoading(false);
         router.refresh();
       } else {
         const fallbackMsg = 'Unexpected response while provisioning shop. Please check your shop list.';
@@ -122,6 +138,18 @@ export function NewShopForm({ plans, suggestedDisplayId }: NewShopFormProps) {
       toast.error(msg);
       setLoading(false);
     }
+  }
+
+  if (created) {
+    return (
+      <ShopCreatedPanel
+        info={created}
+        onCreateAnother={() => {
+          setCreated(null);
+          router.refresh();
+        }}
+      />
+    );
   }
 
   return (

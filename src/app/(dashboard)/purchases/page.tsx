@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { fetchAllRows, sanitizeSearch } from '@/lib/supabase/queries';
 import { PurchasesClient } from './purchases-client';
 import type { Supplier } from '@/lib/types';
 
@@ -13,7 +14,7 @@ export default async function PurchasesPage(props: {
   const supabase = await createClient();
   const searchParams = await props.searchParams;
 
-  const search = searchParams.search || '';
+  const search = sanitizeSearch(searchParams.search);
   const supplierId = searchParams.supplier || '';
   const page = Number(searchParams.page) || 1;
   const perPage = 20;
@@ -25,8 +26,7 @@ export default async function PurchasesPage(props: {
       suppliers(id, name, company, phone),
       purchase_items(
         id, product_id, quantity, unit_price, total_price,
-        products(name, model),
-        imei_records(id, imei_number)
+        products(name, model)
       )
     `, { count: 'exact' })
     .eq('shop_id', user.shop_id!)
@@ -38,14 +38,17 @@ export default async function PurchasesPage(props: {
   }
 
   if (search) {
-    query = query.or(`notes.ilike.%${search}%,purchase_date.ilike.%${search}%`);
+    // purchase_date is a DATE column: match it exactly, text search only on notes
+    query = /^\d{4}-\d{2}-\d{2}$/.test(search)
+      ? query.eq('purchase_date', search)
+      : query.ilike('notes', `%${search}%`);
   }
 
   const from = (page - 1) * perPage;
   query = query.range(from, from + perPage - 1);
 
   // Fetch suppliers, purchases list, and total spend concurrently in a single round-trip
-  const [{ data: suppliers }, { data: rawPurchases, count }, { data: totalSpendData }] = await Promise.all([
+  const [{ data: suppliers }, { data: rawPurchases, count }, totalSpendData] = await Promise.all([
     supabase
       .from('suppliers')
       .select('*')
@@ -53,13 +56,29 @@ export default async function PurchasesPage(props: {
       .eq('is_active', true)
       .order('name'),
     query,
-    supabase
-      .from('purchases')
-      .select('total_amount')
-      .eq('shop_id', user.shop_id!),
+    fetchAllRows<{ total_amount: number }>(() =>
+      supabase.from('purchases').select('total_amount').eq('shop_id', user.shop_id!).order('id', { ascending: true })
+    ),
   ]);
 
-  const totalSpend = (totalSpendData || []).reduce((sum, p) => sum + (p.total_amount || 0), 0);
+  const totalSpend = totalSpendData.reduce((sum, p) => sum + (p.total_amount || 0), 0);
+
+  // IMEIs per purchase line. imei_records.purchase_item_id has no foreign key,
+  // so they cannot be embedded — load them for this page in one query.
+  const itemIds = (rawPurchases || []).flatMap((p) => ((p.purchase_items || []) as { id: string }[]).map((it) => it.id));
+  const imeisByItem = new Map<string, { id: string; imei_number: string }[]>();
+  if (itemIds.length > 0) {
+    const { data: imeis } = await supabase
+      .from('imei_records')
+      .select('id, imei_number, purchase_item_id')
+      .eq('shop_id', user.shop_id!)
+      .in('purchase_item_id', itemIds);
+    for (const r of imeis || []) {
+      const list = imeisByItem.get(r.purchase_item_id) || [];
+      list.push({ id: r.id, imei_number: r.imei_number });
+      imeisByItem.set(r.purchase_item_id, list);
+    }
+  }
 
   const purchases = (rawPurchases || []).map((p) => ({
     id: p.id,
@@ -88,7 +107,7 @@ export default async function PurchasesPage(props: {
       unit_price: it.unit_price,
       total_price: it.total_price,
       product: it.products || null,
-      imei_records: it.imei_records || [],
+      imei_records: imeisByItem.get(it.id) || [],
     })),
   }));
 

@@ -12,6 +12,8 @@ import {
 } from '@/lib/validations';
 import { SUBSCRIPTION_PRICE_PAISAS } from '@/lib/constants';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { generateShopWelcomeEmail, sendAndLogEmail } from '@/lib/email';
 
 /**
  * Helper to generate the next display shop ID (e.g. SHOP-001, SHOP-002)
@@ -247,7 +249,9 @@ export async function createShopAction(formData: FormData) {
 
   if (shopError || !shop) {
     console.error('Create shop error:', shopError);
-    return { error: shopError?.message || 'Failed to create shop record.' };
+    // Undo the owner login we just created, so the same email can be used again
+    await adminClient.auth.admin.deleteUser(ownerUserId).catch(() => undefined);
+    return { error: shopError?.message || 'Failed to create shop record. Nothing was saved — please try again.' };
   }
 
   // 5. Create initial subscription invoice row (Rs. 8,000 / month)
@@ -281,9 +285,10 @@ export async function createShopAction(formData: FormData) {
 
   if (shopUserError) {
     console.error('Shop user link error:', shopUserError);
-    return {
-      error: `Shop ${shop.display_shop_id} was created but the owner account could not be linked. Open the shop and try again, or contact support.`,
-    };
+    // Roll back completely so nothing half-created is left behind
+    await db.from('shops').delete().eq('id', shop.id);
+    await adminClient.auth.admin.deleteUser(ownerUserId).catch(() => undefined);
+    return { error: 'Could not link the owner to the shop. Nothing was saved — please try again.' };
   }
 
   // Default expense categories (Rent, Bijli, Chai...) so the owner can start immediately
@@ -305,6 +310,32 @@ export async function createShopAction(formData: FormData) {
     },
   });
 
+  // 9. Welcome email with login details (never blocks shop creation)
+  const hdrs = await headers();
+  const host = hdrs.get('x-forwarded-host') || hdrs.get('host');
+  const appUrl = host ? `${hdrs.get('x-forwarded-proto') || 'https'}://${host}` : process.env.NEXT_PUBLIC_APP_URL || '';
+  const loginUrl = `${appUrl}/login`;
+  const ownerEmail = result.data.owner_email.toLowerCase();
+  const welcome = {
+    ownerName: result.data.owner_name,
+    shopName: shop.name,
+    displayShopId: shop.display_shop_id || '',
+    loginUrl,
+    email: ownerEmail,
+  };
+  const emailResult = await sendAndLogEmail({
+    shopId: shop.id,
+    recipientEmail: ownerEmail,
+    recipientName: result.data.owner_name,
+    subject: `🎉 Your shop "${shop.name}" is ready on ShopFlow — login details`,
+    templateType: 'shop_welcome',
+    htmlContent: generateShopWelcomeEmail({ ...welcome, password: result.data.owner_password }),
+    // The stored copy never contains the real password
+    logHtml: generateShopWelcomeEmail({ ...welcome, password: '•••••••• (hidden)' }),
+    sentByUserId: admin.id,
+    metadata: { display_shop_id: shop.display_shop_id },
+  });
+
   revalidatePath('/admin/shops');
   revalidatePath('/admin/dashboard');
   revalidatePath('/admin/subscriptions');
@@ -313,6 +344,12 @@ export async function createShopAction(formData: FormData) {
     success: true,
     shopId: shop.id,
     displayShopId: shop.display_shop_id,
+    shopName: shop.name,
+    ownerName: result.data.owner_name,
+    ownerEmail,
+    loginUrl,
+    emailStatus: emailResult.status,
+    emailError: emailResult.error,
   };
 }
 
