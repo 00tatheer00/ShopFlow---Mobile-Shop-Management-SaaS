@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -87,6 +88,7 @@ export function ExpensesClient({
         setFormError(res.error);
       } else {
         setIsAddModalOpen(false);
+        toast.success('Expense saved', { description: 'خرچہ درج ہو گیا' });
         router.refresh();
       }
     });
@@ -103,6 +105,7 @@ export function ExpensesClient({
         setFormError(res.error);
       } else {
         setExpenseToEdit(null);
+        toast.success('Expense updated', { description: 'خرچہ تبدیل ہو گیا' });
         router.refresh();
       }
     });
@@ -115,10 +118,11 @@ export function ExpensesClient({
     startTransition(async () => {
       const res = await createExpenseCategory(newCatName.trim());
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setNewCatName('');
         setIsAddCatModalOpen(false);
+        toast.success('Category added');
         router.refresh();
       }
     });
@@ -128,9 +132,10 @@ export function ExpensesClient({
     startTransition(async () => {
       const res = await deleteExpense(expense.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setExpenseToDelete(null);
+        toast.success('Expense deleted', { description: 'خرچہ ہٹا دیا گیا' });
         router.refresh();
       }
     });
@@ -204,7 +209,7 @@ export function ExpensesClient({
       />
 
       {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1">
         <StatCard
           title="Today's Expenses"
           ur="آج کے خرچے"
@@ -288,7 +293,45 @@ export function ExpensesClient({
         </div>
       ) : (
         <div className="panel overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Phone: card list */}
+          <ul className="divide-y divide-border sm:hidden">
+            {expenses.map((expense) => (
+              <li key={expense.id} className="flex items-start gap-3 p-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-600 dark:bg-rose-950/70 dark:text-rose-300">
+                  <CreditCard className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-foreground">{expense.category?.name || 'General'}</p>
+                  <p className="truncate text-sm text-muted-foreground">{expense.description || expense.notes || 'No description'}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {expense.expense_date} · {(expense.payment_method || 'cash').replace('_', ' ')}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span className="font-mono text-base font-bold text-rose-600 dark:text-rose-400">−{formatPKR(expense.amount)}</span>
+                  {canManage && (
+                    <div className="flex">
+                      <button
+                        onClick={() => {
+                          setFormError(null);
+                          setExpenseToEdit(expense);
+                        }}
+                        className="icon-btn"
+                        aria-label="Edit expense"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button onClick={() => setExpenseToDelete(expense)} className="icon-btn hover:!text-rose-600" aria-label="Delete expense">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="hidden overflow-x-auto sm:block">
             <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
@@ -395,8 +438,8 @@ export function ExpensesClient({
 
       {/* Record Expense Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Record Expense</h2>
               <button
@@ -525,8 +568,8 @@ export function ExpensesClient({
 
       {/* Edit Expense Modal */}
       {expenseToEdit && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Edit Expense</h2>
               <button
@@ -660,8 +703,8 @@ export function ExpensesClient({
 
       {/* Quick Add Category Modal */}
       {isAddCatModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-base font-bold text-foreground">New Expense Category</h2>
               <button

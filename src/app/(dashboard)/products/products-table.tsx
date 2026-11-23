@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { useState, useTransition, useEffect } from 'react';
 import { useIsClient } from '@/lib/hooks';
 import { createPortal } from 'react-dom';
@@ -188,11 +189,11 @@ export function ProductsTable({
     if (!adjustingProduct) return;
     const numericQty = adjustQty === '' ? 0 : Number(adjustQty);
     if (numericQty === 0) {
-      alert('Adjustment cannot be 0.');
+      toast.error('Adjustment cannot be 0.');
       return;
     }
     if (!adjustReason.trim()) {
-      alert('Please provide a reason for the adjustment.');
+      toast.error('Please provide a reason for the adjustment.');
       return;
     }
 
@@ -568,8 +569,8 @@ export function ProductsTable({
 
       {/* Stock Adjustment Dialog (Section 13) */}
       {adjustingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
                 <h3 className="font-bold text-base text-foreground">Adjust Stock Quantity</h3>
@@ -651,8 +652,8 @@ export function ProductsTable({
 
       {/* IMEI Search & Lifecycle Modal (Section 10) */}
       {isImeiModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in-0">
-          <div className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-2xl border border-border bg-card shadow-2xl">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-2xl flex flex-col pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between p-5 border-b border-border">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">

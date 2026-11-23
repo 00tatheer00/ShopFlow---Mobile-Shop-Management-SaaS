@@ -67,16 +67,19 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  let user = null;
+  // getClaims(): refreshes an expired session (cookies updated via setAll) and
+  // verifies the JWT locally — no Auth-server round trip on every page load.
+  let user: { id: string } | null = null;
   let timedOut = false;
   try {
     const result = await Promise.race([
-      supabase.auth.getUser(),
+      supabase.auth.getClaims(),
       new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error('Supabase auth check timed out')), 3500)
       ),
     ]);
-    user = result?.data?.user ?? null;
+    const sub = result?.data?.claims?.sub;
+    user = sub ? { id: sub } : null;
   } catch (error) {
     // Slow internet on the auth server must not log the shopkeeper out.
     // Let the request through; server components re-check the session.

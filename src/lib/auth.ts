@@ -6,86 +6,60 @@ import type { AuthUser, UserRole } from '@/lib/types';
 
 /**
  * Get the currently authenticated user with their shop context.
- * Deduplicated per-request using React cache() to eliminate duplicate auth roundtrips.
- * Redirects to /login if not authenticated.
+ * Deduplicated per request with React cache().
+ *
+ * Speed: the login token is verified with getClaims() (local JWT check with the
+ * project's signing keys; it only calls the Auth server for legacy keys), and
+ * role + shop + profile are fetched in ONE parallel round trip instead of 3-4
+ * sequential ones. Redirects to /login if not authenticated.
  */
 export const getAuthUser = cache(async (): Promise<AuthUser> => {
   const supabase = await createClient();
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (error || !user) {
+  const { data: claimsData, error } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (error || !claims?.sub) {
     redirect('/login');
   }
 
-  // 1. Fetch user role and shop association directly
-  let resolvedRole: UserRole = 'cashier';
-  let resolvedShopId: string | null = null;
-  let resolvedShop: AuthUser['shop'] = undefined;
+  const userId = claims.sub as string;
+  const claimEmail = typeof claims.email === 'string' ? claims.email : '';
 
-  // Try standard authenticated client first
-  const { data: suData } = await supabase
-    .from('shop_users')
-    .select('role, shop_id')
-    .eq('user_id', user.id)
-    .eq('is_active', true)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+  // Server-side read keyed by the VERIFIED user id. The service client avoids
+  // RLS edge cases (super admins have no shop) and joins the shop in one query.
+  const db = getAdminClient() ?? supabase;
 
-  if (suData?.role) {
-    resolvedRole = suData.role as UserRole;
-    resolvedShopId = suData.shop_id || null;
-  } else {
-    // Resilient Fallback: If RLS or NULL shop_id blocked query, use privileged adminClient
-    const adminClient = getAdminClient();
-    if (adminClient) {
-      const { data: adminSu } = await adminClient
-        .from('shop_users')
-        .select('role, shop_id')
-        .eq('user_id', user.id)
-        .eq('is_active', true)
-        .order('created_at', { ascending: true })
-        .limit(1)
-        .maybeSingle();
+  const [{ data: membership }, { data: profile }] = await Promise.all([
+    db
+      .from('shop_users')
+      .select('role, shop_id, shops:shop_id (id, name, slug, city, status, deleted_at)')
+      .eq('user_id', userId)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db.from('profiles').select('full_name, email').eq('id', userId).maybeSingle(),
+  ]);
 
-      if (adminSu?.role) {
-        resolvedRole = adminSu.role as UserRole;
-        resolvedShopId = adminSu.shop_id || null;
-      }
-    }
+  const rawShop = (Array.isArray(membership?.shops) ? membership?.shops[0] : membership?.shops) as
+    | { id: string; name: string; slug: string; city: string; status: string; deleted_at?: string | null }
+    | null
+    | undefined;
+
+  let shop: AuthUser['shop'] = undefined;
+  if (rawShop) {
+    const { deleted_at, ...shopFields } = rawShop;
+    // A shop in the Trash behaves like a deactivated shop (no access)
+    shop = { ...shopFields, status: deleted_at ? 'deactivated' : shopFields.status } as AuthUser['shop'];
   }
-
-  // 2. If attached to a shop, fetch shop details
-  if (resolvedShopId) {
-    const adminClient = getAdminClient() || supabase;
-    const { data: shopRecord } = await adminClient
-      .from('shops')
-      .select('id, name, slug, city, status, deleted_at')
-      .eq('id', resolvedShopId)
-      .maybeSingle();
-
-    if (shopRecord) {
-      const { deleted_at, ...shopFields } = shopRecord as typeof shopRecord & { deleted_at?: string | null };
-      // A shop in the Trash behaves like a deactivated shop (no access)
-      resolvedShop = { ...shopFields, status: deleted_at ? 'deactivated' : shopFields.status } as AuthUser['shop'];
-    }
-  }
-
-  // 3. Fetch profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, email')
-    .eq('id', user.id)
-    .maybeSingle();
 
   return {
-    id: user.id,
-    email: profile?.email || user.email || '',
-    full_name: profile?.full_name || user.email || '',
-    role: resolvedRole,
-    shop_id: resolvedShopId,
-    shop: resolvedShop,
+    id: userId,
+    email: profile?.email || claimEmail,
+    full_name: profile?.full_name || claimEmail,
+    role: ((membership?.role as UserRole) || 'cashier'),
+    shop_id: membership?.shop_id || null,
+    shop,
   };
 });
 

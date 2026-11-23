@@ -69,14 +69,16 @@ export function PageHeader({
   backLabel?: string;
 }) {
   return (
-    <div className="space-y-3">
+    // On phones the app bar already shows the title + back arrow, so only the
+    // action buttons are shown here (compact, thumb-reachable row).
+    <div className={actions ? 'space-y-3' : 'hidden space-y-3 lg:block'}>
       {backHref && (
-        <Link href={backHref} className="inline-flex min-h-9 items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">
+        <Link href={backHref} className="hidden min-h-9 items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground lg:inline-flex">
           <ArrowLeft className="h-4 w-4" /> {backLabel}
         </Link>
       )}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="hidden min-w-0 items-center gap-3 lg:flex">
           {icon && <IconChip icon={icon} tone={tone} size="lg" />}
           <div className="min-w-0">
             <h1 className="flex flex-wrap items-baseline gap-x-2.5 text-2xl font-bold tracking-tight text-foreground">
@@ -86,7 +88,13 @@ export function PageHeader({
             {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
           </div>
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        {/* Screen-reader title on phones */}
+        <h1 className="sr-only lg:hidden">{title}</h1>
+        {actions && (
+          <div className="no-scrollbar -mx-3 flex items-center gap-2 overflow-x-auto px-3 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 [&>*]:shrink-0">
+            {actions}
+          </div>
+        )}
       </div>
     </div>
   );

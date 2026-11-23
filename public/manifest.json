@@ -1,15 +1,20 @@
 {
-  "name": "ShopFlow — Mobile Shop Management SaaS",
+  "name": "ShopFlow — Mobile Shop POS",
   "short_name": "ShopFlow",
   "description": "Cloud-based POS, IMEI Tracking, Stock & Udhaar Khata Management for Mobile Shops",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#090d16",
-  "theme_color": "#2563eb",
-  "categories": ["business", "finance", "productivity", "utilities"],
+  "background_color": "#f7f7fb",
+  "theme_color": "#2b2755",
+  "categories": [
+    "business",
+    "finance",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
@@ -43,32 +48,44 @@
   ],
   "shortcuts": [
     {
-      "name": "POS Terminal (New Sale)",
-      "short_name": "New Sale",
-      "description": "Open POS Cash Counter to make a sale",
+      "name": "New Sale",
+      "short_name": "Sale",
+      "description": "Open the POS to make a sale",
       "url": "/sales/new",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
-      "name": "Udhaar Khata (Customer Ledger)",
+      "name": "Udhaar Khata",
       "short_name": "Udhaar",
-      "description": "Check customer balances and recover cash",
+      "description": "Receive udhaar payments",
       "url": "/udhaar",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
-      "name": "Daily Expenses (Kharcha)",
-      "short_name": "Expenses",
-      "description": "Record shop expenses and bills",
-      "url": "/expenses",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Reports & Analytics",
-      "short_name": "Reports",
-      "description": "View profit, sales and stock reports",
-      "url": "/reports",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+      "name": "Products",
+      "short_name": "Stock",
+      "description": "Check items and stock",
+      "url": "/products",
+      "icons": [
+        {
+          "src": "/icons/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
+  ],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
   ]
 }

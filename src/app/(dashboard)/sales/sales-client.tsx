@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { Badge, PageHeader, Segmented } from '@/components/ui/kit';
 import { useState, useTransition, useMemo } from 'react';
 import Link from 'next/link';
@@ -119,9 +120,10 @@ export function SalesClient({
     startTransition(async () => {
       const res = await cancelSale(sale.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setSaleToCancel(null);
+        toast.success('Sale cancelled — stock returned', { description: 'سیل منسوخ، مال واپس اسٹاک میں' });
         router.refresh();
       }
     });
@@ -224,7 +226,7 @@ export function SalesClient({
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1">
         <StatCard
           title="Total Sale"
           ur="کل سیل"

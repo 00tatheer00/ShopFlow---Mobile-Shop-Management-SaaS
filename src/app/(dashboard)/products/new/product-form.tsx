@@ -358,12 +358,12 @@ export function ProductForm({
       {/* Quick Add Category Modal */}
       {isAddCategoryOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          className="sheet-backdrop"
           onClick={(e) => {
             if (e.target === e.currentTarget && !categoryPending) setIsAddCategoryOpen(false);
           }}
         >
-          <div className="w-full max-w-xs rounded-xl border border-border bg-card p-4 shadow-2xl space-y-3">
+          <div className="sheet sm:max-w-xs p-4 space-y-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <h3 className="font-semibold text-xs text-foreground">Add New Category</h3>
               <button
@@ -437,12 +437,12 @@ export function ProductForm({
       {/* Quick Add Brand Modal */}
       {isAddBrandOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150"
+          className="sheet-backdrop"
           onClick={(e) => {
             if (e.target === e.currentTarget && !brandPending) setIsAddBrandOpen(false);
           }}
         >
-          <div className="w-full max-w-xs rounded-xl border border-border bg-card p-4 shadow-2xl space-y-3">
+          <div className="sheet sm:max-w-xs p-4 space-y-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-2 border-b border-border">
               <h3 className="font-semibold text-xs text-foreground">Add New Brand</h3>
               <button

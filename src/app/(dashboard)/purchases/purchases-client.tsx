@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
@@ -100,9 +101,10 @@ export function PurchasesClient({
     startTransition(async () => {
       const res = await deletePurchase(purchase.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setPurchaseToDelete(null);
+        toast.success('Purchase deleted — stock reversed', { description: 'خریداری ہٹا دی گئی' });
         router.refresh();
       }
     });
@@ -164,7 +166,7 @@ export function PurchasesClient({
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1">
         <StatCard
           title="Total Purchase Spend"
           ur="کل خریداری"
@@ -249,7 +251,31 @@ export function PurchasesClient({
         </div>
       ) : (
         <div className="panel overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Phone: card list */}
+          <ul className="divide-y divide-border sm:hidden">
+            {purchases.map((purchase) => {
+              const units = purchase.items?.reduce((sum, it) => sum + it.quantity, 0) || 0;
+              return (
+                <li key={purchase.id}>
+                  <button type="button" onClick={() => setSelectedPurchase(purchase)} className="flex w-full items-start gap-3 p-4 text-left active:bg-muted/60">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cyan-100 text-cyan-700 dark:bg-cyan-950/70 dark:text-cyan-300">
+                      <Package className="h-5 w-5" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold text-foreground">{purchase.supplier?.name || 'Unknown supplier'}</span>
+                      <span className="block text-sm text-muted-foreground">
+                        {purchase.purchase_date} · {units} unit{units === 1 ? '' : 's'}
+                      </span>
+                      {purchase.notes && <span className="block truncate text-xs text-muted-foreground">{purchase.notes}</span>}
+                    </span>
+                    <span className="shrink-0 font-mono text-base font-bold text-foreground">{formatPKR(purchase.total_amount)}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div className="hidden overflow-x-auto sm:block">
             <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
@@ -344,8 +370,8 @@ export function PurchasesClient({
 
       {/* Purchase Details Modal */}
       {selectedPurchase && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-xl border border-border bg-card p-6 shadow-2xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-lg p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div>
                 <h2 className="text-base font-bold text-foreground">Purchase Details</h2>

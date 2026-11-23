@@ -571,8 +571,8 @@ export function SubscriptionsClient({
 
       {/* ================= MODAL 1: APPROVE PAYMENT ================= */}
       {approveModalSub && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-lg p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400">
@@ -686,8 +686,8 @@ export function SubscriptionsClient({
 
       {/* ================= MODAL 2: SEND REMINDER EMAIL ================= */}
       {reminderModalSub && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-lg p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-400">
@@ -748,8 +748,8 @@ export function SubscriptionsClient({
 
       {/* ================= MODAL 3: GENERATE MONTHLY BILLS ================= */}
       {generateBillsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-4 border-b border-border">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -827,8 +827,8 @@ export function SubscriptionsClient({
 
       {/* ================= MODAL 4: EMAIL DISPATCH LOGS ================= */}
       {emailLogsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="w-full max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 max-h-[85vh] flex flex-col">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-3xl p-6 flex flex-col pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-4 border-b border-border shrink-0">
               <div className="flex items-center gap-2.5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -887,8 +887,8 @@ export function SubscriptionsClient({
 
       {/* ================= MODAL 5: EMAIL HTML PREVIEW ================= */}
       {previewEmail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="w-full max-w-2xl rounded-2xl border border-border bg-card p-6 shadow-2xl animate-in fade-in-0 zoom-in-95 max-h-[90vh] flex flex-col">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-2xl p-6 flex flex-col pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-4 border-b border-border shrink-0">
               <div>
                 <h3 className="text-sm font-bold text-foreground truncate">{previewEmail.subject}</h3>

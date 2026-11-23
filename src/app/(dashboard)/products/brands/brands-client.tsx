@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
@@ -44,6 +45,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
         setFormError(res.error);
       } else {
         setIsAddOpen(false);
+        toast.success('Brand added');
         router.refresh();
       }
     });
@@ -61,6 +63,7 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
         setFormError(res.error);
       } else {
         setEditingBrand(null);
+        toast.success('Brand updated');
         router.refresh();
       }
     });
@@ -70,9 +73,10 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
     startTransition(async () => {
       const res = await deleteBrand(brand.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setBrandToDelete(null);
+        toast.success('Brand deleted');
         router.refresh();
       }
     });
@@ -161,8 +165,8 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
 
       {/* Add Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Add Brand</h3>
               <button onClick={() => setIsAddOpen(false)}>
@@ -211,8 +215,8 @@ export function BrandsClient({ brands, userRole }: BrandsClientProps) {
 
       {/* Edit Modal */}
       {editingBrand && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Edit Brand</h3>
               <button onClick={() => setEditingBrand(null)}>

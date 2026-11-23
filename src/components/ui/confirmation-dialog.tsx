@@ -54,13 +54,13 @@ export function ConfirmationDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+      className="sheet-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading) onClose();
       }}
     >
       <div
-        className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-4 animate-in zoom-in-95 duration-150"
+        className="sheet sm:max-w-md p-6 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
         role="dialog"
         aria-modal="true"
         aria-labelledby="dialog-title"

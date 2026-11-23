@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
@@ -64,7 +65,7 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
 
   function removeItem(index: number) {
     if (items.length <= 1) {
-      alert('A purchase must have at least one product item.');
+      toast.error('A purchase must have at least one product item.');
       return;
     }
     setItems((prev) => prev.filter((_, i) => i !== index));
@@ -163,13 +164,14 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
     startTransition(async () => {
       const res = await createSupplier(formData);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         if (res.supplier) {
           setSuppliers((prev) => [...prev, res.supplier as Supplier]);
           setSupplierId(res.supplier.id);
         }
         setIsAddSupplierOpen(false);
+        toast.success('Supplier added', { description: 'سپلائر شامل ہو گیا' });
         router.refresh();
       }
     });
@@ -460,8 +462,8 @@ export function PurchaseForm({ suppliers: initialSuppliers, products }: Purchase
 
       {/* Quick Add Supplier Modal */}
       {isAddSupplierOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Add New Supplier</h3>
               <button onClick={() => setIsAddSupplierOpen(false)}>

@@ -117,6 +117,7 @@ export function CustomersClient({
         setFormError(res.error);
       } else {
         setIsAddModalOpen(false);
+        toast.success('Customer added', { description: 'گاہک شامل ہو گیا' });
         router.refresh();
       }
     });
@@ -134,6 +135,7 @@ export function CustomersClient({
         setFormError(res.error);
       } else {
         setEditingCustomer(null);
+        toast.success('Customer updated', { description: 'معلومات محفوظ ہو گئیں' });
         router.refresh();
       }
     });
@@ -143,9 +145,10 @@ export function CustomersClient({
     startTransition(async () => {
       const res = await deleteCustomer(customer.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setCustomerToDelete(null);
+        toast.success('Customer removed', { description: 'گاہک ہٹا دیا گیا' });
         router.refresh();
       }
     });
@@ -489,8 +492,8 @@ export function CustomersClient({
 
       {/* Add Customer Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Add New Customer</h2>
               <button
@@ -593,8 +596,8 @@ export function CustomersClient({
 
       {/* Edit Customer Modal */}
       {editingCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Edit Customer</h2>
               <button
@@ -697,8 +700,8 @@ export function CustomersClient({
 
       {/* Settle / Receive Udhaar Payment Modal */}
       {settlingCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in-0 duration-150">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-2xl animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600">

@@ -587,8 +587,8 @@ export function ShopDetailsClient({
 
       {/* CONFIRMATION MODAL (NOT browser confirm) */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 space-y-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center gap-3">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-xl ${
@@ -671,10 +671,10 @@ export function ShopDetailsClient({
 
       {/* CHANGE PLAN MODAL */}
       {planModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+        <div className="sheet-backdrop">
           <form
             onSubmit={handlePlanSave}
-            className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95 duration-150"
+            className="sheet sm:max-w-md p-6 space-y-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-600">
@@ -739,8 +739,8 @@ export function ShopDetailsClient({
 
       {/* Confirmation Dialog: Move to Trash */}
       {trashModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-4">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
                 <Trash2 className="h-5 w-5" />

@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { Download } from 'lucide-react';
 import { useIsIos, useIsStandalone } from '@/lib/hooks';
@@ -47,9 +48,9 @@ export function PwaInstallButton({ className = '' }: { className?: string }) {
       }
       setDeferredPrompt(null);
     } else if (isIos) {
-      alert("iPhone par install karne ke liye: Safari ke bottom Share icon (📤) par click karein aur 'Add to Home Screen' dabayein.");
+      toast.info("iPhone par install karne ke liye: Safari ke bottom Share icon (📤) par click karein aur 'Add to Home Screen' dabayein.", { duration: 9000 });
     } else {
-      alert("App install karne ke liye browser menu (3 dots) par ja kar 'Install ShopFlow' ya 'Add to Home Screen' par click karein.");
+      toast.info("App install karne ke liye browser menu (3 dots) par ja kar 'Install ShopFlow' ya 'Add to Home Screen' par click karein.", { duration: 9000 });
     }
   };
 

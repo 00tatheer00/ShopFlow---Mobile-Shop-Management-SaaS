@@ -216,7 +216,7 @@ export function UdhaarClient({
       />
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1">
         <StatCard
           title="Udhaar to Collect"
           ur="وصول کرنا باقی"
@@ -502,8 +502,8 @@ export function UdhaarClient({
 
       {/* Receive Payment Modal */}
       {isReceivePaymentOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div>
                 <h2 className="text-lg font-bold text-foreground">Receive Udhaar Payment (وصولی)</h2>
@@ -733,8 +733,8 @@ export function UdhaarClient({
 
       {/* Add Udhaar (Credit) Modal */}
       {isCreditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Add Udhaar (Credit)</h2>
               <button

@@ -65,6 +65,8 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
       const res = await updateStaffRole(shopUserId, newRole);
       if (res.error) {
         toast.error(res.error);
+      } else {
+        toast.success(`Role changed to ${newRole === 'manager' ? 'Manager' : 'Cashier'}`);
       }
       router.refresh();
     });
@@ -75,6 +77,8 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
       const res = await toggleStaffStatus(shopUserId, !currentStatus);
       if (res.error) {
         toast.error(res.error);
+      } else {
+        toast.success(currentStatus ? 'Staff member blocked from login' : 'Staff member can log in again');
       }
       router.refresh();
     });
@@ -205,8 +209,8 @@ export function UsersClient({ staffMembers, currentUserId }: UsersClientProps) {
 
       {/* Add Staff Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Add Staff Member</h3>
               <button onClick={() => setIsAddOpen(false)}>

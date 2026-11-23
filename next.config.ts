@@ -30,7 +30,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   experimental: {
     staleTimes: {
-      dynamic: 600,
+      dynamic: 60,
       static: 600,
     },
     optimizePackageImports: ['lucide-react', 'sonner', 'qrcode.react', 'zod'],

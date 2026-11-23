@@ -27,6 +27,8 @@ export default async function NewSalePage() {
       `)
       .eq('shop_id', user.shop_id!)
       .eq('is_active', true)
+      // Only phones still in stock (sold IMEIs used to be downloaded and thrown away)
+      .eq('imei_records.status', 'in_stock')
       .order('name'),
     supabase
       .from('customers')

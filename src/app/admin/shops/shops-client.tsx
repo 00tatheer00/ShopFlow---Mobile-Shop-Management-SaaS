@@ -700,8 +700,8 @@ export function ShopsClient({
 
       {/* Confirmation Dialog: Move to Trash (Soft Delete) */}
       {trashModalShop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-4">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
                 <Trash2 className="h-5 w-5" />
@@ -751,8 +751,8 @@ export function ShopsClient({
 
       {/* Confirmation Dialog: Permanent Delete */}
       {permDeleteModalShop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-destructive/40 bg-card p-6 shadow-2xl space-y-4">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-destructive/20 text-destructive">
                 <ShieldAlert className="h-6 w-6" />
@@ -806,8 +806,8 @@ export function ShopsClient({
 
       {/* Confirmation Dialog: Status Change */}
       {statusModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-xl space-y-4">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 space-y-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center gap-3">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-xl ${

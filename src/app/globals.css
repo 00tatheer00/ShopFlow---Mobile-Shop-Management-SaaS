@@ -176,7 +176,7 @@
 }
 /* Standard form field (inputs / selects / textareas) */
 @utility field {
-  @apply min-h-11 w-full rounded-xl border border-input bg-card px-3 py-2 text-[15px] text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/12 focus:outline-none transition disabled:opacity-60;
+  @apply min-h-11 w-full rounded-xl border border-input bg-card px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-4 focus:ring-primary/12 focus:outline-none transition disabled:opacity-60;
 }
 @utility field-label {
   @apply mb-1.5 flex items-baseline gap-2 text-sm font-semibold text-foreground;
@@ -555,6 +555,70 @@
 .animate-pop { animation: sf-pop 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
 .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+
+/* ---------- Native-app feel ---------- */
+html,
+body {
+  /* no rubber-band bounce / accidental pull-to-refresh while scrolling lists */
+  overscroll-behavior-y: none;
+}
+a,
+button,
+input,
+select,
+textarea,
+label,
+[role="button"],
+[role="tab"] {
+  /* no 300ms tap delay, no double-tap zoom on controls */
+  touch-action: manipulation;
+}
+button,
+[role="tab"],
+nav a {
+  -webkit-user-select: none;
+  user-select: none;
+}
+/* iPhone zooms into any input under 16px — keep every field at 16px+ on touch screens */
+@media (max-width: 1023px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
+}
+
+/* Page enter animation (app-like transition between screens) */
+@keyframes sf-page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.page-enter { animation: sf-page-in 0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .page-enter, .animate-pop { animation: none; }
+}
+
+/* Grab handle on phone bottom sheets */
+@media (max-width: 639px) {
+  .sheet::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 5px;
+    margin: -4px auto 14px;
+    border-radius: 9999px;
+    background: var(--border);
+  }
+}
+
+/* Bottom sheet on phones, centred dialog on larger screens */
+@utility sheet-backdrop {
+  @apply fixed inset-0 z-50 flex items-end justify-center bg-slate-950/50 sm:items-center sm:p-4;
+}
+@utility sheet {
+  @apply max-h-[92dvh] w-full overflow-y-auto rounded-t-3xl border border-border bg-card shadow-2xl animate-in slide-in-from-bottom-6 duration-200 sm:rounded-2xl sm:slide-in-from-bottom-2;
+}
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 

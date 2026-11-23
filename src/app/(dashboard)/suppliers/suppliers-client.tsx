@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -81,6 +82,7 @@ export function SuppliersClient({
         setFormError(res.error);
       } else {
         setIsAddModalOpen(false);
+        toast.success('Supplier added', { description: 'سپلائر شامل ہو گیا' });
         router.refresh();
       }
     });
@@ -98,6 +100,7 @@ export function SuppliersClient({
         setFormError(res.error);
       } else {
         setEditingSupplier(null);
+        toast.success('Supplier updated');
         router.refresh();
       }
     });
@@ -107,9 +110,10 @@ export function SuppliersClient({
     startTransition(async () => {
       const res = await deleteSupplier(supplier.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setSupplierToDelete(null);
+        toast.success('Supplier removed');
         router.refresh();
       }
     });
@@ -229,7 +233,54 @@ export function SuppliersClient({
         </div>
       ) : (
         <div className="panel overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Phone: card list */}
+          <ul className="divide-y divide-border sm:hidden">
+            {suppliers.map((supplier) => (
+              <li key={supplier.id} className="flex items-start gap-3 p-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-100 text-base font-bold text-teal-700 dark:bg-teal-950/70 dark:text-teal-300">
+                  {supplier.name.charAt(0).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold text-foreground">{supplier.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">{supplier.company || supplier.address || 'Supplier'}</p>
+                  {supplier.phone && <p className="font-mono text-sm text-muted-foreground">{supplier.phone}</p>}
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {supplier.phone && (
+                      <a href={getWhatsAppUrl(supplier.phone)} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline">
+                        <MessageCircle className="h-4 w-4 text-emerald-600" /> WhatsApp
+                      </a>
+                    )}
+                    {supplier.phone && (
+                      <a href={`tel:${supplier.phone}`} className="btn btn-sm btn-outline">
+                        Call
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <div className="flex shrink-0 flex-col">
+                  {canEdit && (
+                    <button
+                      onClick={() => {
+                        setFormError(null);
+                        setEditingSupplier(supplier);
+                      }}
+                      className="icon-btn"
+                      aria-label="Edit supplier"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button onClick={() => setSupplierToDelete(supplier)} className="icon-btn hover:!text-rose-600" aria-label="Delete supplier">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="hidden overflow-x-auto sm:block">
             <table className="sf-table">
               <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                 <tr>
@@ -356,8 +407,8 @@ export function SuppliersClient({
 
       {/* Add Supplier Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Add New Supplier</h2>
               <button
@@ -471,8 +522,8 @@ export function SuppliersClient({
 
       {/* Edit Supplier Modal */}
       {editingSupplier && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-xl animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-md p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h2 className="text-lg font-bold text-foreground">Edit Supplier</h2>
               <button

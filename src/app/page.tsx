@@ -3,7 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub;
 
   if (!user) {
     redirect('/login');
@@ -12,7 +13,7 @@ export default async function HomePage() {
   const { data: shopUser } = await supabase
     .from('shop_users')
     .select('role')
-    .eq('user_id', user.id)
+    .eq('user_id', user)
     .eq('is_active', true)
     .maybeSingle();
 

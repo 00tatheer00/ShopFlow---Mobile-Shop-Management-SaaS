@@ -1,5 +1,6 @@
 'use client';
 
+import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/kit';
 import { useState, useTransition } from 'react';
 import Link from 'next/link';
@@ -44,6 +45,7 @@ export function CategoriesClient({ categories, userRole }: CategoriesClientProps
         setFormError(res.error);
       } else {
         setIsAddOpen(false);
+        toast.success('Category added');
         router.refresh();
       }
     });
@@ -61,6 +63,7 @@ export function CategoriesClient({ categories, userRole }: CategoriesClientProps
         setFormError(res.error);
       } else {
         setEditingCat(null);
+        toast.success('Category updated');
         router.refresh();
       }
     });
@@ -70,9 +73,10 @@ export function CategoriesClient({ categories, userRole }: CategoriesClientProps
     startTransition(async () => {
       const res = await deleteCategory(cat.id);
       if (res.error) {
-        alert(res.error);
+        toast.error(res.error);
       } else {
         setCategoryToDelete(null);
+        toast.success('Category deleted');
         router.refresh();
       }
     });
@@ -166,8 +170,8 @@ export function CategoriesClient({ categories, userRole }: CategoriesClientProps
 
       {/* Add Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Add Category</h3>
               <button onClick={() => setIsAddOpen(false)}>
@@ -226,8 +230,8 @@ export function CategoriesClient({ categories, userRole }: CategoriesClientProps
 
       {/* Edit Modal */}
       {editingCat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="sheet-backdrop">
+          <div className="sheet sm:max-w-sm p-6 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <h3 className="font-bold text-sm text-foreground">Edit Category</h3>
               <button onClick={() => setEditingCat(null)}>
