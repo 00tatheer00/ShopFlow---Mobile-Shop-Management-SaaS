@@ -28,6 +28,10 @@
 
 BEGIN;
 
+-- Works whether or not migration 012 (shop Trash) was applied:
+-- the functions below read shops.deleted_at.
+ALTER TABLE shops ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ NULL;
+
 -- ------------------------------------------------------------
 -- 0. Helper: assert the caller may act on a shop
 --    * service_role (server admin client)           -> allowed
